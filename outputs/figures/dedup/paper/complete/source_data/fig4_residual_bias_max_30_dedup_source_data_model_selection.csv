@@ -1,0 +1,5 @@
+bag,objective,objective_label,best_rung,candidate_id,source_file
+structural,o_min,Synergy arm,xgb_tree_d3,m048530_o_min_ord4_rk00016,/data/workspaces/neuromodelling/rherzog/Brainlat/expo_hoi_bag_repro_data_dedup/work/fig_dedup/max_30/stats/residuals/residuals_subject_structural_syn.csv
+structural,o_max,Redundancy arm,xgb_tree_d3,m026012_o_max_ord29_rk00013,/data/workspaces/neuromodelling/rherzog/Brainlat/expo_hoi_bag_repro_data_dedup/work/fig_dedup/max_30/stats/residuals/residuals_subject_structural_red.csv
+functional,o_min,Synergy arm,xgb_tree_d3,m070525_o_min_ord26_rk00011,/data/workspaces/neuromodelling/rherzog/Brainlat/expo_hoi_bag_repro_data_dedup/work/fig_dedup/max_30/stats/residuals/residuals_subject_functional_syn.csv
+functional,o_max,Redundancy arm,xgb_tree_d3,m023016_o_max_ord26_rk00017,/data/workspaces/neuromodelling/rherzog/Brainlat/expo_hoi_bag_repro_data_dedup/work/fig_dedup/max_30/stats/residuals/residuals_subject_functional_red.csv

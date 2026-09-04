@@ -1,0 +1,31 @@
+figure,panel,sheet,item,value
+fig_s10_set_size_sensitivity,a_best_r2,a_best_r2,description,"Pooled depth-3 held-out LOCO R² across maximum set sizes, structural BAG followed by functional BAG."
+fig_s10_set_size_sensitivity,a_best_r2,a_best_r2,n_rows_plotted,52
+fig_s10_set_size_sensitivity,a_best_r2,a_best_r2,notes,"The dashed vertical line marks cap 21, the last cap before evaluated O-information changes sign at set size 22."
+fig_s10_set_size_sensitivity,a_best_r2,a_best_r2,column: bag,brain-age-gap measure and figure row
+fig_s10_set_size_sensitivity,a_best_r2,a_best_r2,column: order_cap,maximum candidate set size
+fig_s10_set_size_sensitivity,a_best_r2,a_best_r2,column: rung_id,model level (xgb_tree_d3 = d3)
+fig_s10_set_size_sensitivity,a_best_r2,a_best_r2,column: best_syn_r2,best R² in the minimum-O-information (synergy) arm
+fig_s10_set_size_sensitivity,a_best_r2,a_best_r2,column: best_red_r2,best R² in the maximum-O-information (redundancy) arm
+fig_s10_set_size_sensitivity,a_best_r2,a_best_r2,column: baseline_r2,covariate-only baseline R²
+fig_s10_set_size_sensitivity,b_selected_set_size,b_selected_set_size,description,Set size of each pooled depth-3 arm winner across maximum set sizes.
+fig_s10_set_size_sensitivity,b_selected_set_size,b_selected_set_size,n_rows_plotted,52
+fig_s10_set_size_sensitivity,b_selected_set_size,b_selected_set_size,notes,The grey identity line is selected set size = maximum allowed set size.
+fig_s10_set_size_sensitivity,b_selected_set_size,b_selected_set_size,column: bag,brain-age-gap measure and figure row
+fig_s10_set_size_sensitivity,b_selected_set_size,b_selected_set_size,column: order_cap,maximum candidate set size
+fig_s10_set_size_sensitivity,b_selected_set_size,b_selected_set_size,column: rung_id,model level (xgb_tree_d3 = d3)
+fig_s10_set_size_sensitivity,b_selected_set_size,b_selected_set_size,column: best_syn_order,set size of the minimum-O-information arm winner
+fig_s10_set_size_sensitivity,b_selected_set_size,b_selected_set_size,column: best_red_order,set size of the maximum-O-information arm winner
+fig_s10_set_size_sensitivity,c_diversity_slopes,c_diversity_slopes,description,Set-size-adjusted pooled depth-3 domain-diversity slopes across maximum set sizes.
+fig_s10_set_size_sensitivity,c_diversity_slopes,c_diversity_slopes,n_rows_plotted,52
+fig_s10_set_size_sensitivity,c_diversity_slopes,c_diversity_slopes,notes,The horizontal black line marks a zero diversity slope.
+fig_s10_set_size_sensitivity,c_diversity_slopes,c_diversity_slopes,column: bag,brain-age-gap measure and figure row
+fig_s10_set_size_sensitivity,c_diversity_slopes,c_diversity_slopes,column: order_cap,maximum candidate set size
+fig_s10_set_size_sensitivity,c_diversity_slopes,c_diversity_slopes,column: rung_id,model level (xgb_tree_d3 = d3)
+fig_s10_set_size_sensitivity,c_diversity_slopes,c_diversity_slopes,column: beta_h_syn,diversity slope in the minimum-O-information arm (R² per bit)
+fig_s10_set_size_sensitivity,c_diversity_slopes,c_diversity_slopes,column: beta_h_red,diversity slope in the maximum-O-information arm (R² per bit)
+fig_s10_set_size_sensitivity,c_diversity_slopes,c_diversity_slopes,column: beta_interaction,minimum-minus-maximum arm slope interaction
+fig_s10_set_size_sensitivity,c_diversity_slopes,c_diversity_slopes,column: p_h_syn_interaction_cluster_order,set-size-clustered two-sided interaction p value
+fig_s10_set_size_sensitivity,c_diversity_slopes,c_diversity_slopes,column: p_h_syn_interaction_perm,within-order label-permutation p value
+fig_s10_set_size_sensitivity,,,generated_from,/home/rherzog/Documents/Brainlat/repo-expo-hoi-bag/outputs/sensitivity/dedup/order_cap/order_cap_summary_by_cap_bag_rung.csv
+fig_s10_set_size_sensitivity,,,generated_from,/home/rherzog/Documents/Brainlat/repo-expo-hoi-bag/outputs/sensitivity/dedup/order_cap/diversity_r2_betas_by_cap.csv

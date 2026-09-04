@@ -1,0 +1,192 @@
+defaults:
+  data_root: data
+  base_output_root: outputs
+  greedy_subdir: greedy
+  n_jobs: 64
+  n_null: 10000
+  top_k_per_order: 20
+  order_min: 3
+  order_max: 30
+  candidate_limit: null
+  smoke_test: false
+  pipeline_manifest: pipeline_manifest.json
+
+common:
+  # ── Reproducibility ──────────────────────────────────────────────────────────
+  # All random seeds are collected here so that any analysis parameter that
+  # affects stochastic behaviour is visible in one place.
+  bootstrap_rng_seed: 42       # seed for bootstrap CI resampling across all scripts
+  n_bootstrap: 2000            # default bootstrap replicate count for CI estimation
+  # ── Shared analysis params ───────────────────────────────────────────────────
+  top_k_per_order: 20          # top-K syn + top-K red models used throughout
+  paths:
+    input_csv: data/raw/all_exposome_bag_clean_expo63_countryyear_only_complete_cases.csv
+    greedy_topk_csv: outputs/greedy/greedy_topk_by_objective_order.csv
+    greedy_feature_names_csv: outputs/greedy/exposome_feature_names.csv
+  analysis_cfg:
+    objectives:
+      - o_max
+      - o_min
+    initial_order: 3
+    max_order: 30
+    top_k_per_order: 100
+    max_candidates_per_objective: 0
+    max_models_total: 0
+    objective_filter: []
+    order_min: null
+    order_max: 30
+    include_sex: true
+    include_diagnosis: true
+    include_year: true
+    min_n_obs: 80
+    min_n_obs_for_metrics: 5
+  xgb_cfg:
+    objective: reg:squarederror
+    eval_metric: rmse
+    tree_method: hist
+    learning_rate: 0.03
+    max_depth: 2
+    min_child_weight: 15
+    subsample: 0.7
+    colsample_bytree: 0.7
+    reg_alpha: 0.5
+    reg_lambda: 2.0
+    gamma: 0.5
+    n_estimators: 4000
+    early_stopping_rounds: 100
+    random_state: 20260304
+    nthread: 1
+    missing: null
+  cv_cfg:
+    split_col: country_clean
+    min_country_size_test: 0
+    unseen_diag_policy: drop_test_rows
+  perf_cfg:
+    backend: loky
+    blas_threads: 1
+
+audit:
+  required_outputs:
+    - path: "{output_root}/pipeline_manifest.json"
+      description: Consolidated pipeline manifest for the run
+    - path: "{output_root}/families/pooled_oinfo_ladder/canonical"
+      description: Canonical pooled output directory
+
+variants:
+  a:
+    label: variant_a
+    description: Main analysis — CN + AD + FTD
+    exclude_countries: France,Italy,Egypt,Greece,Poland
+    exclude_diagnosis: Other,AFM,MCI
+  b:
+    label: variant_b
+    description: Robustness — AD + FTD only
+    exclude_countries: France,Italy,Egypt,Greece,Poland
+    exclude_diagnosis: Other,AFM,MCI,CN
+    skip_steps:
+      - transfer
+      - main_cn_transfer
+
+greedy:
+  input_csv: data/raw/all_exposome_bag_clean_expo63_countryyear_only_complete_cases.csv
+  feature_list_csv: data/metadata/exposome_feature_names.csv
+  country_col: country_clean
+  year_acq_col: exposome_year
+  year_fallback_col: Year
+  countries_to_remove: ""
+  outlier_ids: ""
+  year_min: null
+  year_max: null
+  min_country_size: 0
+  initial_order: 3
+  max_order: 30
+  greedy_repeat: 40000
+  batch_size: 1000000
+  repeat_batch_size: 1000
+  device: cpu
+  objectives: o_max,o_min
+  top_k_per_order: 1000
+  precomputed_neg_oinfo_csv: ""
+  precomputed_neg_oinfo_col: negative_oinfo
+
+null_model:
+  n_null: 10000
+  top_k_syn: 20
+  top_k_red: 20
+  outdir_base: outputs/variant_a/null_model
+  experiments_root: outputs/variant_a/experiments
+  greedy_root: outputs/greedy
+  min_n_test_dx: 5
+  rng_seed: 20260403           # seed for null draw sampling (date-keyed for auditability)
+  diversity_max_domain_frac: 0.60  # max fraction of features from one domain for "diverse" filter
+
+dx_stratified:
+  top_k_syn: 20
+  top_k_red: 20
+  min_n_test_dx: 5
+  outdir_base: outputs/variant_a/dx_stratified_eval
+  experiments_root: outputs/variant_a/experiments
+  greedy_root: outputs/greedy
+
+transfer:
+  top_k_syn: 20
+  top_k_red: 20
+  min_n_test_dx: 5
+  min_train_cn_subjects: 30    # minimum CN subjects in a country fold to train transfer model
+  outdir_base: outputs/variant_a/transfer_dx_eval
+  experiments_root: outputs/variant_a/experiments
+  greedy_root: outputs/greedy
+  perf_cfg:
+    chunk_size_models: 8
+
+single_exposure:
+  outdir_base: outputs/variant_a/single_exposure_eval
+  greedy_root: outputs/greedy
+  perf_cfg:
+    n_jobs: 64
+
+oof_predictions:
+  outdir_base: outputs/variant_a/subject_level_oof
+  greedy_root: outputs/greedy
+
+shap_oof:
+  outdir_base: outputs/variant_a/shap_oof
+  greedy_root: outputs/greedy
+
+compute_phase2_stats:
+  # Diagnosis odds-ratio analysis
+  # Age bins used to stratify subjects in logistic regression (years).
+  # Chosen to capture typical neurodegeneration risk decades in the LOCO cohort.
+  age_bins: [0, 50, 60, 70, 80, 200]
+  age_bin_labels: ["<50", "50-60", "60-70", "70-80", "80+"]
+  # Diagnoses reported as contrasts against CN in the diagnosis OR model.
+  # Must be a subset of the diagnoses present in the data after exclusions.
+  contrast_diagnoses: ["AD", "FTD", "MCI"]
+  # Minimum subjects in a country-fold to include it in summary stats.
+  # Chosen to avoid unreliable R² estimates from very small test sets.
+  min_n_test: 20
+  # Gradient label thresholds (dx_median relative to CN median R²).
+  # amplification: dx > CN * 1.1  |  persistence: dx > CN * 0.8  |  attenuation: dx > 0  |  collapse: dx ≤ 0
+  gradient_amplification_threshold: 1.1
+  gradient_persistence_threshold: 0.8
+  # Enrichment analysis: top-percentile cutoffs reported in the enrichment table.
+  enrichment_thresholds: [0.01, 0.02, 0.05, 0.10, 0.15, 0.20, 0.50]
+
+compute_bootstrap_stability:
+  n_bootstrap: 500             # resamples for variable-frequency bootstrap (lighter than CI bootstrap)
+  top_k: 20                   # top-K models used for variable frequency analysis
+
+stages:
+  - greedy
+  - main_pooled
+  - main_single_dx
+  - main_portability
+  - main_cn_transfer
+  - dx_stratified
+  - transfer
+  - null_model
+  - single_exposure
+  - oof_predictions
+  - shap_oof
+  - post_stats
+  - post_figures

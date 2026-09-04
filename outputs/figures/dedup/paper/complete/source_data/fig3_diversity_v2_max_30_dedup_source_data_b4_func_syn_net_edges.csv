@@ -1,0 +1,37 @@
+bag,family,rung,domain_a,domain_b,cooccurrence_count,normalized_cooccurrence,in_top1_pair,edge_width_used,edge_rank
+functional,synergy,xgb_tree_d3,Democracy,Temperature,549,0.10273203592814371,True,,1
+functional,synergy,xgb_tree_d3,Democracy,Precipitation/droughts,491,0.09187874251497007,True,,2
+functional,synergy,xgb_tree_d3,Democracy,Soil and water quality,352,0.0658682634730539,True,,3
+functional,synergy,xgb_tree_d3,Precipitation/droughts,Temperature,305,0.057073353293413176,True,,4
+functional,synergy,xgb_tree_d3,Air Pollution,Democracy,244,0.04565868263473054,True,,5
+functional,synergy,xgb_tree_d3,Democracy,Socioeconomic,244,0.04565868263473054,True,,6
+functional,synergy,xgb_tree_d3,Soil and water quality,Temperature,222,0.04154191616766467,True,,7
+functional,synergy,xgb_tree_d3,Precipitation/droughts,Soil and water quality,195,0.03648952095808383,True,,8
+functional,synergy,xgb_tree_d3,Air Pollution,Temperature,152,0.02844311377245509,True,,9
+functional,synergy,xgb_tree_d3,Socioeconomic,Temperature,152,0.02844311377245509,True,,10
+functional,synergy,xgb_tree_d3,Air Pollution,Precipitation/droughts,134,0.025074850299401198,True,,11
+functional,synergy,xgb_tree_d3,Precipitation/droughts,Socioeconomic,134,0.025074850299401198,True,,12
+functional,synergy,xgb_tree_d3,Democracy,Disease-related mortality,132,0.02470059880239521,True,,13
+functional,synergy,xgb_tree_d3,Democracy,Migration,122,0.02282934131736527,True,,14
+functional,synergy,xgb_tree_d3,Democracy,Green space access,117,0.0218937125748503,True,,15
+functional,synergy,xgb_tree_d3,Air Pollution,Soil and water quality,98,0.018338323353293412,True,,16
+functional,synergy,xgb_tree_d3,Socioeconomic,Soil and water quality,98,0.018338323353293412,True,,17
+functional,synergy,xgb_tree_d3,Disease-related mortality,Temperature,80,0.014970059880239521,True,,18
+functional,synergy,xgb_tree_d3,Migration,Temperature,76,0.014221556886227544,True,,19
+functional,synergy,xgb_tree_d3,Green space access,Temperature,73,0.013660179640718563,True,,20
+functional,synergy,xgb_tree_d3,Disease-related mortality,Precipitation/droughts,72,0.01347305389221557,True,,21
+functional,synergy,xgb_tree_d3,Air Pollution,Socioeconomic,68,0.012724550898203593,True,,22
+functional,synergy,xgb_tree_d3,Migration,Precipitation/droughts,67,0.012537425149700599,True,,23
+functional,synergy,xgb_tree_d3,Green space access,Precipitation/droughts,64,0.011976047904191617,True,,24
+functional,synergy,xgb_tree_d3,Disease-related mortality,Soil and water quality,50,0.0093562874251497,True,,25
+functional,synergy,xgb_tree_d3,Migration,Soil and water quality,49,0.009169161676646706,True,,26
+functional,synergy,xgb_tree_d3,Green space access,Soil and water quality,48,0.008982035928143712,True,,27
+functional,synergy,xgb_tree_d3,Air Pollution,Disease-related mortality,36,0.006736526946107785,True,,28
+functional,synergy,xgb_tree_d3,Disease-related mortality,Socioeconomic,36,0.006736526946107785,True,,29
+functional,synergy,xgb_tree_d3,Air Pollution,Migration,34,0.006362275449101796,True,,30
+functional,synergy,xgb_tree_d3,Migration,Socioeconomic,34,0.006362275449101796,True,,31
+functional,synergy,xgb_tree_d3,Air Pollution,Green space access,32,0.005988023952095809,True,,32
+functional,synergy,xgb_tree_d3,Green space access,Socioeconomic,32,0.005988023952095809,True,,33
+functional,synergy,xgb_tree_d3,Disease-related mortality,Migration,18,0.0033682634730538923,True,,34
+functional,synergy,xgb_tree_d3,Disease-related mortality,Green space access,16,0.0029940119760479044,True,,35
+functional,synergy,xgb_tree_d3,Green space access,Migration,16,0.0029940119760479044,True,,36

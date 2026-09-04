@@ -1,0 +1,45 @@
+figure,panel,sheet,item,value
+fig4_residual_bias_max_30_dedup,a1_struct_bias_heatmap,a1_struct_bias_heatmap,description,"Structural BAG bias stratified by country and diagnosis, for the best synergistic and best redundant model."
+fig4_residual_bias_max_30_dedup,a1_struct_bias_heatmap,a1_struct_bias_heatmap,n_rows_plotted,112
+fig4_residual_bias_max_30_dedup,a1_struct_bias_heatmap,a1_struct_bias_heatmap,notes,"Colour scale is symmetric and clipped at +/-5.0 years, so cells beyond that saturate; the tabulated median is the unclipped value. Country order is shared across all rows and taken from the configured reference BAG and arm."
+fig4_residual_bias_max_30_dedup,a1_struct_bias_heatmap,a1_struct_bias_heatmap,column: objective,o_min = best synergistic (min O-information) model; o_max = best redundant (max O-information) model
+fig4_residual_bias_max_30_dedup,a1_struct_bias_heatmap,a1_struct_bias_heatmap,column: objective_label,arm label as printed above the heatmap
+fig4_residual_bias_max_30_dedup,a1_struct_bias_heatmap,a1_struct_bias_heatmap,column: country,country of the held-out LOCO fold; rows are ordered by absolute median bias
+fig4_residual_bias_max_30_dedup,a1_struct_bias_heatmap,a1_struct_bias_heatmap,column: diagnosis_label,diagnosis group as printed on the x axis
+fig4_residual_bias_max_30_dedup,a1_struct_bias_heatmap,a1_struct_bias_heatmap,column: median_residual,"median BAG bias (predicted - observed, years) in that cell -- the plotted colour"
+fig4_residual_bias_max_30_dedup,a1_struct_bias_heatmap,a1_struct_bias_heatmap,column: n_subjects,participants in that cell; cells with n >= 10 carry the printed annotation
+fig4_residual_bias_max_30_dedup,a2_struct_bias_density,a2_struct_bias_density,description,Structural BAG bias pooled by diagnosis: the per-participant residuals underlying each plotted density curve.
+fig4_residual_bias_max_30_dedup,a2_struct_bias_density,a2_struct_bias_density,n_rows_plotted,23158
+fig4_residual_bias_max_30_dedup,a2_struct_bias_density,a2_struct_bias_density,notes,"One row per participant. The figure draws a Gaussian kernel density estimate (bw_method=0.30) over these values, one curve per diagnosis and arm; the curve itself is derived, so the underlying residuals are given instead."
+fig4_residual_bias_max_30_dedup,a2_struct_bias_density,a2_struct_bias_density,column: objective,o_min = best synergistic (min O-information) model; o_max = best redundant (max O-information) model
+fig4_residual_bias_max_30_dedup,a2_struct_bias_density,a2_struct_bias_density,column: objective_label,"arm label, distinguishing the two curve colours"
+fig4_residual_bias_max_30_dedup,a2_struct_bias_density,a2_struct_bias_density,column: diagnosis_label,"diagnosis group, distinguishing the three line styles"
+fig4_residual_bias_max_30_dedup,a2_struct_bias_density,a2_struct_bias_density,column: country,country of the held-out LOCO fold
+fig4_residual_bias_max_30_dedup,a2_struct_bias_density,a2_struct_bias_density,column: residual,"BAG bias (predicted - observed, years) for that participant"
+fig4_residual_bias_max_30_dedup,b1_func_bias_heatmap,b1_func_bias_heatmap,description,"Functional BAG bias stratified by country and diagnosis, for the best synergistic and best redundant model."
+fig4_residual_bias_max_30_dedup,b1_func_bias_heatmap,b1_func_bias_heatmap,n_rows_plotted,84
+fig4_residual_bias_max_30_dedup,b1_func_bias_heatmap,b1_func_bias_heatmap,notes,"Colour scale is symmetric and clipped at +/-5.0 years, so cells beyond that saturate; the tabulated median is the unclipped value. Country order is shared across all rows and taken from the configured reference BAG and arm."
+fig4_residual_bias_max_30_dedup,b1_func_bias_heatmap,b1_func_bias_heatmap,column: objective,o_min = best synergistic (min O-information) model; o_max = best redundant (max O-information) model
+fig4_residual_bias_max_30_dedup,b1_func_bias_heatmap,b1_func_bias_heatmap,column: objective_label,arm label as printed above the heatmap
+fig4_residual_bias_max_30_dedup,b1_func_bias_heatmap,b1_func_bias_heatmap,column: country,country of the held-out LOCO fold; rows are ordered by absolute median bias
+fig4_residual_bias_max_30_dedup,b1_func_bias_heatmap,b1_func_bias_heatmap,column: diagnosis_label,diagnosis group as printed on the x axis
+fig4_residual_bias_max_30_dedup,b1_func_bias_heatmap,b1_func_bias_heatmap,column: median_residual,"median BAG bias (predicted - observed, years) in that cell -- the plotted colour"
+fig4_residual_bias_max_30_dedup,b1_func_bias_heatmap,b1_func_bias_heatmap,column: n_subjects,participants in that cell; cells with n >= 10 carry the printed annotation
+fig4_residual_bias_max_30_dedup,b2_func_bias_density,b2_func_bias_density,description,Functional BAG bias pooled by diagnosis: the per-participant residuals underlying each plotted density curve.
+fig4_residual_bias_max_30_dedup,b2_func_bias_density,b2_func_bias_density,n_rows_plotted,20294
+fig4_residual_bias_max_30_dedup,b2_func_bias_density,b2_func_bias_density,notes,"One row per participant. The figure draws a Gaussian kernel density estimate (bw_method=0.30) over these values, one curve per diagnosis and arm; the curve itself is derived, so the underlying residuals are given instead."
+fig4_residual_bias_max_30_dedup,b2_func_bias_density,b2_func_bias_density,column: objective,o_min = best synergistic (min O-information) model; o_max = best redundant (max O-information) model
+fig4_residual_bias_max_30_dedup,b2_func_bias_density,b2_func_bias_density,column: objective_label,"arm label, distinguishing the two curve colours"
+fig4_residual_bias_max_30_dedup,b2_func_bias_density,b2_func_bias_density,column: diagnosis_label,"diagnosis group, distinguishing the three line styles"
+fig4_residual_bias_max_30_dedup,b2_func_bias_density,b2_func_bias_density,column: country,country of the held-out LOCO fold
+fig4_residual_bias_max_30_dedup,b2_func_bias_density,b2_func_bias_density,column: residual,"BAG bias (predicted - observed, years) for that participant"
+fig4_residual_bias_max_30_dedup,model_selection,model_selection,description,"The model whose residuals each panel shows, per BAG and arm."
+fig4_residual_bias_max_30_dedup,model_selection,model_selection,n_rows_plotted,4
+fig4_residual_bias_max_30_dedup,model_selection,model_selection,notes,Provenance for the panels above; nothing in this sheet is itself plotted.
+fig4_residual_bias_max_30_dedup,model_selection,model_selection,column: bag,brain-age-gap modality
+fig4_residual_bias_max_30_dedup,model_selection,model_selection,column: objective,o_min = best synergistic (min O-information) model; o_max = best redundant (max O-information) model
+fig4_residual_bias_max_30_dedup,model_selection,model_selection,column: best_rung,model level selected for that BAG and arm
+fig4_residual_bias_max_30_dedup,model_selection,model_selection,column: candidate_id,identifier of the selected exposure set
+fig4_residual_bias_max_30_dedup,model_selection,model_selection,column: source_file,residual table the panel was built from
+fig4_residual_bias_max_30_dedup,,,generated_from,/data/workspaces/neuromodelling/rherzog/Brainlat/expo_hoi_bag_repro_data_dedup/work/fig_dedup/max_30/stats/residuals
+fig4_residual_bias_max_30_dedup,,,generated_from,/data/workspaces/neuromodelling/rherzog/Brainlat/expo_hoi_bag_repro_data_dedup/work/fig_dedup/max_30/stats/best_rung_selection.csv

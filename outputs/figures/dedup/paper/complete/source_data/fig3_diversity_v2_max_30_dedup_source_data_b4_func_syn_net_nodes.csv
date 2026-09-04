@@ -1,0 +1,10 @@
+bag,family,rung,domain,display_label,domain_color,model_presence_topk,model_presence_fraction,within_domain_pair_count,in_top1_model,rank1_model_id,node_size_used,frequency_rank
+functional,synergy,xgb_tree_d3,Democracy,Democracy,#ACD0A7,20,1.0,383,True,m070525_o_min_ord26_rk00011,,1
+functional,synergy,xgb_tree_d3,Temperature,Temperature,#A4CCCA,19,0.95,135,True,m070525_o_min_ord26_rk00011,,2
+functional,synergy,xgb_tree_d3,Precipitation/droughts,Precipitation/droughts,#D8BCD0,19,0.95,101,True,m070525_o_min_ord26_rk00011,,3
+functional,synergy,xgb_tree_d3,Soil and water quality,Soil and water quality,#F0BEDE,17,0.85,48,True,m070525_o_min_ord26_rk00011,,4
+functional,synergy,xgb_tree_d3,Air Pollution,Air Pollution,#A6BCD3,17,0.85,17,True,m070525_o_min_ord26_rk00011,,5
+functional,synergy,xgb_tree_d3,Socioeconomic,Socioeconomic,#CEBAAF,17,0.85,17,True,m070525_o_min_ord26_rk00011,,6
+functional,synergy,xgb_tree_d3,Disease-related mortality,Disease-related mortality,#F0ABAC,18,0.9,1,True,m070525_o_min_ord26_rk00011,,7
+functional,synergy,xgb_tree_d3,Green space access,Green space access,#BADBD8,17,0.85,0,True,m070525_o_min_ord26_rk00011,,8
+functional,synergy,xgb_tree_d3,Migration,Migration,#F6E4A4,17,0.85,0,True,m070525_o_min_ord26_rk00011,,9

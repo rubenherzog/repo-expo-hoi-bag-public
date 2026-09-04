@@ -1,0 +1,37 @@
+figure,panel,sheet,item,value
+residual_confounds,a1_struct_residuals,a1_struct_residuals,description,Subject-level signed Structural BAG bias (predicted - observed) for the best synergy-arm and redundancy-arm models.
+residual_confounds,a1_struct_residuals,a1_struct_residuals,n_rows_plotted,28776
+residual_confounds,a1_struct_residuals,a1_struct_residuals,notes,Histogram is plotted as a density over 40 bins.
+residual_confounds,a1_struct_residuals,a1_struct_residuals,column: objective,"o_min = synergy arm, o_max = redundancy arm"
+residual_confounds,a1_struct_residuals,a1_struct_residuals,column: residual,signed BAG bias in years (predicted - observed)
+residual_confounds,a2_struct_confounds,a2_struct_confounds,description,Country-random-intercept mixed-model fixed effects on subject-level signed Structural BAG bias.
+residual_confounds,a2_struct_confounds,a2_struct_confounds,n_rows_plotted,14
+residual_confounds,a2_struct_confounds,a2_struct_confounds,statistical_test,Two-sided Wald test on the mixed-model fixed effect.
+residual_confounds,a2_struct_confounds,a2_struct_confounds,notes,Sex uses female and diagnosis uses HC as the reference level.
+residual_confounds,a2_struct_confounds,a2_struct_confounds,column: objective,"o_min = synergy arm, o_max = redundancy arm"
+residual_confounds,a2_struct_confounds,a2_struct_confounds,column: term,fixed effect (continuous terms standardized)
+residual_confounds,a2_struct_confounds,a2_struct_confounds,column: coef,coefficient (plotted point)
+residual_confounds,a2_struct_confounds,a2_struct_confounds,column: se,standard error
+residual_confounds,a2_struct_confounds,a2_struct_confounds,column: ci_lo,lower bound of the 95% CI (plotted whisker)
+residual_confounds,a2_struct_confounds,a2_struct_confounds,column: ci_hi,upper bound of the 95% CI (plotted whisker)
+residual_confounds,a2_struct_confounds,a2_struct_confounds,column: p_value,exact p value as fitted; not rounded or capped
+residual_confounds,a2_struct_confounds,a2_struct_confounds,column: n_obs,subjects entering the model
+residual_confounds,a2_struct_confounds,a2_struct_confounds,column: n_countries,countries entering the random intercept
+residual_confounds,b1_func_residuals,b1_func_residuals,description,Subject-level signed Functional BAG bias (predicted - observed) for the best synergy-arm and redundancy-arm models.
+residual_confounds,b1_func_residuals,b1_func_residuals,n_rows_plotted,23020
+residual_confounds,b1_func_residuals,b1_func_residuals,notes,Histogram is plotted as a density over 40 bins.
+residual_confounds,b1_func_residuals,b1_func_residuals,column: objective,"o_min = synergy arm, o_max = redundancy arm"
+residual_confounds,b1_func_residuals,b1_func_residuals,column: residual,signed BAG bias in years (predicted - observed)
+residual_confounds,b2_func_confounds,b2_func_confounds,description,Country-random-intercept mixed-model fixed effects on subject-level signed Functional BAG bias.
+residual_confounds,b2_func_confounds,b2_func_confounds,n_rows_plotted,14
+residual_confounds,b2_func_confounds,b2_func_confounds,statistical_test,Two-sided Wald test on the mixed-model fixed effect.
+residual_confounds,b2_func_confounds,b2_func_confounds,notes,Sex uses female and diagnosis uses HC as the reference level.
+residual_confounds,b2_func_confounds,b2_func_confounds,column: objective,"o_min = synergy arm, o_max = redundancy arm"
+residual_confounds,b2_func_confounds,b2_func_confounds,column: term,fixed effect (continuous terms standardized)
+residual_confounds,b2_func_confounds,b2_func_confounds,column: coef,coefficient (plotted point)
+residual_confounds,b2_func_confounds,b2_func_confounds,column: se,standard error
+residual_confounds,b2_func_confounds,b2_func_confounds,column: ci_lo,lower bound of the 95% CI (plotted whisker)
+residual_confounds,b2_func_confounds,b2_func_confounds,column: ci_hi,upper bound of the 95% CI (plotted whisker)
+residual_confounds,b2_func_confounds,b2_func_confounds,column: p_value,exact p value as fitted; not rounded or capped
+residual_confounds,b2_func_confounds,b2_func_confounds,column: n_obs,subjects entering the model
+residual_confounds,b2_func_confounds,b2_func_confounds,column: n_countries,countries entering the random intercept

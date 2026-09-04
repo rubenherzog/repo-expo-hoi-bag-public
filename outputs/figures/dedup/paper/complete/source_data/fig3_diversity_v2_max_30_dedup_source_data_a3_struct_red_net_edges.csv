@@ -1,0 +1,25 @@
+bag,family,rung,domain_a,domain_b,cooccurrence_count,normalized_cooccurrence,in_top1_pair,edge_width_used,edge_rank
+structural,redundancy,xgb_tree_d3,Democracy,Socioeconomic,1237,0.16933607118412047,True,,1
+structural,redundancy,xgb_tree_d3,Air Pollution,Democracy,448,0.06132785763175907,True,,2
+structural,redundancy,xgb_tree_d3,Democracy,Migration,424,0.05804243668720055,True,,3
+structural,redundancy,xgb_tree_d3,Democracy,Soil and water quality,403,0.05516769336071184,True,,4
+structural,redundancy,xgb_tree_d3,Democracy,Green space access,107,0.014647501711156741,False,,5
+structural,redundancy,xgb_tree_d3,Migration,Socioeconomic,58,0.007939767282683094,True,,6
+structural,redundancy,xgb_tree_d3,Socioeconomic,Soil and water quality,58,0.007939767282683094,True,,7
+structural,redundancy,xgb_tree_d3,Air Pollution,Socioeconomic,46,0.006297056810403833,True,,8
+structural,redundancy,xgb_tree_d3,Air Pollution,Migration,21,0.002874743326488706,True,,9
+structural,redundancy,xgb_tree_d3,Democracy,Disease-related mortality,21,0.002874743326488706,False,,10
+structural,redundancy,xgb_tree_d3,Democracy,Temperature,21,0.002874743326488706,False,,11
+structural,redundancy,xgb_tree_d3,Migration,Soil and water quality,19,0.0026009582477754963,True,,12
+structural,redundancy,xgb_tree_d3,Green space access,Socioeconomic,16,0.002190280629705681,False,,13
+structural,redundancy,xgb_tree_d3,Air Pollution,Soil and water quality,15,0.002053388090349076,True,,14
+structural,redundancy,xgb_tree_d3,Air Pollution,Temperature,6,0.0008213552361396304,False,,15
+structural,redundancy,xgb_tree_d3,Green space access,Migration,5,0.0006844626967830253,False,,16
+structural,redundancy,xgb_tree_d3,Green space access,Soil and water quality,5,0.0006844626967830253,False,,17
+structural,redundancy,xgb_tree_d3,Air Pollution,Green space access,4,0.0005475701574264203,False,,18
+structural,redundancy,xgb_tree_d3,Disease-related mortality,Socioeconomic,4,0.0005475701574264203,False,,19
+structural,redundancy,xgb_tree_d3,Air Pollution,Disease-related mortality,1,0.00013689253935660506,False,,20
+structural,redundancy,xgb_tree_d3,Disease-related mortality,Green space access,1,0.00013689253935660506,False,,21
+structural,redundancy,xgb_tree_d3,Disease-related mortality,Migration,1,0.00013689253935660506,False,,22
+structural,redundancy,xgb_tree_d3,Disease-related mortality,Soil and water quality,1,0.00013689253935660506,False,,23
+structural,redundancy,xgb_tree_d3,Migration,Temperature,1,0.00013689253935660506,False,,24

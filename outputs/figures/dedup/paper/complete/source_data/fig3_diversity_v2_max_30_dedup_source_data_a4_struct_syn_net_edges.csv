@@ -1,0 +1,45 @@
+bag,family,rung,domain_a,domain_b,cooccurrence_count,normalized_cooccurrence,in_top1_pair,edge_width_used,edge_rank
+structural,synergy,xgb_tree_d3,Democracy,Temperature,213,0.11002066115702479,False,,1
+structural,synergy,xgb_tree_d3,Democracy,Precipitation/droughts,121,0.0625,False,,2
+structural,synergy,xgb_tree_d3,Air Pollution,Democracy,117,0.06043388429752066,False,,3
+structural,synergy,xgb_tree_d3,Democracy,Soil and water quality,106,0.05475206611570248,False,,4
+structural,synergy,xgb_tree_d3,Air Pollution,Temperature,100,0.05165289256198347,True,,5
+structural,synergy,xgb_tree_d3,Democracy,Socioeconomic,88,0.045454545454545456,False,,6
+structural,synergy,xgb_tree_d3,Precipitation/droughts,Temperature,82,0.042355371900826444,False,,7
+structural,synergy,xgb_tree_d3,Soil and water quality,Temperature,77,0.03977272727272727,True,,8
+structural,synergy,xgb_tree_d3,Socioeconomic,Temperature,66,0.03409090909090909,False,,9
+structural,synergy,xgb_tree_d3,Democracy,Disease-related mortality,56,0.028925619834710745,False,,10
+structural,synergy,xgb_tree_d3,Air Pollution,Socioeconomic,51,0.02634297520661157,False,,11
+structural,synergy,xgb_tree_d3,Democracy,Green space access,49,0.0253099173553719,False,,12
+structural,synergy,xgb_tree_d3,Air Pollution,Precipitation/droughts,47,0.02427685950413223,False,,13
+structural,synergy,xgb_tree_d3,Precipitation/droughts,Soil and water quality,40,0.02066115702479339,False,,14
+structural,synergy,xgb_tree_d3,Air Pollution,Soil and water quality,39,0.020144628099173553,True,,15
+structural,synergy,xgb_tree_d3,Precipitation/droughts,Socioeconomic,37,0.019111570247933883,False,,16
+structural,synergy,xgb_tree_d3,Disease-related mortality,Temperature,36,0.01859504132231405,False,,17
+structural,synergy,xgb_tree_d3,Green space access,Temperature,34,0.01756198347107438,False,,18
+structural,synergy,xgb_tree_d3,Democracy,Migration,33,0.017045454545454544,False,,19
+structural,synergy,xgb_tree_d3,Socioeconomic,Soil and water quality,30,0.015495867768595042,False,,20
+structural,synergy,xgb_tree_d3,Migration,Temperature,26,0.013429752066115703,True,,21
+structural,synergy,xgb_tree_d3,Disease-related mortality,Precipitation/droughts,22,0.011363636363636364,False,,22
+structural,synergy,xgb_tree_d3,Air Pollution,Green space access,21,0.01084710743801653,False,,23
+structural,synergy,xgb_tree_d3,Air Pollution,Disease-related mortality,20,0.010330578512396695,False,,24
+structural,synergy,xgb_tree_d3,Disease-related mortality,Soil and water quality,18,0.009297520661157025,False,,25
+structural,synergy,xgb_tree_d3,Green space access,Precipitation/droughts,18,0.009297520661157025,False,,26
+structural,synergy,xgb_tree_d3,Disease-related mortality,Socioeconomic,17,0.00878099173553719,False,,27
+structural,synergy,xgb_tree_d3,Green space access,Soil and water quality,16,0.008264462809917356,False,,28
+structural,synergy,xgb_tree_d3,Air Pollution,Migration,15,0.007747933884297521,True,,29
+structural,synergy,xgb_tree_d3,Green space access,Socioeconomic,14,0.007231404958677686,False,,30
+structural,synergy,xgb_tree_d3,Migration,Precipitation/droughts,12,0.006198347107438017,False,,31
+structural,synergy,xgb_tree_d3,Migration,Soil and water quality,12,0.006198347107438017,True,,32
+structural,synergy,xgb_tree_d3,Disease-related mortality,Green space access,9,0.0046487603305785125,False,,33
+structural,synergy,xgb_tree_d3,Climate disasters,Democracy,8,0.004132231404958678,False,,34
+structural,synergy,xgb_tree_d3,Migration,Socioeconomic,7,0.003615702479338843,False,,35
+structural,synergy,xgb_tree_d3,Green space access,Migration,6,0.0030991735537190084,False,,36
+structural,synergy,xgb_tree_d3,Disease-related mortality,Migration,5,0.0025826446280991736,False,,37
+structural,synergy,xgb_tree_d3,Climate disasters,Precipitation/droughts,4,0.002066115702479339,False,,38
+structural,synergy,xgb_tree_d3,Climate disasters,Socioeconomic,4,0.002066115702479339,False,,39
+structural,synergy,xgb_tree_d3,Air Pollution,Climate disasters,3,0.0015495867768595042,False,,40
+structural,synergy,xgb_tree_d3,Climate disasters,Temperature,3,0.0015495867768595042,False,,41
+structural,synergy,xgb_tree_d3,Climate disasters,Disease-related mortality,2,0.0010330578512396695,False,,42
+structural,synergy,xgb_tree_d3,Climate disasters,Soil and water quality,2,0.0010330578512396695,False,,43
+structural,synergy,xgb_tree_d3,Climate disasters,Green space access,1,0.0005165289256198347,False,,44

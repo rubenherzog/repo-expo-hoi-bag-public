@@ -1,0 +1,38 @@
+figure,panel,sheet,item,value
+fig_normative_transfer_grid_structural_max_30_dedup,a_structural_loco_r2,a_structural_loco_r2,description,"Structural BAG: held-out LOCO R² of the transferred models, by condition and model level."
+fig_normative_transfer_grid_structural_max_30_dedup,a_structural_loco_r2,a_structural_loco_r2,n_rows_plotted,1280
+fig_normative_transfer_grid_structural_max_30_dedup,a_structural_loco_r2,a_structural_loco_r2,notes,"One row per plotted candidate: the top 20 by held-out LOCO R² within each condition, model level and arm. Candidates are capped at set size 30."
+fig_normative_transfer_grid_structural_max_30_dedup,a_structural_loco_r2,a_structural_loco_r2,column: condition,transfer condition: the normative model's training group -> the evaluated group
+fig_normative_transfer_grid_structural_max_30_dedup,a_structural_loco_r2,a_structural_loco_r2,column: model_level,"model level (OLS, d1, d2, d3)"
+fig_normative_transfer_grid_structural_max_30_dedup,a_structural_loco_r2,a_structural_loco_r2,column: objective,o_min = synergistic (min O-information) arm; o_max = redundant (max O-information) arm
+fig_normative_transfer_grid_structural_max_30_dedup,a_structural_loco_r2,a_structural_loco_r2,column: candidate_id,identifier of the exposure set
+fig_normative_transfer_grid_structural_max_30_dedup,a_structural_loco_r2,a_structural_loco_r2,column: order,set size (number of exposures)
+fig_normative_transfer_grid_structural_max_30_dedup,a_structural_loco_r2,a_structural_loco_r2,column: r2,held-out LOCO R² of that candidate
+fig_normative_transfer_grid_structural_max_30_dedup,a_structural_loco_r2,a_structural_loco_r2,column: baseline_r2,covariate-only baseline R² for that cell -- the black line
+fig_normative_transfer_grid_structural_max_30_dedup,b_structural_set_size,b_structural_set_size,description,"Structural BAG: set size of the same candidates, by condition and model level."
+fig_normative_transfer_grid_structural_max_30_dedup,b_structural_set_size,b_structural_set_size,n_rows_plotted,1280
+fig_normative_transfer_grid_structural_max_30_dedup,b_structural_set_size,b_structural_set_size,notes,"One row per plotted candidate: the top 20 by held-out LOCO R² within each condition, model level and arm. Candidates are capped at set size 30."
+fig_normative_transfer_grid_structural_max_30_dedup,b_structural_set_size,b_structural_set_size,column: condition,transfer condition: the normative model's training group -> the evaluated group
+fig_normative_transfer_grid_structural_max_30_dedup,b_structural_set_size,b_structural_set_size,column: model_level,"model level (OLS, d1, d2, d3)"
+fig_normative_transfer_grid_structural_max_30_dedup,b_structural_set_size,b_structural_set_size,column: objective,o_min = synergistic (min O-information) arm; o_max = redundant (max O-information) arm
+fig_normative_transfer_grid_structural_max_30_dedup,b_structural_set_size,b_structural_set_size,column: candidate_id,identifier of the exposure set
+fig_normative_transfer_grid_structural_max_30_dedup,b_structural_set_size,b_structural_set_size,column: order,set size (number of exposures)
+fig_normative_transfer_grid_structural_max_30_dedup,c_structural_triplets,c_structural_triplets,description,"Structural BAG: synergistic-triplet content of the same candidates, by condition and model level."
+fig_normative_transfer_grid_structural_max_30_dedup,c_structural_triplets,c_structural_triplets,n_rows_plotted,1280
+fig_normative_transfer_grid_structural_max_30_dedup,c_structural_triplets,c_structural_triplets,notes,"One row per plotted candidate: the top 20 by held-out LOCO R² within each condition, model level and arm. Candidates are capped at set size 30. The dashed line marks the exposome-wide rate over all triplets, 33.2%."
+fig_normative_transfer_grid_structural_max_30_dedup,c_structural_triplets,c_structural_triplets,column: condition,transfer condition: the normative model's training group -> the evaluated group
+fig_normative_transfer_grid_structural_max_30_dedup,c_structural_triplets,c_structural_triplets,column: model_level,"model level (OLS, d1, d2, d3)"
+fig_normative_transfer_grid_structural_max_30_dedup,c_structural_triplets,c_structural_triplets,column: objective,o_min = synergistic (min O-information) arm; o_max = redundant (max O-information) arm
+fig_normative_transfer_grid_structural_max_30_dedup,c_structural_triplets,c_structural_triplets,column: candidate_id,identifier of the exposure set
+fig_normative_transfer_grid_structural_max_30_dedup,c_structural_triplets,c_structural_triplets,column: order,set size (number of exposures)
+fig_normative_transfer_grid_structural_max_30_dedup,c_structural_triplets,c_structural_triplets,column: n_triplets,number of triplet sub-combinations in the candidate
+fig_normative_transfer_grid_structural_max_30_dedup,c_structural_triplets,c_structural_triplets,column: n_synergistic_triplets,number of those triplets with negative O-information
+fig_normative_transfer_grid_structural_max_30_dedup,c_structural_triplets,c_structural_triplets,column: pct_synergistic_triplets,percentage of the candidate's triplets with negative O-information
+fig_normative_transfer_grid_structural_max_30_dedup,c_structural_triplets,c_structural_triplets,column: exposome_baseline_pct,percentage of all exposome triplets with negative O-information -- the dashed line
+fig_normative_transfer_grid_structural_max_30_dedup,best_single_structural,best_single_structural,description,Structural BAG: the best single-exposure reference drawn as the orange line in the R² row.
+fig_normative_transfer_grid_structural_max_30_dedup,best_single_structural,best_single_structural,n_rows_plotted,32
+fig_normative_transfer_grid_structural_max_30_dedup,best_single_structural,best_single_structural,notes,"One row per condition and model level; each value is a single reference line, not a distribution."
+fig_normative_transfer_grid_structural_max_30_dedup,best_single_structural,best_single_structural,column: condition,transfer condition: the normative model's training group -> the evaluated group
+fig_normative_transfer_grid_structural_max_30_dedup,best_single_structural,best_single_structural,column: model_level,"model level (OLS, d1, d2, d3)"
+fig_normative_transfer_grid_structural_max_30_dedup,best_single_structural,best_single_structural,column: single_r2,held-out LOCO R² of the best single exposure
+fig_normative_transfer_grid_structural_max_30_dedup,best_single_structural,best_single_structural,column: single_feature,the exposure itself

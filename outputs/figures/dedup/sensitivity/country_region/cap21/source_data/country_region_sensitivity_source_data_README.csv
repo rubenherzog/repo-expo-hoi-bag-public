@@ -1,0 +1,145 @@
+figure,panel,sheet,item,value
+country_region_sensitivity,a1_struct_loco_ols,a1_struct_loco_ols,description,Structural BAG Country LOCO held-out-fold LOCO R2 for the top-20 synergistic and top-20 redundant candidates at model level OLS.
+country_region_sensitivity,a1_struct_loco_ols,a1_struct_loco_ols,n_rows_plotted,44
+country_region_sensitivity,a1_struct_loco_ols,a1_struct_loco_ols,notes,Top-20 sets are selected within each model level by that level's global LOCO R². Values are held-out R²; no model is refit for the plot.
+country_region_sensitivity,a1_struct_loco_ols,a1_struct_loco_ols,column: fold,held-out country (country_loco) or subregion (region_loro)
+country_region_sensitivity,a1_struct_loco_ols,a1_struct_loco_ols,column: series,"top20_syn = top-20 synergistic, top20_red = top-20 redundant"
+country_region_sensitivity,a1_struct_loco_ols,a1_struct_loco_ols,column: median_r2,median held-out R² across the 20 candidates in that series
+country_region_sensitivity,a1_struct_loco_ols,a1_struct_loco_ols,column: min_r2,minimum held-out R² across those candidates (lower errorbar)
+country_region_sensitivity,a1_struct_loco_ols,a1_struct_loco_ols,column: max_r2,maximum held-out R² across those candidates (upper errorbar)
+country_region_sensitivity,a1_struct_loco_ols,a1_struct_loco_ols,column: baseline_r2,covariate-only baseline R² for that fold (horizontal dash)
+country_region_sensitivity,a2_struct_loco_d1,a2_struct_loco_d1,description,Structural BAG Country LOCO held-out-fold LOCO R2 for the top-20 synergistic and top-20 redundant candidates at model level d1.
+country_region_sensitivity,a2_struct_loco_d1,a2_struct_loco_d1,n_rows_plotted,44
+country_region_sensitivity,a2_struct_loco_d1,a2_struct_loco_d1,notes,Top-20 sets are selected within each model level by that level's global LOCO R². Values are held-out R²; no model is refit for the plot.
+country_region_sensitivity,a2_struct_loco_d1,a2_struct_loco_d1,column: fold,held-out country (country_loco) or subregion (region_loro)
+country_region_sensitivity,a2_struct_loco_d1,a2_struct_loco_d1,column: series,"top20_syn = top-20 synergistic, top20_red = top-20 redundant"
+country_region_sensitivity,a2_struct_loco_d1,a2_struct_loco_d1,column: median_r2,median held-out R² across the 20 candidates in that series
+country_region_sensitivity,a2_struct_loco_d1,a2_struct_loco_d1,column: min_r2,minimum held-out R² across those candidates (lower errorbar)
+country_region_sensitivity,a2_struct_loco_d1,a2_struct_loco_d1,column: max_r2,maximum held-out R² across those candidates (upper errorbar)
+country_region_sensitivity,a2_struct_loco_d1,a2_struct_loco_d1,column: baseline_r2,covariate-only baseline R² for that fold (horizontal dash)
+country_region_sensitivity,a3_struct_loco_d2,a3_struct_loco_d2,description,Structural BAG Country LOCO held-out-fold LOCO R2 for the top-20 synergistic and top-20 redundant candidates at model level d2.
+country_region_sensitivity,a3_struct_loco_d2,a3_struct_loco_d2,n_rows_plotted,44
+country_region_sensitivity,a3_struct_loco_d2,a3_struct_loco_d2,notes,Top-20 sets are selected within each model level by that level's global LOCO R². Values are held-out R²; no model is refit for the plot.
+country_region_sensitivity,a3_struct_loco_d2,a3_struct_loco_d2,column: fold,held-out country (country_loco) or subregion (region_loro)
+country_region_sensitivity,a3_struct_loco_d2,a3_struct_loco_d2,column: series,"top20_syn = top-20 synergistic, top20_red = top-20 redundant"
+country_region_sensitivity,a3_struct_loco_d2,a3_struct_loco_d2,column: median_r2,median held-out R² across the 20 candidates in that series
+country_region_sensitivity,a3_struct_loco_d2,a3_struct_loco_d2,column: min_r2,minimum held-out R² across those candidates (lower errorbar)
+country_region_sensitivity,a3_struct_loco_d2,a3_struct_loco_d2,column: max_r2,maximum held-out R² across those candidates (upper errorbar)
+country_region_sensitivity,a3_struct_loco_d2,a3_struct_loco_d2,column: baseline_r2,covariate-only baseline R² for that fold (horizontal dash)
+country_region_sensitivity,a4_struct_loco_d3,a4_struct_loco_d3,description,Structural BAG Country LOCO held-out-fold LOCO R2 for the top-20 synergistic and top-20 redundant candidates at model level d3.
+country_region_sensitivity,a4_struct_loco_d3,a4_struct_loco_d3,n_rows_plotted,44
+country_region_sensitivity,a4_struct_loco_d3,a4_struct_loco_d3,notes,Top-20 sets are selected within each model level by that level's global LOCO R². Values are held-out R²; no model is refit for the plot.
+country_region_sensitivity,a4_struct_loco_d3,a4_struct_loco_d3,column: fold,held-out country (country_loco) or subregion (region_loro)
+country_region_sensitivity,a4_struct_loco_d3,a4_struct_loco_d3,column: series,"top20_syn = top-20 synergistic, top20_red = top-20 redundant"
+country_region_sensitivity,a4_struct_loco_d3,a4_struct_loco_d3,column: median_r2,median held-out R² across the 20 candidates in that series
+country_region_sensitivity,a4_struct_loco_d3,a4_struct_loco_d3,column: min_r2,minimum held-out R² across those candidates (lower errorbar)
+country_region_sensitivity,a4_struct_loco_d3,a4_struct_loco_d3,column: max_r2,maximum held-out R² across those candidates (upper errorbar)
+country_region_sensitivity,a4_struct_loco_d3,a4_struct_loco_d3,column: baseline_r2,covariate-only baseline R² for that fold (horizontal dash)
+country_region_sensitivity,b1_struct_loro_ols,b1_struct_loro_ols,description,Structural BAG Region LORO held-out-fold LOCO R2 for the top-20 synergistic and top-20 redundant candidates at model level OLS.
+country_region_sensitivity,b1_struct_loro_ols,b1_struct_loro_ols,n_rows_plotted,18
+country_region_sensitivity,b1_struct_loro_ols,b1_struct_loro_ols,notes,Top-20 sets are selected within each model level by that level's global LOCO R². Values are held-out R²; no model is refit for the plot.
+country_region_sensitivity,b1_struct_loro_ols,b1_struct_loro_ols,column: fold,held-out country (country_loco) or subregion (region_loro)
+country_region_sensitivity,b1_struct_loro_ols,b1_struct_loro_ols,column: series,"top20_syn = top-20 synergistic, top20_red = top-20 redundant"
+country_region_sensitivity,b1_struct_loro_ols,b1_struct_loro_ols,column: median_r2,median held-out R² across the 20 candidates in that series
+country_region_sensitivity,b1_struct_loro_ols,b1_struct_loro_ols,column: min_r2,minimum held-out R² across those candidates (lower errorbar)
+country_region_sensitivity,b1_struct_loro_ols,b1_struct_loro_ols,column: max_r2,maximum held-out R² across those candidates (upper errorbar)
+country_region_sensitivity,b1_struct_loro_ols,b1_struct_loro_ols,column: baseline_r2,covariate-only baseline R² for that fold (horizontal dash)
+country_region_sensitivity,b2_struct_loro_d1,b2_struct_loro_d1,description,Structural BAG Region LORO held-out-fold LOCO R2 for the top-20 synergistic and top-20 redundant candidates at model level d1.
+country_region_sensitivity,b2_struct_loro_d1,b2_struct_loro_d1,n_rows_plotted,18
+country_region_sensitivity,b2_struct_loro_d1,b2_struct_loro_d1,notes,Top-20 sets are selected within each model level by that level's global LOCO R². Values are held-out R²; no model is refit for the plot.
+country_region_sensitivity,b2_struct_loro_d1,b2_struct_loro_d1,column: fold,held-out country (country_loco) or subregion (region_loro)
+country_region_sensitivity,b2_struct_loro_d1,b2_struct_loro_d1,column: series,"top20_syn = top-20 synergistic, top20_red = top-20 redundant"
+country_region_sensitivity,b2_struct_loro_d1,b2_struct_loro_d1,column: median_r2,median held-out R² across the 20 candidates in that series
+country_region_sensitivity,b2_struct_loro_d1,b2_struct_loro_d1,column: min_r2,minimum held-out R² across those candidates (lower errorbar)
+country_region_sensitivity,b2_struct_loro_d1,b2_struct_loro_d1,column: max_r2,maximum held-out R² across those candidates (upper errorbar)
+country_region_sensitivity,b2_struct_loro_d1,b2_struct_loro_d1,column: baseline_r2,covariate-only baseline R² for that fold (horizontal dash)
+country_region_sensitivity,b3_struct_loro_d2,b3_struct_loro_d2,description,Structural BAG Region LORO held-out-fold LOCO R2 for the top-20 synergistic and top-20 redundant candidates at model level d2.
+country_region_sensitivity,b3_struct_loro_d2,b3_struct_loro_d2,n_rows_plotted,18
+country_region_sensitivity,b3_struct_loro_d2,b3_struct_loro_d2,notes,Top-20 sets are selected within each model level by that level's global LOCO R². Values are held-out R²; no model is refit for the plot.
+country_region_sensitivity,b3_struct_loro_d2,b3_struct_loro_d2,column: fold,held-out country (country_loco) or subregion (region_loro)
+country_region_sensitivity,b3_struct_loro_d2,b3_struct_loro_d2,column: series,"top20_syn = top-20 synergistic, top20_red = top-20 redundant"
+country_region_sensitivity,b3_struct_loro_d2,b3_struct_loro_d2,column: median_r2,median held-out R² across the 20 candidates in that series
+country_region_sensitivity,b3_struct_loro_d2,b3_struct_loro_d2,column: min_r2,minimum held-out R² across those candidates (lower errorbar)
+country_region_sensitivity,b3_struct_loro_d2,b3_struct_loro_d2,column: max_r2,maximum held-out R² across those candidates (upper errorbar)
+country_region_sensitivity,b3_struct_loro_d2,b3_struct_loro_d2,column: baseline_r2,covariate-only baseline R² for that fold (horizontal dash)
+country_region_sensitivity,b4_struct_loro_d3,b4_struct_loro_d3,description,Structural BAG Region LORO held-out-fold LOCO R2 for the top-20 synergistic and top-20 redundant candidates at model level d3.
+country_region_sensitivity,b4_struct_loro_d3,b4_struct_loro_d3,n_rows_plotted,18
+country_region_sensitivity,b4_struct_loro_d3,b4_struct_loro_d3,notes,Top-20 sets are selected within each model level by that level's global LOCO R². Values are held-out R²; no model is refit for the plot.
+country_region_sensitivity,b4_struct_loro_d3,b4_struct_loro_d3,column: fold,held-out country (country_loco) or subregion (region_loro)
+country_region_sensitivity,b4_struct_loro_d3,b4_struct_loro_d3,column: series,"top20_syn = top-20 synergistic, top20_red = top-20 redundant"
+country_region_sensitivity,b4_struct_loro_d3,b4_struct_loro_d3,column: median_r2,median held-out R² across the 20 candidates in that series
+country_region_sensitivity,b4_struct_loro_d3,b4_struct_loro_d3,column: min_r2,minimum held-out R² across those candidates (lower errorbar)
+country_region_sensitivity,b4_struct_loro_d3,b4_struct_loro_d3,column: max_r2,maximum held-out R² across those candidates (upper errorbar)
+country_region_sensitivity,b4_struct_loro_d3,b4_struct_loro_d3,column: baseline_r2,covariate-only baseline R² for that fold (horizontal dash)
+country_region_sensitivity,c1_func_loco_ols,c1_func_loco_ols,description,Functional BAG Country LOCO held-out-fold LOCO R2 for the top-20 synergistic and top-20 redundant candidates at model level OLS.
+country_region_sensitivity,c1_func_loco_ols,c1_func_loco_ols,n_rows_plotted,32
+country_region_sensitivity,c1_func_loco_ols,c1_func_loco_ols,notes,Top-20 sets are selected within each model level by that level's global LOCO R². Values are held-out R²; no model is refit for the plot.
+country_region_sensitivity,c1_func_loco_ols,c1_func_loco_ols,column: fold,held-out country (country_loco) or subregion (region_loro)
+country_region_sensitivity,c1_func_loco_ols,c1_func_loco_ols,column: series,"top20_syn = top-20 synergistic, top20_red = top-20 redundant"
+country_region_sensitivity,c1_func_loco_ols,c1_func_loco_ols,column: median_r2,median held-out R² across the 20 candidates in that series
+country_region_sensitivity,c1_func_loco_ols,c1_func_loco_ols,column: min_r2,minimum held-out R² across those candidates (lower errorbar)
+country_region_sensitivity,c1_func_loco_ols,c1_func_loco_ols,column: max_r2,maximum held-out R² across those candidates (upper errorbar)
+country_region_sensitivity,c1_func_loco_ols,c1_func_loco_ols,column: baseline_r2,covariate-only baseline R² for that fold (horizontal dash)
+country_region_sensitivity,c2_func_loco_d1,c2_func_loco_d1,description,Functional BAG Country LOCO held-out-fold LOCO R2 for the top-20 synergistic and top-20 redundant candidates at model level d1.
+country_region_sensitivity,c2_func_loco_d1,c2_func_loco_d1,n_rows_plotted,32
+country_region_sensitivity,c2_func_loco_d1,c2_func_loco_d1,notes,Top-20 sets are selected within each model level by that level's global LOCO R². Values are held-out R²; no model is refit for the plot.
+country_region_sensitivity,c2_func_loco_d1,c2_func_loco_d1,column: fold,held-out country (country_loco) or subregion (region_loro)
+country_region_sensitivity,c2_func_loco_d1,c2_func_loco_d1,column: series,"top20_syn = top-20 synergistic, top20_red = top-20 redundant"
+country_region_sensitivity,c2_func_loco_d1,c2_func_loco_d1,column: median_r2,median held-out R² across the 20 candidates in that series
+country_region_sensitivity,c2_func_loco_d1,c2_func_loco_d1,column: min_r2,minimum held-out R² across those candidates (lower errorbar)
+country_region_sensitivity,c2_func_loco_d1,c2_func_loco_d1,column: max_r2,maximum held-out R² across those candidates (upper errorbar)
+country_region_sensitivity,c2_func_loco_d1,c2_func_loco_d1,column: baseline_r2,covariate-only baseline R² for that fold (horizontal dash)
+country_region_sensitivity,c3_func_loco_d2,c3_func_loco_d2,description,Functional BAG Country LOCO held-out-fold LOCO R2 for the top-20 synergistic and top-20 redundant candidates at model level d2.
+country_region_sensitivity,c3_func_loco_d2,c3_func_loco_d2,n_rows_plotted,32
+country_region_sensitivity,c3_func_loco_d2,c3_func_loco_d2,notes,Top-20 sets are selected within each model level by that level's global LOCO R². Values are held-out R²; no model is refit for the plot.
+country_region_sensitivity,c3_func_loco_d2,c3_func_loco_d2,column: fold,held-out country (country_loco) or subregion (region_loro)
+country_region_sensitivity,c3_func_loco_d2,c3_func_loco_d2,column: series,"top20_syn = top-20 synergistic, top20_red = top-20 redundant"
+country_region_sensitivity,c3_func_loco_d2,c3_func_loco_d2,column: median_r2,median held-out R² across the 20 candidates in that series
+country_region_sensitivity,c3_func_loco_d2,c3_func_loco_d2,column: min_r2,minimum held-out R² across those candidates (lower errorbar)
+country_region_sensitivity,c3_func_loco_d2,c3_func_loco_d2,column: max_r2,maximum held-out R² across those candidates (upper errorbar)
+country_region_sensitivity,c3_func_loco_d2,c3_func_loco_d2,column: baseline_r2,covariate-only baseline R² for that fold (horizontal dash)
+country_region_sensitivity,c4_func_loco_d3,c4_func_loco_d3,description,Functional BAG Country LOCO held-out-fold LOCO R2 for the top-20 synergistic and top-20 redundant candidates at model level d3.
+country_region_sensitivity,c4_func_loco_d3,c4_func_loco_d3,n_rows_plotted,32
+country_region_sensitivity,c4_func_loco_d3,c4_func_loco_d3,notes,Top-20 sets are selected within each model level by that level's global LOCO R². Values are held-out R²; no model is refit for the plot.
+country_region_sensitivity,c4_func_loco_d3,c4_func_loco_d3,column: fold,held-out country (country_loco) or subregion (region_loro)
+country_region_sensitivity,c4_func_loco_d3,c4_func_loco_d3,column: series,"top20_syn = top-20 synergistic, top20_red = top-20 redundant"
+country_region_sensitivity,c4_func_loco_d3,c4_func_loco_d3,column: median_r2,median held-out R² across the 20 candidates in that series
+country_region_sensitivity,c4_func_loco_d3,c4_func_loco_d3,column: min_r2,minimum held-out R² across those candidates (lower errorbar)
+country_region_sensitivity,c4_func_loco_d3,c4_func_loco_d3,column: max_r2,maximum held-out R² across those candidates (upper errorbar)
+country_region_sensitivity,c4_func_loco_d3,c4_func_loco_d3,column: baseline_r2,covariate-only baseline R² for that fold (horizontal dash)
+country_region_sensitivity,d1_func_loro_ols,d1_func_loro_ols,description,Functional BAG Region LORO held-out-fold LOCO R2 for the top-20 synergistic and top-20 redundant candidates at model level OLS.
+country_region_sensitivity,d1_func_loro_ols,d1_func_loro_ols,n_rows_plotted,16
+country_region_sensitivity,d1_func_loro_ols,d1_func_loro_ols,notes,Top-20 sets are selected within each model level by that level's global LOCO R². Values are held-out R²; no model is refit for the plot.
+country_region_sensitivity,d1_func_loro_ols,d1_func_loro_ols,column: fold,held-out country (country_loco) or subregion (region_loro)
+country_region_sensitivity,d1_func_loro_ols,d1_func_loro_ols,column: series,"top20_syn = top-20 synergistic, top20_red = top-20 redundant"
+country_region_sensitivity,d1_func_loro_ols,d1_func_loro_ols,column: median_r2,median held-out R² across the 20 candidates in that series
+country_region_sensitivity,d1_func_loro_ols,d1_func_loro_ols,column: min_r2,minimum held-out R² across those candidates (lower errorbar)
+country_region_sensitivity,d1_func_loro_ols,d1_func_loro_ols,column: max_r2,maximum held-out R² across those candidates (upper errorbar)
+country_region_sensitivity,d1_func_loro_ols,d1_func_loro_ols,column: baseline_r2,covariate-only baseline R² for that fold (horizontal dash)
+country_region_sensitivity,d2_func_loro_d1,d2_func_loro_d1,description,Functional BAG Region LORO held-out-fold LOCO R2 for the top-20 synergistic and top-20 redundant candidates at model level d1.
+country_region_sensitivity,d2_func_loro_d1,d2_func_loro_d1,n_rows_plotted,16
+country_region_sensitivity,d2_func_loro_d1,d2_func_loro_d1,notes,Top-20 sets are selected within each model level by that level's global LOCO R². Values are held-out R²; no model is refit for the plot.
+country_region_sensitivity,d2_func_loro_d1,d2_func_loro_d1,column: fold,held-out country (country_loco) or subregion (region_loro)
+country_region_sensitivity,d2_func_loro_d1,d2_func_loro_d1,column: series,"top20_syn = top-20 synergistic, top20_red = top-20 redundant"
+country_region_sensitivity,d2_func_loro_d1,d2_func_loro_d1,column: median_r2,median held-out R² across the 20 candidates in that series
+country_region_sensitivity,d2_func_loro_d1,d2_func_loro_d1,column: min_r2,minimum held-out R² across those candidates (lower errorbar)
+country_region_sensitivity,d2_func_loro_d1,d2_func_loro_d1,column: max_r2,maximum held-out R² across those candidates (upper errorbar)
+country_region_sensitivity,d2_func_loro_d1,d2_func_loro_d1,column: baseline_r2,covariate-only baseline R² for that fold (horizontal dash)
+country_region_sensitivity,d3_func_loro_d2,d3_func_loro_d2,description,Functional BAG Region LORO held-out-fold LOCO R2 for the top-20 synergistic and top-20 redundant candidates at model level d2.
+country_region_sensitivity,d3_func_loro_d2,d3_func_loro_d2,n_rows_plotted,16
+country_region_sensitivity,d3_func_loro_d2,d3_func_loro_d2,notes,Top-20 sets are selected within each model level by that level's global LOCO R². Values are held-out R²; no model is refit for the plot.
+country_region_sensitivity,d3_func_loro_d2,d3_func_loro_d2,column: fold,held-out country (country_loco) or subregion (region_loro)
+country_region_sensitivity,d3_func_loro_d2,d3_func_loro_d2,column: series,"top20_syn = top-20 synergistic, top20_red = top-20 redundant"
+country_region_sensitivity,d3_func_loro_d2,d3_func_loro_d2,column: median_r2,median held-out R² across the 20 candidates in that series
+country_region_sensitivity,d3_func_loro_d2,d3_func_loro_d2,column: min_r2,minimum held-out R² across those candidates (lower errorbar)
+country_region_sensitivity,d3_func_loro_d2,d3_func_loro_d2,column: max_r2,maximum held-out R² across those candidates (upper errorbar)
+country_region_sensitivity,d3_func_loro_d2,d3_func_loro_d2,column: baseline_r2,covariate-only baseline R² for that fold (horizontal dash)
+country_region_sensitivity,d4_func_loro_d3,d4_func_loro_d3,description,Functional BAG Region LORO held-out-fold LOCO R2 for the top-20 synergistic and top-20 redundant candidates at model level d3.
+country_region_sensitivity,d4_func_loro_d3,d4_func_loro_d3,n_rows_plotted,16
+country_region_sensitivity,d4_func_loro_d3,d4_func_loro_d3,notes,Top-20 sets are selected within each model level by that level's global LOCO R². Values are held-out R²; no model is refit for the plot.
+country_region_sensitivity,d4_func_loro_d3,d4_func_loro_d3,column: fold,held-out country (country_loco) or subregion (region_loro)
+country_region_sensitivity,d4_func_loro_d3,d4_func_loro_d3,column: series,"top20_syn = top-20 synergistic, top20_red = top-20 redundant"
+country_region_sensitivity,d4_func_loro_d3,d4_func_loro_d3,column: median_r2,median held-out R² across the 20 candidates in that series
+country_region_sensitivity,d4_func_loro_d3,d4_func_loro_d3,column: min_r2,minimum held-out R² across those candidates (lower errorbar)
+country_region_sensitivity,d4_func_loro_d3,d4_func_loro_d3,column: max_r2,maximum held-out R² across those candidates (upper errorbar)
+country_region_sensitivity,d4_func_loro_d3,d4_func_loro_d3,column: baseline_r2,covariate-only baseline R² for that fold (horizontal dash)

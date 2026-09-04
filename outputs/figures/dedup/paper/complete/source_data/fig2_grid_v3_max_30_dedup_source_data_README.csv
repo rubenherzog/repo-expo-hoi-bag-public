@@ -1,0 +1,82 @@
+figure,panel,sheet,item,value
+fig2_grid_v3_max_30_dedup,a1_oinfo_by_set_size,a1_oinfo_by_set_size,description,Exposome synergy-redundancy balance across set sizes: the O-information envelope (min to max) at each set size.
+fig2_grid_v3_max_30_dedup,a1_oinfo_by_set_size,a1_oinfo_by_set_size,n_rows_plotted,56
+fig2_grid_v3_max_30_dedup,a1_oinfo_by_set_size,a1_oinfo_by_set_size,notes,"Shaded band spans min to max across all candidates of that set size; it is a range, not a confidence interval."
+fig2_grid_v3_max_30_dedup,a1_oinfo_by_set_size,a1_oinfo_by_set_size,column: objective,o_min = synergistic (min O-information) arm; o_max = redundant (max O-information) arm
+fig2_grid_v3_max_30_dedup,a1_oinfo_by_set_size,a1_oinfo_by_set_size,column: model_level,"model level (OLS, d1, d2, d3)"
+fig2_grid_v3_max_30_dedup,a1_oinfo_by_set_size,a1_oinfo_by_set_size,column: set_size,number of exposures in the candidate set
+fig2_grid_v3_max_30_dedup,a1_oinfo_by_set_size,a1_oinfo_by_set_size,column: omega_min,lowest O-information (nats) at that set size
+fig2_grid_v3_max_30_dedup,a1_oinfo_by_set_size,a1_oinfo_by_set_size,column: omega_max,highest O-information (nats) at that set size
+fig2_grid_v3_max_30_dedup,a2_unique_domains,a2_unique_domains,description,Unique exposome domains per candidate against set size.
+fig2_grid_v3_max_30_dedup,a2_unique_domains,a2_unique_domains,n_rows_plotted,56
+fig2_grid_v3_max_30_dedup,a2_unique_domains,a2_unique_domains,notes,"Ribbon is mean +/- 1 SD across candidates, not a confidence interval. Drawn values are clipped to [0, 10]; the tabulated bounds are unclipped."
+fig2_grid_v3_max_30_dedup,a2_unique_domains,a2_unique_domains,column: objective,o_min = synergistic (min O-information) arm; o_max = redundant (max O-information) arm
+fig2_grid_v3_max_30_dedup,a2_unique_domains,a2_unique_domains,column: model_level,"model level (OLS, d1, d2, d3)"
+fig2_grid_v3_max_30_dedup,a2_unique_domains,a2_unique_domains,column: set_size,number of exposures in the candidate set
+fig2_grid_v3_max_30_dedup,a2_unique_domains,a2_unique_domains,column: n_domains_mean,mean unique domains per candidate
+fig2_grid_v3_max_30_dedup,a2_unique_domains,a2_unique_domains,column: n_domains_minus_1sd,mean - 1 SD
+fig2_grid_v3_max_30_dedup,a2_unique_domains,a2_unique_domains,column: n_domains_plus_1sd,mean + 1 SD
+fig2_grid_v3_max_30_dedup,a3_shannon_entropy,a3_shannon_entropy,description,Shannon domain entropy H per candidate against set size.
+fig2_grid_v3_max_30_dedup,a3_shannon_entropy,a3_shannon_entropy,n_rows_plotted,56
+fig2_grid_v3_max_30_dedup,a3_shannon_entropy,a3_shannon_entropy,notes,"Ribbon is mean +/- 1 SD across candidates, not a confidence interval."
+fig2_grid_v3_max_30_dedup,a3_shannon_entropy,a3_shannon_entropy,column: objective,o_min = synergistic (min O-information) arm; o_max = redundant (max O-information) arm
+fig2_grid_v3_max_30_dedup,a3_shannon_entropy,a3_shannon_entropy,column: model_level,"model level (OLS, d1, d2, d3)"
+fig2_grid_v3_max_30_dedup,a3_shannon_entropy,a3_shannon_entropy,column: set_size,number of exposures in the candidate set
+fig2_grid_v3_max_30_dedup,a3_shannon_entropy,a3_shannon_entropy,column: shannon_h_mean,mean Shannon domain entropy H (bits)
+fig2_grid_v3_max_30_dedup,a3_shannon_entropy,a3_shannon_entropy,column: shannon_h_minus_1sd,mean - 1 SD
+fig2_grid_v3_max_30_dedup,a3_shannon_entropy,a3_shannon_entropy,column: shannon_h_plus_1sd,mean + 1 SD
+fig2_grid_v3_max_30_dedup,b1_struct_r2,b1_struct_r2,description,Structural BAG-exposome association: held-out LOCO R² by model level.
+fig2_grid_v3_max_30_dedup,b1_struct_r2,b1_struct_r2,n_rows_plotted,400
+fig2_grid_v3_max_30_dedup,b1_struct_r2,b1_struct_r2,notes,"One row per plotted candidate: the top 50 by delta_r2_vs_base within each model level and objective, which is the pool the box and whiskers summarise. baseline_r2 and best_single_r2 repeat per row -- each is a single horizontal line drawn once per model level."
+fig2_grid_v3_max_30_dedup,b1_struct_r2,b1_struct_r2,column: objective,o_min = synergistic (min O-information) arm; o_max = redundant (max O-information) arm
+fig2_grid_v3_max_30_dedup,b1_struct_r2,b1_struct_r2,column: model_level,"model level (OLS, d1, d2, d3)"
+fig2_grid_v3_max_30_dedup,b1_struct_r2,b1_struct_r2,column: set_size,number of exposures in the candidate set
+fig2_grid_v3_max_30_dedup,b1_struct_r2,b1_struct_r2,column: candidate_id,identifier of the exposure set
+fig2_grid_v3_max_30_dedup,b1_struct_r2,b1_struct_r2,column: full_r2,held-out LOCO R² of the full model
+fig2_grid_v3_max_30_dedup,b1_struct_r2,b1_struct_r2,column: baseline_r2,covariate-only baseline R² at that model level
+fig2_grid_v3_max_30_dedup,b1_struct_r2,b1_struct_r2,column: best_single_r2,best single-exposure R² at that model level
+fig2_grid_v3_max_30_dedup,b2_struct_set_size,b2_struct_set_size,description,Structural BAG: set size of the same top-50 candidates by model level.
+fig2_grid_v3_max_30_dedup,b2_struct_set_size,b2_struct_set_size,n_rows_plotted,400
+fig2_grid_v3_max_30_dedup,b2_struct_set_size,b2_struct_set_size,notes,"One row per plotted candidate: the top 50 by delta_r2_vs_base within each model level and objective, which is the pool the box and whiskers summarise. baseline_r2 and best_single_r2 repeat per row -- each is a single horizontal line drawn once per model level. The dashed line marks set size 21, the last set size with negative O-information."
+fig2_grid_v3_max_30_dedup,b2_struct_set_size,b2_struct_set_size,column: objective,o_min = synergistic (min O-information) arm; o_max = redundant (max O-information) arm
+fig2_grid_v3_max_30_dedup,b2_struct_set_size,b2_struct_set_size,column: model_level,"model level (OLS, d1, d2, d3)"
+fig2_grid_v3_max_30_dedup,b2_struct_set_size,b2_struct_set_size,column: set_size,number of exposures in the candidate set
+fig2_grid_v3_max_30_dedup,b2_struct_set_size,b2_struct_set_size,column: candidate_id,identifier of the exposure set
+fig2_grid_v3_max_30_dedup,b2_struct_set_size,b2_struct_set_size,column: order,set size (number of exposures) of that candidate
+fig2_grid_v3_max_30_dedup,b3_struct_syn_triplets,b3_struct_syn_triplets,description,Structural BAG: synergistic triplet content of each evaluated candidate.
+fig2_grid_v3_max_30_dedup,b3_struct_syn_triplets,b3_struct_syn_triplets,n_rows_plotted,400
+fig2_grid_v3_max_30_dedup,b3_struct_syn_triplets,b3_struct_syn_triplets,notes,"One row per evaluated candidate (top-20 synergistic + top-20 redundant, the only candidates with sub-combination O-information computed). The dashed line is the exposome-wide rate over all C(63,3) triplets, 33.2%."
+fig2_grid_v3_max_30_dedup,b3_struct_syn_triplets,b3_struct_syn_triplets,column: objective,o_min = synergistic (min O-information) arm; o_max = redundant (max O-information) arm
+fig2_grid_v3_max_30_dedup,b3_struct_syn_triplets,b3_struct_syn_triplets,column: model_level,"model level (OLS, d1, d2, d3)"
+fig2_grid_v3_max_30_dedup,b3_struct_syn_triplets,b3_struct_syn_triplets,column: set_size,number of exposures in the candidate set
+fig2_grid_v3_max_30_dedup,b3_struct_syn_triplets,b3_struct_syn_triplets,column: pct_synergistic_triplets,percentage of the candidate's triplet sub-combinations with negative O-information
+fig2_grid_v3_max_30_dedup,b3_struct_syn_triplets,b3_struct_syn_triplets,column: full_r2,held-out LOCO R² of that candidate
+fig2_grid_v3_max_30_dedup,c1_func_r2,c1_func_r2,description,Functional BAG-exposome association: held-out LOCO R² by model level.
+fig2_grid_v3_max_30_dedup,c1_func_r2,c1_func_r2,n_rows_plotted,400
+fig2_grid_v3_max_30_dedup,c1_func_r2,c1_func_r2,notes,"One row per plotted candidate: the top 50 by delta_r2_vs_base within each model level and objective, which is the pool the box and whiskers summarise. baseline_r2 and best_single_r2 repeat per row -- each is a single horizontal line drawn once per model level."
+fig2_grid_v3_max_30_dedup,c1_func_r2,c1_func_r2,column: objective,o_min = synergistic (min O-information) arm; o_max = redundant (max O-information) arm
+fig2_grid_v3_max_30_dedup,c1_func_r2,c1_func_r2,column: model_level,"model level (OLS, d1, d2, d3)"
+fig2_grid_v3_max_30_dedup,c1_func_r2,c1_func_r2,column: set_size,number of exposures in the candidate set
+fig2_grid_v3_max_30_dedup,c1_func_r2,c1_func_r2,column: candidate_id,identifier of the exposure set
+fig2_grid_v3_max_30_dedup,c1_func_r2,c1_func_r2,column: full_r2,held-out LOCO R² of the full model
+fig2_grid_v3_max_30_dedup,c1_func_r2,c1_func_r2,column: baseline_r2,covariate-only baseline R² at that model level
+fig2_grid_v3_max_30_dedup,c1_func_r2,c1_func_r2,column: best_single_r2,best single-exposure R² at that model level
+fig2_grid_v3_max_30_dedup,c2_func_set_size,c2_func_set_size,description,Functional BAG: set size of the same top-50 candidates by model level.
+fig2_grid_v3_max_30_dedup,c2_func_set_size,c2_func_set_size,n_rows_plotted,400
+fig2_grid_v3_max_30_dedup,c2_func_set_size,c2_func_set_size,notes,"One row per plotted candidate: the top 50 by delta_r2_vs_base within each model level and objective, which is the pool the box and whiskers summarise. baseline_r2 and best_single_r2 repeat per row -- each is a single horizontal line drawn once per model level. The dashed line marks set size 21, the last set size with negative O-information."
+fig2_grid_v3_max_30_dedup,c2_func_set_size,c2_func_set_size,column: objective,o_min = synergistic (min O-information) arm; o_max = redundant (max O-information) arm
+fig2_grid_v3_max_30_dedup,c2_func_set_size,c2_func_set_size,column: model_level,"model level (OLS, d1, d2, d3)"
+fig2_grid_v3_max_30_dedup,c2_func_set_size,c2_func_set_size,column: set_size,number of exposures in the candidate set
+fig2_grid_v3_max_30_dedup,c2_func_set_size,c2_func_set_size,column: candidate_id,identifier of the exposure set
+fig2_grid_v3_max_30_dedup,c2_func_set_size,c2_func_set_size,column: order,set size (number of exposures) of that candidate
+fig2_grid_v3_max_30_dedup,c3_func_syn_triplets,c3_func_syn_triplets,description,Functional BAG: synergistic triplet content of each evaluated candidate.
+fig2_grid_v3_max_30_dedup,c3_func_syn_triplets,c3_func_syn_triplets,n_rows_plotted,400
+fig2_grid_v3_max_30_dedup,c3_func_syn_triplets,c3_func_syn_triplets,notes,"One row per evaluated candidate (top-20 synergistic + top-20 redundant, the only candidates with sub-combination O-information computed). The dashed line is the exposome-wide rate over all C(63,3) triplets, 33.2%."
+fig2_grid_v3_max_30_dedup,c3_func_syn_triplets,c3_func_syn_triplets,column: objective,o_min = synergistic (min O-information) arm; o_max = redundant (max O-information) arm
+fig2_grid_v3_max_30_dedup,c3_func_syn_triplets,c3_func_syn_triplets,column: model_level,"model level (OLS, d1, d2, d3)"
+fig2_grid_v3_max_30_dedup,c3_func_syn_triplets,c3_func_syn_triplets,column: set_size,number of exposures in the candidate set
+fig2_grid_v3_max_30_dedup,c3_func_syn_triplets,c3_func_syn_triplets,column: pct_synergistic_triplets,percentage of the candidate's triplet sub-combinations with negative O-information
+fig2_grid_v3_max_30_dedup,c3_func_syn_triplets,c3_func_syn_triplets,column: full_r2,held-out LOCO R² of that candidate
+fig2_grid_v3_max_30_dedup,,,generated_from,/data/workspaces/neuromodelling/rherzog/Brainlat/expo_hoi_bag_repro_data_dedup/runs/oinfo_only/variant_a/families/pooled_oinfo_ladder/canonical/per_experiment/pooled_oinfo_ladder_<bag>/metrics_global_long.parquet
+fig2_grid_v3_max_30_dedup,,,generated_from,/data/workspaces/neuromodelling/rherzog/Brainlat/expo_hoi_bag_repro_data_dedup/work/greedy/greedy_topk_by_objective_order.csv
+fig2_grid_v3_max_30_dedup,,,generated_from,/home/rherzog/Documents/Brainlat/repo-expo-hoi-bag/outputs/dedup/subcomb_oinfo/subcomb_enrichment.csv

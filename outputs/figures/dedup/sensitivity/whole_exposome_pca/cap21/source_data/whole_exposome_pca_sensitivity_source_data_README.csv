@@ -1,0 +1,27 @@
+figure,panel,sheet,item,value
+whole_exposome_pca_sensitivity,a1_struct_pca_variance,a1_struct_pca_variance,description,"Whole-exposome PCA variance by number of components, Structural BAG."
+whole_exposome_pca_sensitivity,a1_struct_pca_variance,a1_struct_pca_variance,n_rows_plotted,10
+whole_exposome_pca_sensitivity,a1_struct_pca_variance,a1_struct_pca_variance,column: pc_n,number of principal components
+whole_exposome_pca_sensitivity,a1_struct_pca_variance,a1_struct_pca_variance,column: explained_variance_ratio,variance explained by that component (left axis)
+whole_exposome_pca_sensitivity,a1_struct_pca_variance,a1_struct_pca_variance,column: cumulative_explained_variance_ratio,cumulative variance explained (right axis)
+whole_exposome_pca_sensitivity,a2_struct_incremental_pcs,a2_struct_incremental_pcs,description,"Held-out LOCO R² of incremental whole-exposome PCA predictors by model level, Structural BAG."
+whole_exposome_pca_sensitivity,a2_struct_incremental_pcs,a2_struct_incremental_pcs,n_rows_plotted,40
+whole_exposome_pca_sensitivity,a2_struct_incremental_pcs,a2_struct_incremental_pcs,notes,"PCA loadings are fit per LOCO fold on training countries only; scores are projected for all subject rows, so evaluation stays subject-level."
+whole_exposome_pca_sensitivity,a2_struct_incremental_pcs,a2_struct_incremental_pcs,column: model_level,"model level (OLS, d1, d2, d3)"
+whole_exposome_pca_sensitivity,a2_struct_incremental_pcs,a2_struct_incremental_pcs,column: pc_n,number of leading PCs entered as predictors
+whole_exposome_pca_sensitivity,a2_struct_incremental_pcs,a2_struct_incremental_pcs,column: global_oof_r2,global out-of-fold LOCO R² for that level and PC count
+whole_exposome_pca_sensitivity,a2_struct_incremental_pcs,a2_struct_incremental_pcs,column: level_baseline_r2,covariate-only baseline for that level (dashed line)
+whole_exposome_pca_sensitivity,a2_struct_incremental_pcs,a2_struct_incremental_pcs,column: original_best_model_r2,original best model for that level (solid line)
+whole_exposome_pca_sensitivity,b1_func_pca_variance,b1_func_pca_variance,description,"Whole-exposome PCA variance by number of components, Functional BAG."
+whole_exposome_pca_sensitivity,b1_func_pca_variance,b1_func_pca_variance,n_rows_plotted,10
+whole_exposome_pca_sensitivity,b1_func_pca_variance,b1_func_pca_variance,column: pc_n,number of principal components
+whole_exposome_pca_sensitivity,b1_func_pca_variance,b1_func_pca_variance,column: explained_variance_ratio,variance explained by that component (left axis)
+whole_exposome_pca_sensitivity,b1_func_pca_variance,b1_func_pca_variance,column: cumulative_explained_variance_ratio,cumulative variance explained (right axis)
+whole_exposome_pca_sensitivity,b2_func_incremental_pcs,b2_func_incremental_pcs,description,"Held-out LOCO R² of incremental whole-exposome PCA predictors by model level, Functional BAG."
+whole_exposome_pca_sensitivity,b2_func_incremental_pcs,b2_func_incremental_pcs,n_rows_plotted,40
+whole_exposome_pca_sensitivity,b2_func_incremental_pcs,b2_func_incremental_pcs,notes,"PCA loadings are fit per LOCO fold on training countries only; scores are projected for all subject rows, so evaluation stays subject-level."
+whole_exposome_pca_sensitivity,b2_func_incremental_pcs,b2_func_incremental_pcs,column: model_level,"model level (OLS, d1, d2, d3)"
+whole_exposome_pca_sensitivity,b2_func_incremental_pcs,b2_func_incremental_pcs,column: pc_n,number of leading PCs entered as predictors
+whole_exposome_pca_sensitivity,b2_func_incremental_pcs,b2_func_incremental_pcs,column: global_oof_r2,global out-of-fold LOCO R² for that level and PC count
+whole_exposome_pca_sensitivity,b2_func_incremental_pcs,b2_func_incremental_pcs,column: level_baseline_r2,covariate-only baseline for that level (dashed line)
+whole_exposome_pca_sensitivity,b2_func_incremental_pcs,b2_func_incremental_pcs,column: original_best_model_r2,original best model for that level (solid line)

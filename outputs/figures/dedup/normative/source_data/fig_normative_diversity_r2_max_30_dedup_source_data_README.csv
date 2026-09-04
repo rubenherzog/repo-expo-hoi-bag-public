@@ -1,0 +1,63 @@
+figure,panel,sheet,item,value
+fig_normative_diversity_r2_max_30_dedup,a1_struct_diversity_scatter,a1_struct_diversity_scatter,description,"Structural BAG: held-out LOCO R² against Shannon domain entropy H, one point per candidate, in each transfer condition."
+fig_normative_diversity_r2_max_30_dedup,a1_struct_diversity_scatter,a1_struct_diversity_scatter,n_rows_plotted,6735
+fig_normative_diversity_r2_max_30_dedup,a1_struct_diversity_scatter,a1_struct_diversity_scatter,notes,"Only candidates of the best model level per arm are plotted, and only those with R² >= 0.1; the fitted line and its 95% band are drawn on this subset. The selected model level per cell is in the companion stats sheet."
+fig_normative_diversity_r2_max_30_dedup,a1_struct_diversity_scatter,a1_struct_diversity_scatter,column: condition,transfer condition: the normative model's training group -> the evaluated group
+fig_normative_diversity_r2_max_30_dedup,a1_struct_diversity_scatter,a1_struct_diversity_scatter,column: objective,o_min = synergistic (min O-information) arm; o_max = redundant (max O-information) arm
+fig_normative_diversity_r2_max_30_dedup,a1_struct_diversity_scatter,a1_struct_diversity_scatter,column: rung_id,model level the candidates were drawn from
+fig_normative_diversity_r2_max_30_dedup,a1_struct_diversity_scatter,a1_struct_diversity_scatter,column: candidate_id,identifier of the exposure set
+fig_normative_diversity_r2_max_30_dedup,a1_struct_diversity_scatter,a1_struct_diversity_scatter,column: order,set size (number of exposures)
+fig_normative_diversity_r2_max_30_dedup,a1_struct_diversity_scatter,a1_struct_diversity_scatter,column: r2,held-out LOCO R² -- the y axis
+fig_normative_diversity_r2_max_30_dedup,a1_struct_diversity_scatter,a1_struct_diversity_scatter,column: shannon_h,Shannon domain entropy H (bits) -- the x axis
+fig_normative_diversity_r2_max_30_dedup,a1_struct_diversity_scatter,a1_struct_diversity_scatter,column: n_domains,unique exposome domains in the set
+fig_normative_diversity_r2_max_30_dedup,a1_struct_diversity_scatter,a1_struct_diversity_scatter,column: dominant_domain,most frequent domain in the set
+fig_normative_diversity_r2_max_30_dedup,a2_struct_diversity_stats,a2_struct_diversity_stats,description,Structural BAG: arm-specific Pearson correlations and least-squares lines reported in each panel.
+fig_normative_diversity_r2_max_30_dedup,a2_struct_diversity_stats,a2_struct_diversity_stats,n_rows_plotted,15
+fig_normative_diversity_r2_max_30_dedup,a2_struct_diversity_stats,a2_struct_diversity_stats,statistical_test,Two-sided Pearson correlation test (scipy.stats.linregress).
+fig_normative_diversity_r2_max_30_dedup,a2_struct_diversity_stats,a2_struct_diversity_stats,notes,The line and its 95% confidence band use the same arm-specific bivariate fit. Adjusted diversity-by-arm models controlling for set size are reported in Supplementary Table 15 rather than annotated on the figure.
+fig_normative_diversity_r2_max_30_dedup,a2_struct_diversity_stats,a2_struct_diversity_stats,column: condition,transfer condition
+fig_normative_diversity_r2_max_30_dedup,a2_struct_diversity_stats,a2_struct_diversity_stats,column: objective,o_min = synergistic (min O-information) arm; o_max = redundant (max O-information) arm
+fig_normative_diversity_r2_max_30_dedup,a2_struct_diversity_stats,a2_struct_diversity_stats,column: arm_label,arm label printed in the panel legend
+fig_normative_diversity_r2_max_30_dedup,a2_struct_diversity_stats,a2_struct_diversity_stats,column: n_candidates,candidates entering the correlation and line fit
+fig_normative_diversity_r2_max_30_dedup,a2_struct_diversity_stats,a2_struct_diversity_stats,column: pearson_r,Pearson correlation coefficient printed in the legend
+fig_normative_diversity_r2_max_30_dedup,a2_struct_diversity_stats,a2_struct_diversity_stats,column: p_value,exact two-sided p-value for the Pearson correlation
+fig_normative_diversity_r2_max_30_dedup,a2_struct_diversity_stats,a2_struct_diversity_stats,column: slope_beta_h,least-squares slope on Shannon domain entropy H (R² per bit)
+fig_normative_diversity_r2_max_30_dedup,a2_struct_diversity_stats,a2_struct_diversity_stats,column: intercept,least-squares intercept
+fig_normative_diversity_r2_max_30_dedup,a2_struct_diversity_stats,a2_struct_diversity_stats,column: stderr,standard error of the slope
+fig_normative_diversity_r2_max_30_dedup,b1_func_diversity_scatter,b1_func_diversity_scatter,description,"Functional BAG: held-out LOCO R² against Shannon domain entropy H, one point per candidate, in each transfer condition."
+fig_normative_diversity_r2_max_30_dedup,b1_func_diversity_scatter,b1_func_diversity_scatter,n_rows_plotted,5343
+fig_normative_diversity_r2_max_30_dedup,b1_func_diversity_scatter,b1_func_diversity_scatter,notes,"Only candidates of the best model level per arm are plotted, and only those with R² >= 0.1; the fitted line and its 95% band are drawn on this subset. The selected model level per cell is in the companion stats sheet."
+fig_normative_diversity_r2_max_30_dedup,b1_func_diversity_scatter,b1_func_diversity_scatter,column: condition,transfer condition: the normative model's training group -> the evaluated group
+fig_normative_diversity_r2_max_30_dedup,b1_func_diversity_scatter,b1_func_diversity_scatter,column: objective,o_min = synergistic (min O-information) arm; o_max = redundant (max O-information) arm
+fig_normative_diversity_r2_max_30_dedup,b1_func_diversity_scatter,b1_func_diversity_scatter,column: rung_id,model level the candidates were drawn from
+fig_normative_diversity_r2_max_30_dedup,b1_func_diversity_scatter,b1_func_diversity_scatter,column: candidate_id,identifier of the exposure set
+fig_normative_diversity_r2_max_30_dedup,b1_func_diversity_scatter,b1_func_diversity_scatter,column: order,set size (number of exposures)
+fig_normative_diversity_r2_max_30_dedup,b1_func_diversity_scatter,b1_func_diversity_scatter,column: r2,held-out LOCO R² -- the y axis
+fig_normative_diversity_r2_max_30_dedup,b1_func_diversity_scatter,b1_func_diversity_scatter,column: shannon_h,Shannon domain entropy H (bits) -- the x axis
+fig_normative_diversity_r2_max_30_dedup,b1_func_diversity_scatter,b1_func_diversity_scatter,column: n_domains,unique exposome domains in the set
+fig_normative_diversity_r2_max_30_dedup,b1_func_diversity_scatter,b1_func_diversity_scatter,column: dominant_domain,most frequent domain in the set
+fig_normative_diversity_r2_max_30_dedup,b2_func_diversity_stats,b2_func_diversity_stats,description,Functional BAG: arm-specific Pearson correlations and least-squares lines reported in each panel.
+fig_normative_diversity_r2_max_30_dedup,b2_func_diversity_stats,b2_func_diversity_stats,n_rows_plotted,16
+fig_normative_diversity_r2_max_30_dedup,b2_func_diversity_stats,b2_func_diversity_stats,statistical_test,Two-sided Pearson correlation test (scipy.stats.linregress).
+fig_normative_diversity_r2_max_30_dedup,b2_func_diversity_stats,b2_func_diversity_stats,notes,The line and its 95% confidence band use the same arm-specific bivariate fit. Adjusted diversity-by-arm models controlling for set size are reported in Supplementary Table 15 rather than annotated on the figure.
+fig_normative_diversity_r2_max_30_dedup,b2_func_diversity_stats,b2_func_diversity_stats,column: condition,transfer condition
+fig_normative_diversity_r2_max_30_dedup,b2_func_diversity_stats,b2_func_diversity_stats,column: objective,o_min = synergistic (min O-information) arm; o_max = redundant (max O-information) arm
+fig_normative_diversity_r2_max_30_dedup,b2_func_diversity_stats,b2_func_diversity_stats,column: arm_label,arm label printed in the panel legend
+fig_normative_diversity_r2_max_30_dedup,b2_func_diversity_stats,b2_func_diversity_stats,column: n_candidates,candidates entering the correlation and line fit
+fig_normative_diversity_r2_max_30_dedup,b2_func_diversity_stats,b2_func_diversity_stats,column: pearson_r,Pearson correlation coefficient printed in the legend
+fig_normative_diversity_r2_max_30_dedup,b2_func_diversity_stats,b2_func_diversity_stats,column: p_value,exact two-sided p-value for the Pearson correlation
+fig_normative_diversity_r2_max_30_dedup,b2_func_diversity_stats,b2_func_diversity_stats,column: slope_beta_h,least-squares slope on Shannon domain entropy H (R² per bit)
+fig_normative_diversity_r2_max_30_dedup,b2_func_diversity_stats,b2_func_diversity_stats,column: intercept,least-squares intercept
+fig_normative_diversity_r2_max_30_dedup,b2_func_diversity_stats,b2_func_diversity_stats,column: stderr,standard error of the slope
+fig_normative_diversity_r2_max_30_dedup,model_level_selection,model_level_selection,description,"The model level selected for each BAG, condition and arm, whose candidates the scatter shows."
+fig_normative_diversity_r2_max_30_dedup,model_level_selection,model_level_selection,n_rows_plotted,32
+fig_normative_diversity_r2_max_30_dedup,model_level_selection,model_level_selection,notes,"Selection is by highest R² across model levels, before the R² plotting filter."
+fig_normative_diversity_r2_max_30_dedup,model_level_selection,model_level_selection,column: bag,brain-age-gap modality
+fig_normative_diversity_r2_max_30_dedup,model_level_selection,model_level_selection,column: condition,transfer condition
+fig_normative_diversity_r2_max_30_dedup,model_level_selection,model_level_selection,column: objective,o_min = synergistic (min O-information) arm; o_max = redundant (max O-information) arm
+fig_normative_diversity_r2_max_30_dedup,model_level_selection,model_level_selection,column: best_rung,selected model level
+fig_normative_diversity_r2_max_30_dedup,model_level_selection,model_level_selection,column: best_rung_label,that level as printed in the panel annotation
+fig_normative_diversity_r2_max_30_dedup,model_level_selection,model_level_selection,column: best_r2,highest held-out LOCO R² at that level
+fig_normative_diversity_r2_max_30_dedup,model_level_selection,model_level_selection,column: n_models,candidates carried into the scatter from that level
+fig_normative_diversity_r2_max_30_dedup,,,generated_from,/data/workspaces/neuromodelling/rherzog/Brainlat/expo_hoi_bag_repro_data_dedup/work/compatibility_runtime/outputs/variant_a/stats/normative_diversity_r2
+fig_normative_diversity_r2_max_30_dedup,,,generated_from,/data/workspaces/neuromodelling/rherzog/Brainlat/expo_hoi_bag_repro_data_dedup/work/compatibility_runtime/data/exposome_feature_domains.csv

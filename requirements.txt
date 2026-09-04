@@ -1,0 +1,22 @@
+numpy==2.2.6
+pandas==2.2.3
+scipy==1.15.3
+scikit-learn==1.6.1
+xgboost==2.1.4
+matplotlib==3.10.3
+PyYAML==6.0.2
+pyarrow==19.0.1
+fastparquet==2024.11.0
+joblib==1.4.2
+tqdm==4.67.1
+# Published thoi. The greedy (core/oinfo_bag_ladder/custom_greedy.py) targets this
+# version via a collector adapter (_batch_to_tensor_unpacked) for the 0.2.36+ batch
+# contract; do NOT revert to the local thoi_branch fork. See docs/HANDOFF_DEDUP_REANALYSIS.md.
+thoi==0.2.42
+hoi==0.0.7
+torch==2.7.0
+networkx==3.5
+openpyxl==3.1.5
+statsmodels==0.14.5
+pytest==8.3.5
+ruff==0.11.10

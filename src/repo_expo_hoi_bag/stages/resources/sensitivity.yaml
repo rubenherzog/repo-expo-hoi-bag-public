@@ -1,0 +1,126 @@
+# Shared defaults for every `run sensitivity <name>` stage (scripts.sensitivity_common).
+# Exclusions mirror the main analysis (CLAUDE.md Sec.6 / plan "Reglas transversales"):
+# countries France/Italy/Egypt/Greece/Poland, diagnoses Other/AFM/MCI.
+defaults:
+  exclude_countries:
+    - France
+    - Italy
+    - Egypt
+    - Greece
+    - Poland
+  exclude_diagnosis:
+    - Other
+    - AFM
+    - MCI
+  active_rungs:
+    - ols
+    - xgb_tree_d1
+    - xgb_tree_d2
+    - xgb_tree_d3
+  primary_bags:
+    - structural
+    - functional
+  optional_bags: []
+  output_root: outputs/sensitivity
+  bundle_sensitivity_subdir: sensitivity
+
+# Shared definition of the models and cohort used for paper-facing residual,
+# geography, transfer, and diagnosis-balance analyses. Stages must read these
+# values instead of embedding a rung, interaction-order cap, or diagnosis pool
+# in Python. The reference OOF directory is formatted with the configured cap,
+# which prevents a cap change from silently continuing to read `max_30` data.
+paper_analysis:
+  primary_diagnoses:
+    - CN
+    - AD
+    - FTD
+  control_diagnosis: CN
+  diagnosis_labels:
+    CN: HC
+    AD: AD
+    FTD: FTLD
+  objectives:
+    - o_min
+    - o_max
+  objective_metadata:
+    o_min:
+      file_suffix: syn
+      arm_label: Synergy arm
+    o_max:
+      file_suffix: red
+      arm_label: Redundancy arm
+  deployed_rung: xgb_tree_d3
+  order_max: 30
+  reference_oof_dir_template: work/fig_dedup/max_{order_max}/subject_level_oof
+  country_meta_regression_objective: o_min
+  residual_bias_bags:
+    - structural
+    - functional
+  residual_bias:
+    best_rung_analysis: A_top_k_per_rung
+    top_k_candidates: 20
+    age_bins: [0, 40, 60, 70, 120]
+    age_labels: ["≤40", "41–60", "61–70", ">70"]
+    rung_ladder_bag: structural
+    rung_ladder_objective: o_min
+    country_order_reference_bag: structural
+    country_order_reference_objective: o_min
+    country_paired_draws: 10000
+    country_paired_seed: 20260731
+  diagnosis_balance:
+    bootstrap_draws: 10000
+    bootstrap_seed: 20260731
+  normative_transfer:
+    model_family: xgb
+    required_bundle_marker: dedup_data/effective_sample.summary.json
+    transfers:
+      - [CN, CN]
+      - [CN, AD]
+      - [CN, FTD]
+      - [AD, AD]
+      - [FTD, FTD]
+      - [AD+FTD, AD]
+      - [AD+FTD, FTD]
+  residual_confounds:
+    individual_covariates:
+      - age
+      - sex
+      - diagnosis
+    country_covariates:
+      - log_n_country
+      - bag_sd
+      - dataset_heterogeneity
+    sex_reference: Female
+    optimizers: [lbfgs, powell, cg]
+    optimizer_max_iterations: 2000
+    random_effect_bootstrap_draws: 10000
+    random_effect_bootstrap_seed: 20260731
+    random_effect_bootstrap_batch_size: 100
+    random_effect_tau_max: 10.0
+
+# Claim-level comparison summaries. These values define comparisons rather than
+# model fits and keep the aggregation stage free of embedded rung,
+# order-cap, objective, diagnosis, or country/region-series choices.
+arm_comparison:
+  default_namespace: dedup
+  negative_o_namespace: dedup_neg_o
+  reference_order_cap: 21
+  primary_objective: o_min
+  arm_comparison_country_metric: country_full_r2
+  country_region_series: top20_syn
+  country_region_cap_split: complete
+
+# Domain-imbalance sensitivity. Candidates are nplets over the ~10 exposome
+# domains (not the 63 individual features). The repository-wide cap remains 30;
+# the domain candidate space itself naturally contains no orders above 10.
+domain_imbalance:
+  order_min: 3
+  order_max: 30
+  top_k_plot: 20
+  thoi_batch_size: 100000
+
+# Whole-exposome PCA sensitivity. Refits PCA per LOCO fold on training rows over
+# the 63 exposome features and feeds the first `max_pcs` components incrementally.
+# max_pcs=10 mirrors the script's built-in fallback (run_whole_exposome_pca_sensitivity).
+whole_exposome_pca:
+  max_pcs: 10

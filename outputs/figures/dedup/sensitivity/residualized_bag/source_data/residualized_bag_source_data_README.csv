@@ -1,0 +1,17 @@
+figure,panel,sheet,item,value
+residualized_bag,a_structural_residualized_r2,a_structural_residualized_r2,description,"Held-out LOCO R² by model level under a Structural BAG target with age, sex and diagnosis already regressed out."
+residualized_bag,a_structural_residualized_r2,a_structural_residualized_r2,n_rows_plotted,4
+residualized_bag,a_structural_residualized_r2,a_structural_residualized_r2,notes,Residualization is per-fold and leakage-free: BAG ~ age + sex + diagnosis is refit on each LOCO fold's training countries only. Country is deliberately not in the residualization formula.
+residualized_bag,a_structural_residualized_r2,a_structural_residualized_r2,column: model_level,"model level (OLS, d1, d2, d3)"
+residualized_bag,a_structural_residualized_r2,a_structural_residualized_r2,column: baseline_r2,"covariate-only baseline, zero exposome predictors"
+residualized_bag,a_structural_residualized_r2,a_structural_residualized_r2,column: best_single_r2,best of the 63 single-exposure candidates
+residualized_bag,a_structural_residualized_r2,a_structural_residualized_r2,column: best_synergy_r2,best synergistic (o_min) multi-exposure candidate
+residualized_bag,a_structural_residualized_r2,a_structural_residualized_r2,column: best_redundancy_r2,best redundant (o_max) multi-exposure candidate
+residualized_bag,b_functional_residualized_r2,b_functional_residualized_r2,description,"Held-out LOCO R² by model level under a Functional BAG target with age, sex and diagnosis already regressed out."
+residualized_bag,b_functional_residualized_r2,b_functional_residualized_r2,n_rows_plotted,4
+residualized_bag,b_functional_residualized_r2,b_functional_residualized_r2,notes,Residualization is per-fold and leakage-free: BAG ~ age + sex + diagnosis is refit on each LOCO fold's training countries only. Country is deliberately not in the residualization formula.
+residualized_bag,b_functional_residualized_r2,b_functional_residualized_r2,column: model_level,"model level (OLS, d1, d2, d3)"
+residualized_bag,b_functional_residualized_r2,b_functional_residualized_r2,column: baseline_r2,"covariate-only baseline, zero exposome predictors"
+residualized_bag,b_functional_residualized_r2,b_functional_residualized_r2,column: best_single_r2,best of the 63 single-exposure candidates
+residualized_bag,b_functional_residualized_r2,b_functional_residualized_r2,column: best_synergy_r2,best synergistic (o_min) multi-exposure candidate
+residualized_bag,b_functional_residualized_r2,b_functional_residualized_r2,column: best_redundancy_r2,best redundant (o_max) multi-exposure candidate

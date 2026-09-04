@@ -1,0 +1,32 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+.env
+.env.*
+.mcp.json
+work/
+# outputs/ is local-only, EXCEPT the delivered figures and source data.
+# Git cannot re-include through an excluded directory, so unwind it level by level.
+outputs/*
+!outputs/figures/
+outputs/figures/*
+!outputs/figures/dedup/
+!outputs/figures/dedup/**
+logs/
+paper_figures.tar.gz
+REPRO_DATA_ROOT/
+.code-review-graph/
+*.egg-info/
+*.log
+*.tmp
+*.parquet
+*.pkl
+*.joblib
+*.npy
+*.npz

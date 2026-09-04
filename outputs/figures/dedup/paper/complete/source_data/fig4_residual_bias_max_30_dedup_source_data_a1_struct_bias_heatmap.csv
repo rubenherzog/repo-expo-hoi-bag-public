@@ -1,0 +1,113 @@
+objective,objective_label,country,diagnosis_label,median_residual,n_subjects
+o_max,Redundancy arm,Germany,AD,-2.7701844543683736,104
+o_max,Redundancy arm,Germany,HC,0.811089761090332,334
+o_max,Redundancy arm,Germany,,-3.602879689659546,89
+o_max,Redundancy arm,Turkey,AD,-4.645327991502045,54
+o_max,Redundancy arm,Turkey,HC,-0.7252782924244388,88
+o_max,Redundancy arm,Brazil,AD,-3.461746553302185,38
+o_max,Redundancy arm,Brazil,HC,0.8255584234519042,788
+o_max,Redundancy arm,Brazil,FTLD,-1.5319366449487308,29
+o_max,Redundancy arm,United States,AD,-3.707050207610108,331
+o_max,Redundancy arm,United States,HC,0.7691758371138917,1653
+o_max,Redundancy arm,United States,FTLD,-0.0195104973300779,399
+o_max,Redundancy arm,United States,,2.08270256010199,358
+o_max,Redundancy arm,Spain,HC,-1.0308890504477273,403
+o_max,Redundancy arm,India,AD,0.8800682586859283,31
+o_max,Redundancy arm,India,HC,-1.9273909407272953,66
+o_max,Redundancy arm,India,FTLD,0.8116104290979003,30
+o_max,Redundancy arm,India,,1.629179323346428,18
+o_max,Redundancy arm,Chile,AD,-2.161857508652435,174
+o_max,Redundancy arm,Chile,HC,0.012988573532684351,272
+o_max,Redundancy arm,Chile,FTLD,-1.4696179172146602,64
+o_max,Redundancy arm,Chile,,1.5515726836803743,72
+o_max,Redundancy arm,Austria,AD,2.394855984659668,15
+o_max,Redundancy arm,Austria,HC,0.1981759751016847,71
+o_max,Redundancy arm,Austria,,2.2328045471830675,18
+o_max,Redundancy arm,Australia,AD,2.7494364544541012,724
+o_max,Redundancy arm,Australia,HC,-0.1553536174179686,347
+o_max,Redundancy arm,Australia,FTLD,-0.41340344364604176,196
+o_max,Redundancy arm,Australia,,1.6228607612063906,116
+o_max,Redundancy arm,Ireland,AD,-2.132814203688355,9
+o_max,Redundancy arm,Ireland,HC,0.9829591833460691,20
+o_max,Redundancy arm,Ireland,,-3.2999730775107423,11
+o_max,Redundancy arm,Argentina,AD,-1.029464246185547,113
+o_max,Redundancy arm,Argentina,HC,-0.1503644808652038,131
+o_max,Redundancy arm,Argentina,FTLD,-1.726163825347336,47
+o_max,Redundancy arm,Canada,AD,-0.33107888386164097,4
+o_max,Redundancy arm,Canada,HC,0.8476362094248047,395
+o_max,Redundancy arm,Canada,,-2.4061179407139894,4
+o_max,Redundancy arm,China,HC,0.4216773890875245,846
+o_max,Redundancy arm,Mexico,AD,1.480222505722908,63
+o_max,Redundancy arm,Mexico,HC,-0.14129789207263194,176
+o_max,Redundancy arm,Mexico,FTLD,-0.9131376039648432,11
+o_max,Redundancy arm,Switzerland,HC,-1.137196541620361,181
+o_max,Redundancy arm,Netherlands,AD,-1.3699843427444458,15
+o_max,Redundancy arm,Netherlands,HC,-1.3874734314763184,23
+o_max,Redundancy arm,Netherlands,,1.2883733911724244,24
+o_max,Redundancy arm,Peru,AD,-0.1720677743512573,153
+o_max,Redundancy arm,Peru,HC,1.9883677245046691,260
+o_max,Redundancy arm,Peru,FTLD,0.7669162876977538,75
+o_max,Redundancy arm,United Kingdom,HC,0.0076462289879761,605
+o_max,Redundancy arm,United Kingdom,,-1.217600472410198,22
+o_max,Redundancy arm,Sweden,HC,-0.3029014299138183,84
+o_max,Redundancy arm,Colombia,AD,-0.4660198729255981,243
+o_max,Redundancy arm,Colombia,HC,0.6830421202380372,135
+o_max,Redundancy arm,Colombia,FTLD,-1.7662808508173828,141
+o_max,Redundancy arm,Japan,HC,-0.34784187092509833,838
+o_max,Redundancy arm,South Africa,HC,-0.13445377172259515,68
+o_min,Synergy arm,Germany,AD,-2.6238425080224306,104
+o_min,Synergy arm,Germany,HC,0.23282880488226332,334
+o_min,Synergy arm,Germany,,-3.478365866969849,89
+o_min,Synergy arm,Turkey,AD,-4.0119359196831965,54
+o_min,Synergy arm,Turkey,HC,-0.0622760978724671,88
+o_min,Synergy arm,Brazil,AD,-2.6526835955385133,38
+o_min,Synergy arm,Brazil,HC,1.9269509596472167,788
+o_min,Synergy arm,Brazil,FTLD,-1.2397094132458495,29
+o_min,Synergy arm,United States,AD,-3.250816327081055,331
+o_min,Synergy arm,United States,HC,0.397403167975586,1653
+o_min,Synergy arm,United States,FTLD,0.963935439168946,399
+o_min,Synergy arm,United States,,3.1423463745562747,358
+o_min,Synergy arm,Spain,HC,-1.4894167578449706,403
+o_min,Synergy arm,India,AD,1.111724184198242,31
+o_min,Synergy arm,India,HC,-2.66472264132518,66
+o_min,Synergy arm,India,FTLD,0.2812714846354983,30
+o_min,Synergy arm,India,,1.616399774582199,18
+o_min,Synergy arm,Chile,AD,-1.7430204668030091,174
+o_min,Synergy arm,Chile,HC,0.472901606407074,272
+o_min,Synergy arm,Chile,FTLD,-0.9136239178629149,64
+o_min,Synergy arm,Chile,,1.969578485636292,72
+o_min,Synergy arm,Austria,AD,1.6160098995881045,15
+o_min,Synergy arm,Austria,HC,0.0257381104345704,71
+o_min,Synergy arm,Austria,,2.1311015292330096,18
+o_min,Synergy arm,Australia,AD,2.7515328853538668,724
+o_min,Synergy arm,Australia,HC,-0.0063124854404295,347
+o_min,Synergy arm,Australia,FTLD,0.20861495598608384,196
+o_min,Synergy arm,Australia,,1.908465035827759,116
+o_min,Synergy arm,Ireland,AD,0.0086307178051754,9
+o_min,Synergy arm,Ireland,HC,1.964490815274292,20
+o_min,Synergy arm,Ireland,,-1.639151639675049,11
+o_min,Synergy arm,Argentina,AD,-1.4526520980913695,113
+o_min,Synergy arm,Argentina,HC,-0.1899160612471008,131
+o_min,Synergy arm,Argentina,FTLD,-1.942720650077149,47
+o_min,Synergy arm,Canada,AD,0.3960764141329729,4
+o_min,Synergy arm,Canada,HC,1.6943662292309876,395
+o_min,Synergy arm,Canada,,-1.356223756839859,4
+o_min,Synergy arm,China,HC,1.0374011349216004,846
+o_min,Synergy arm,Mexico,AD,1.2553459231513062,63
+o_min,Synergy arm,Mexico,HC,-0.1533764445489044,176
+o_min,Synergy arm,Mexico,FTLD,-1.6938087236547847,11
+o_min,Synergy arm,Switzerland,HC,-0.9137446888218994,181
+o_min,Synergy arm,Netherlands,AD,-0.7302675304919433,15
+o_min,Synergy arm,Netherlands,HC,-1.7084370526158448,23
+o_min,Synergy arm,Netherlands,,0.10390845968438735,24
+o_min,Synergy arm,Peru,AD,-0.0358945413648683,153
+o_min,Synergy arm,Peru,HC,1.6598585049604646,260
+o_min,Synergy arm,Peru,FTLD,0.6320957288925781,75
+o_min,Synergy arm,United Kingdom,HC,0.7074914866188964,605
+o_min,Synergy arm,United Kingdom,,-0.6818127186493835,22
+o_min,Synergy arm,Sweden,HC,0.6474237855438232,84
+o_min,Synergy arm,Colombia,AD,-0.1074379542093506,243
+o_min,Synergy arm,Colombia,HC,0.1203852245684813,135
+o_min,Synergy arm,Colombia,FTLD,-1.6726192809272469,141
+o_min,Synergy arm,Japan,HC,-0.34493578858593743,838
+o_min,Synergy arm,South Africa,HC,0.2907865065214233,68

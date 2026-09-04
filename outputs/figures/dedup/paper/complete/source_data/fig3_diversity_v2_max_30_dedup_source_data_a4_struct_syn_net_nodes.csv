@@ -1,0 +1,11 @@
+bag,family,rung,domain,display_label,domain_color,model_presence_topk,model_presence_fraction,within_domain_pair_count,in_top1_model,rank1_model_id,node_size_used,frequency_rank
+structural,synergy,xgb_tree_d3,Democracy,Democracy,#ACD0A7,11,0.55,130,False,,,1
+structural,synergy,xgb_tree_d3,Temperature,Temperature,#A4CCCA,19,0.95,60,True,m048530_o_min_ord4_rk00016,,2
+structural,synergy,xgb_tree_d3,Air Pollution,Air Pollution,#A6BCD3,20,1.0,24,True,m048530_o_min_ord4_rk00016,,3
+structural,synergy,xgb_tree_d3,Precipitation/droughts,Precipitation/droughts,#D8BCD0,10,0.5,14,False,,,4
+structural,synergy,xgb_tree_d3,Soil and water quality,Soil and water quality,#F0BEDE,10,0.5,12,True,m048530_o_min_ord4_rk00016,,5
+structural,synergy,xgb_tree_d3,Socioeconomic,Socioeconomic,#CEBAAF,18,0.9,8,False,,,6
+structural,synergy,xgb_tree_d3,Disease-related mortality,Disease-related mortality,#F0ABAC,8,0.4,1,False,,,7
+structural,synergy,xgb_tree_d3,Green space access,Green space access,#BADBD8,10,0.5,0,False,,,8
+structural,synergy,xgb_tree_d3,Migration,Migration,#F6E4A4,8,0.4,0,True,m048530_o_min_ord4_rk00016,,9
+structural,synergy,xgb_tree_d3,Climate disasters,Climate disasters,#F8C695,1,0.05,0,False,,,10

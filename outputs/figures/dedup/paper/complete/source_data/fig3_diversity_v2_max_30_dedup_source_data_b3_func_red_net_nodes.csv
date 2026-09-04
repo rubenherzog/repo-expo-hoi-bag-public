@@ -1,0 +1,6 @@
+bag,family,rung,domain,display_label,domain_color,model_presence_topk,model_presence_fraction,within_domain_pair_count,in_top1_model,rank1_model_id,node_size_used,frequency_rank
+functional,redundancy,xgb_tree_d3,Democracy,Democracy,#ACD0A7,20,1.0,1435,True,m023016_o_max_ord26_rk00017,,1
+functional,redundancy,xgb_tree_d3,Socioeconomic,Socioeconomic,#CEBAAF,6,0.3,22,True,m023016_o_max_ord26_rk00017,,2
+functional,redundancy,xgb_tree_d3,Air Pollution,Air Pollution,#A6BCD3,1,0.05,15,False,,,3
+functional,redundancy,xgb_tree_d3,Soil and water quality,Soil and water quality,#F0BEDE,6,0.3,0,True,m023016_o_max_ord26_rk00017,,4
+functional,redundancy,xgb_tree_d3,Migration,Migration,#F6E4A4,4,0.2,0,True,m023016_o_max_ord26_rk00017,,5

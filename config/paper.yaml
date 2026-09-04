@@ -1,0 +1,16 @@
+inputs:
+  cohort_csv: data/raw/all_exposome_bag_clean_expo63_countryyear_only_complete_cases.csv
+  feature_domains_csv: data/metadata/exposome_feature_domains.csv
+  feature_names_csv: data/metadata/exposome_feature_names.csv
+
+analysis:
+  bags: [structural, functional]
+  rung_order: [ols, xgb_tree_d1, xgb_tree_d2, xgb_tree_d3]
+  top_k: 20
+  order_min: 3
+  order_max: 30
+  random_seed: 20260304
+
+runtime:
+  blas_threads: 1
+  matplotlib_backend: Agg

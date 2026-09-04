@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "repo-expo-hoi-bag"
+version = "0.1.0"
+description = "Reproducible exposome O-information BAG analysis"
+requires-python = ">=3.10,<3.14"
+dynamic = ["dependencies"]
+
+[project.scripts]
+repo-expo-hoi-bag = "repo_expo_hoi_bag.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"

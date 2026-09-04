@@ -1,0 +1,784 @@
+objective,rung,model_id,model_rank,global_oof_r2,order,variable,domain
+o_min,xgb_tree_d3,m048530_o_min_ord4_rk00016,1,0.26727931442597974,4,Non-methane volatile organic compounds (NMVOC) emissions,Air Pollution
+o_min,xgb_tree_d3,m048530_o_min_ord4_rk00016,1,0.26727931442597974,4,agri_emp_o,Soil and water quality
+o_min,xgb_tree_d3,m048530_o_min_ord4_rk00016,1,0.26727931442597974,4,maxgtemp_o,Temperature
+o_min,xgb_tree_d3,m048530_o_min_ord4_rk00016,1,0.26727931442597974,4,migration,Migration
+o_min,xgb_tree_d3,m049520_o_min_ord5_rk00006,2,0.2667933693927603,5,Sulphur dioxide (SO₂) emissions,Air Pollution
+o_min,xgb_tree_d3,m049520_o_min_ord5_rk00006,2,0.2667933693927603,5,Carbon monoxide (CO) emissions,Air Pollution
+o_min,xgb_tree_d3,m049520_o_min_ord5_rk00006,2,0.2667933693927603,5,soc_grp_equal_est,Democracy
+o_min,xgb_tree_d3,m049520_o_min_ord5_rk00006,2,0.2667933693927603,5,migration,Migration
+o_min,xgb_tree_d3,m049520_o_min_ord5_rk00006,2,0.2667933693927603,5,Average share of green area in city/ urban area,Green space access
+o_min,xgb_tree_d3,m049529_o_min_ord5_rk00015,3,0.2636044521958609,5,PM2.5,Air Pollution
+o_min,xgb_tree_d3,m049529_o_min_ord5_rk00015,3,0.2636044521958609,5,Carbon monoxide (CO) emissions,Air Pollution
+o_min,xgb_tree_d3,m049529_o_min_ord5_rk00015,3,0.2636044521958609,5,Ammonia (NH₃) emissions,Air Pollution
+o_min,xgb_tree_d3,m049529_o_min_ord5_rk00015,3,0.2636044521958609,5,mean_temp_areaw_o,Temperature
+o_min,xgb_tree_d3,m049529_o_min_ord5_rk00015,3,0.2636044521958609,5,Electricity_demand (kWh),Socioeconomic
+o_min,xgb_tree_d3,m066519_o_min_ord22_rk00005,4,0.26236076551081866,22,Sulphur dioxide (SO₂) emissions,Air Pollution
+o_min,xgb_tree_d3,m066519_o_min_ord22_rk00005,4,0.26236076551081866,22,Non-methane volatile organic compounds (NMVOC) emissions,Air Pollution
+o_min,xgb_tree_d3,m066519_o_min_ord22_rk00005,4,0.26236076551081866,22,agri_emp_o,Soil and water quality
+o_min,xgb_tree_d3,m066519_o_min_ord22_rk00005,4,0.26236076551081866,22,maxgtemp_o,Temperature
+o_min,xgb_tree_d3,m066519_o_min_ord22_rk00005,4,0.26236076551081866,22,mean_anomalies_o,Temperature
+o_min,xgb_tree_d3,m066519_o_min_ord22_rk00005,4,0.26236076551081866,22,mean_anomalies_areaw_o,Temperature
+o_min,xgb_tree_d3,m066519_o_min_ord22_rk00005,4,0.26236076551081866,22,sd_lr_o,Temperature
+o_min,xgb_tree_d3,m066519_o_min_ord22_rk00005,4,0.26236076551081866,22,mean_temp_areaw_o,Temperature
+o_min,xgb_tree_d3,m066519_o_min_ord22_rk00005,4,0.26236076551081866,22,scpdsi_o,Precipitation/droughts
+o_min,xgb_tree_d3,m066519_o_min_ord22_rk00005,4,0.26236076551081866,22,scpdsi_aw_o,Precipitation/droughts
+o_min,xgb_tree_d3,m066519_o_min_ord22_rk00005,4,0.26236076551081866,22,Pop_basic_drinking-water(%),Soil and water quality
+o_min,xgb_tree_d3,m066519_o_min_ord22_rk00005,4,0.26236076551081866,22,Poisoning_mortality_rate,Soil and water quality
+o_min,xgb_tree_d3,m066519_o_min_ord22_rk00005,4,0.26236076551081866,22,deaths_trans,Disease-related mortality
+o_min,xgb_tree_d3,m066519_o_min_ord22_rk00005,4,0.26236076551081866,22,GINI,Socioeconomic
+o_min,xgb_tree_d3,m066519_o_min_ord22_rk00005,4,0.26236076551081866,22,unemp,Socioeconomic
+o_min,xgb_tree_d3,m066519_o_min_ord22_rk00005,4,0.26236076551081866,22,free_express_est,Democracy
+o_min,xgb_tree_d3,m066519_o_min_ord22_rk00005,4,0.26236076551081866,22,basic_welf_est,Democracy
+o_min,xgb_tree_d3,m066519_o_min_ord22_rk00005,4,0.26236076551081866,22,civic_engage_est,Democracy
+o_min,xgb_tree_d3,m066519_o_min_ord22_rk00005,4,0.26236076551081866,22,elect_part_est,Democracy
+o_min,xgb_tree_d3,m066519_o_min_ord22_rk00005,4,0.26236076551081866,22,direct_dem_est,Democracy
+o_min,xgb_tree_d3,m066519_o_min_ord22_rk00005,4,0.26236076551081866,22,migration,Migration
+o_min,xgb_tree_d3,m066519_o_min_ord22_rk00005,4,0.26236076551081866,22,Average share of green area in city/ urban area,Green space access
+o_min,xgb_tree_d3,m049524_o_min_ord5_rk00010,5,0.2612380474803312,5,PM2.5,Air Pollution
+o_min,xgb_tree_d3,m049524_o_min_ord5_rk00010,5,0.2612380474803312,5,Carbon monoxide (CO) emissions,Air Pollution
+o_min,xgb_tree_d3,m049524_o_min_ord5_rk00010,5,0.2612380474803312,5,mean_temp_areaw_o,Temperature
+o_min,xgb_tree_d3,m049524_o_min_ord5_rk00010,5,0.2612380474803312,5,Electricity_demand (kWh),Socioeconomic
+o_min,xgb_tree_d3,m049524_o_min_ord5_rk00010,5,0.2612380474803312,5,Average share of green area in city/ urban area,Green space access
+o_min,xgb_tree_d3,m066523_o_min_ord22_rk00009,6,0.2611706496044861,22,Nitrogen oxide (NOx),Air Pollution
+o_min,xgb_tree_d3,m066523_o_min_ord22_rk00009,6,0.2611706496044861,22,Sulphur dioxide (SO₂) emissions,Air Pollution
+o_min,xgb_tree_d3,m066523_o_min_ord22_rk00009,6,0.2611706496044861,22,agri_emp_o,Soil and water quality
+o_min,xgb_tree_d3,m066523_o_min_ord22_rk00009,6,0.2611706496044861,22,maxgtemp_o,Temperature
+o_min,xgb_tree_d3,m066523_o_min_ord22_rk00009,6,0.2611706496044861,22,mean_anomalies_areaw_o,Temperature
+o_min,xgb_tree_d3,m066523_o_min_ord22_rk00009,6,0.2611706496044861,22,sd_lr_o,Temperature
+o_min,xgb_tree_d3,m066523_o_min_ord22_rk00009,6,0.2611706496044861,22,mean_temp_areaw_o,Temperature
+o_min,xgb_tree_d3,m066523_o_min_ord22_rk00009,6,0.2611706496044861,22,scpdsi_o,Precipitation/droughts
+o_min,xgb_tree_d3,m066523_o_min_ord22_rk00009,6,0.2611706496044861,22,scpdsi_aw_o,Precipitation/droughts
+o_min,xgb_tree_d3,m066523_o_min_ord22_rk00009,6,0.2611706496044861,22,Pop_basic_drinking-water(%),Soil and water quality
+o_min,xgb_tree_d3,m066523_o_min_ord22_rk00009,6,0.2611706496044861,22,Poisoning_mortality_rate,Soil and water quality
+o_min,xgb_tree_d3,m066523_o_min_ord22_rk00009,6,0.2611706496044861,22,deaths_trans,Disease-related mortality
+o_min,xgb_tree_d3,m066523_o_min_ord22_rk00009,6,0.2611706496044861,22,unemp,Socioeconomic
+o_min,xgb_tree_d3,m066523_o_min_ord22_rk00009,6,0.2611706496044861,22,effect_parl_est,Democracy
+o_min,xgb_tree_d3,m066523_o_min_ord22_rk00009,6,0.2611706496044861,22,access_just_est,Democracy
+o_min,xgb_tree_d3,m066523_o_min_ord22_rk00009,6,0.2611706496044861,22,free_relig_est,Democracy
+o_min,xgb_tree_d3,m066523_o_min_ord22_rk00009,6,0.2611706496044861,22,basic_welf_est,Democracy
+o_min,xgb_tree_d3,m066523_o_min_ord22_rk00009,6,0.2611706496044861,22,civic_engage_est,Democracy
+o_min,xgb_tree_d3,m066523_o_min_ord22_rk00009,6,0.2611706496044861,22,elect_part_est,Democracy
+o_min,xgb_tree_d3,m066523_o_min_ord22_rk00009,6,0.2611706496044861,22,direct_dem_est,Democracy
+o_min,xgb_tree_d3,m066523_o_min_ord22_rk00009,6,0.2611706496044861,22,migration,Migration
+o_min,xgb_tree_d3,m066523_o_min_ord22_rk00009,6,0.2611706496044861,22,Average share of green area in city/ urban area,Green space access
+o_min,xgb_tree_d3,m062529_o_min_ord18_rk00015,7,0.26095708563409026,18,Sulphur dioxide (SO₂) emissions,Air Pollution
+o_min,xgb_tree_d3,m062529_o_min_ord18_rk00015,7,0.26095708563409026,18,Carbon monoxide (CO) emissions,Air Pollution
+o_min,xgb_tree_d3,m062529_o_min_ord18_rk00015,7,0.26095708563409026,18,maxgtemp_o,Temperature
+o_min,xgb_tree_d3,m062529_o_min_ord18_rk00015,7,0.26095708563409026,18,mean_anomalies_areaw_o,Temperature
+o_min,xgb_tree_d3,m062529_o_min_ord18_rk00015,7,0.26095708563409026,18,sd_lr_o,Temperature
+o_min,xgb_tree_d3,m062529_o_min_ord18_rk00015,7,0.26095708563409026,18,mean_temp_areaw_o,Temperature
+o_min,xgb_tree_d3,m062529_o_min_ord18_rk00015,7,0.26095708563409026,18,scpdsi_o,Precipitation/droughts
+o_min,xgb_tree_d3,m062529_o_min_ord18_rk00015,7,0.26095708563409026,18,scpdsi_aw_o,Precipitation/droughts
+o_min,xgb_tree_d3,m062529_o_min_ord18_rk00015,7,0.26095708563409026,18,Pop_basic_drinking-water(%),Soil and water quality
+o_min,xgb_tree_d3,m062529_o_min_ord18_rk00015,7,0.26095708563409026,18,deaths_trans,Disease-related mortality
+o_min,xgb_tree_d3,m062529_o_min_ord18_rk00015,7,0.26095708563409026,18,unemp,Socioeconomic
+o_min,xgb_tree_d3,m062529_o_min_ord18_rk00015,7,0.26095708563409026,18,rights_est,Democracy
+o_min,xgb_tree_d3,m062529_o_min_ord18_rk00015,7,0.26095708563409026,18,free_relig_est,Democracy
+o_min,xgb_tree_d3,m062529_o_min_ord18_rk00015,7,0.26095708563409026,18,basic_welf_est,Democracy
+o_min,xgb_tree_d3,m062529_o_min_ord18_rk00015,7,0.26095708563409026,18,elect_part_est,Democracy
+o_min,xgb_tree_d3,m062529_o_min_ord18_rk00015,7,0.26095708563409026,18,direct_dem_est,Democracy
+o_min,xgb_tree_d3,m062529_o_min_ord18_rk00015,7,0.26095708563409026,18,migration,Migration
+o_min,xgb_tree_d3,m062529_o_min_ord18_rk00015,7,0.26095708563409026,18,Average share of green area in city/ urban area,Green space access
+o_min,xgb_tree_d3,m062532_o_min_ord18_rk00018,8,0.2607507845147454,18,Sulphur dioxide (SO₂) emissions,Air Pollution
+o_min,xgb_tree_d3,m062532_o_min_ord18_rk00018,8,0.2607507845147454,18,Carbon monoxide (CO) emissions,Air Pollution
+o_min,xgb_tree_d3,m062532_o_min_ord18_rk00018,8,0.2607507845147454,18,maxgtemp_o,Temperature
+o_min,xgb_tree_d3,m062532_o_min_ord18_rk00018,8,0.2607507845147454,18,mean_anomalies_areaw_o,Temperature
+o_min,xgb_tree_d3,m062532_o_min_ord18_rk00018,8,0.2607507845147454,18,sd_lr_o,Temperature
+o_min,xgb_tree_d3,m062532_o_min_ord18_rk00018,8,0.2607507845147454,18,mean_temp_areaw_o,Temperature
+o_min,xgb_tree_d3,m062532_o_min_ord18_rk00018,8,0.2607507845147454,18,scpdsi_o,Precipitation/droughts
+o_min,xgb_tree_d3,m062532_o_min_ord18_rk00018,8,0.2607507845147454,18,scpdsi_aw_o,Precipitation/droughts
+o_min,xgb_tree_d3,m062532_o_min_ord18_rk00018,8,0.2607507845147454,18,Pop_basic_drinking-water(%),Soil and water quality
+o_min,xgb_tree_d3,m062532_o_min_ord18_rk00018,8,0.2607507845147454,18,deaths_trans,Disease-related mortality
+o_min,xgb_tree_d3,m062532_o_min_ord18_rk00018,8,0.2607507845147454,18,unemp,Socioeconomic
+o_min,xgb_tree_d3,m062532_o_min_ord18_rk00018,8,0.2607507845147454,18,access_just_est,Democracy
+o_min,xgb_tree_d3,m062532_o_min_ord18_rk00018,8,0.2607507845147454,18,free_relig_est,Democracy
+o_min,xgb_tree_d3,m062532_o_min_ord18_rk00018,8,0.2607507845147454,18,basic_welf_est,Democracy
+o_min,xgb_tree_d3,m062532_o_min_ord18_rk00018,8,0.2607507845147454,18,elect_part_est,Democracy
+o_min,xgb_tree_d3,m062532_o_min_ord18_rk00018,8,0.2607507845147454,18,direct_dem_est,Democracy
+o_min,xgb_tree_d3,m062532_o_min_ord18_rk00018,8,0.2607507845147454,18,migration,Migration
+o_min,xgb_tree_d3,m062532_o_min_ord18_rk00018,8,0.2607507845147454,18,Average share of green area in city/ urban area,Green space access
+o_min,xgb_tree_d3,m072528_o_min_ord28_rk00014,9,0.2602806851567073,28,PM2.5,Air Pollution
+o_min,xgb_tree_d3,m072528_o_min_ord28_rk00014,9,0.2602806851567073,28,Nitrogen oxide (NOx),Air Pollution
+o_min,xgb_tree_d3,m072528_o_min_ord28_rk00014,9,0.2602806851567073,28,Ammonia (NH₃) emissions,Air Pollution
+o_min,xgb_tree_d3,m072528_o_min_ord28_rk00014,9,0.2602806851567073,28,climatedisaster_naffected_o,Climate disasters
+o_min,xgb_tree_d3,m072528_o_min_ord28_rk00014,9,0.2602806851567073,28,mean_anomalies_o,Temperature
+o_min,xgb_tree_d3,m072528_o_min_ord28_rk00014,9,0.2602806851567073,28,mean_anomalies_areaw_o,Temperature
+o_min,xgb_tree_d3,m072528_o_min_ord28_rk00014,9,0.2602806851567073,28,sd_lr_o,Temperature
+o_min,xgb_tree_d3,m072528_o_min_ord28_rk00014,9,0.2602806851567073,28,mean_prec2_areaw_o,Precipitation/droughts
+o_min,xgb_tree_d3,m072528_o_min_ord28_rk00014,9,0.2602806851567073,28,mean_prec2_o,Precipitation/droughts
+o_min,xgb_tree_d3,m072528_o_min_ord28_rk00014,9,0.2602806851567073,28,scpdsi_o,Precipitation/droughts
+o_min,xgb_tree_d3,m072528_o_min_ord28_rk00014,9,0.2602806851567073,28,scpdsi_aw_o,Precipitation/droughts
+o_min,xgb_tree_d3,m072528_o_min_ord28_rk00014,9,0.2602806851567073,28,Pop_basic_drinking-water(%),Soil and water quality
+o_min,xgb_tree_d3,m072528_o_min_ord28_rk00014,9,0.2602806851567073,28,Poisoning_mortality_rate,Soil and water quality
+o_min,xgb_tree_d3,m072528_o_min_ord28_rk00014,9,0.2602806851567073,28,deaths_notrans,Disease-related mortality
+o_min,xgb_tree_d3,m072528_o_min_ord28_rk00014,9,0.2602806851567073,28,deaths_trans,Disease-related mortality
+o_min,xgb_tree_d3,m072528_o_min_ord28_rk00014,9,0.2602806851567073,28,GINI,Socioeconomic
+o_min,xgb_tree_d3,m072528_o_min_ord28_rk00014,9,0.2602806851567073,28,GDP,Socioeconomic
+o_min,xgb_tree_d3,m072528_o_min_ord28_rk00014,9,0.2602806851567073,28,unemp,Socioeconomic
+o_min,xgb_tree_d3,m072528_o_min_ord28_rk00014,9,0.2602806851567073,28,Electricity_demand (kWh),Socioeconomic
+o_min,xgb_tree_d3,m072528_o_min_ord28_rk00014,9,0.2602806851567073,28,inclu_suff_est,Democracy
+o_min,xgb_tree_d3,m072528_o_min_ord28_rk00014,9,0.2602806851567073,28,local_dem_est,Democracy
+o_min,xgb_tree_d3,m072528_o_min_ord28_rk00014,9,0.2602806851567073,28,free_relig_est,Democracy
+o_min,xgb_tree_d3,m072528_o_min_ord28_rk00014,9,0.2602806851567073,28,free_move_est,Democracy
+o_min,xgb_tree_d3,m072528_o_min_ord28_rk00014,9,0.2602806851567073,28,participation_est,Democracy
+o_min,xgb_tree_d3,m072528_o_min_ord28_rk00014,9,0.2602806851567073,28,civic_engage_est,Democracy
+o_min,xgb_tree_d3,m072528_o_min_ord28_rk00014,9,0.2602806851567073,28,elect_part_est,Democracy
+o_min,xgb_tree_d3,m072528_o_min_ord28_rk00014,9,0.2602806851567073,28,direct_dem_est,Democracy
+o_min,xgb_tree_d3,m072528_o_min_ord28_rk00014,9,0.2602806851567073,28,Average share of green area in city/ urban area,Green space access
+o_min,xgb_tree_d3,m048529_o_min_ord4_rk00015,10,0.26026390523969123,4,PM2.5,Air Pollution
+o_min,xgb_tree_d3,m048529_o_min_ord4_rk00015,10,0.26026390523969123,4,Black carbon (BC) emissions,Air Pollution
+o_min,xgb_tree_d3,m048529_o_min_ord4_rk00015,10,0.26026390523969123,4,mean_temp_o,Temperature
+o_min,xgb_tree_d3,m048529_o_min_ord4_rk00015,10,0.26026390523969123,4,Electricity_demand (kWh),Socioeconomic
+o_min,xgb_tree_d3,m048517_o_min_ord4_rk00003,11,0.2601147951983991,4,PM2.5,Air Pollution
+o_min,xgb_tree_d3,m048517_o_min_ord4_rk00003,11,0.2601147951983991,4,Carbon monoxide (CO) emissions,Air Pollution
+o_min,xgb_tree_d3,m048517_o_min_ord4_rk00003,11,0.2601147951983991,4,mean_temp_o,Temperature
+o_min,xgb_tree_d3,m048517_o_min_ord4_rk00003,11,0.2601147951983991,4,Electricity_demand (kWh),Socioeconomic
+o_min,xgb_tree_d3,m048520_o_min_ord4_rk00006,12,0.25972458449144864,4,PM2.5,Air Pollution
+o_min,xgb_tree_d3,m048520_o_min_ord4_rk00006,12,0.25972458449144864,4,Carbon monoxide (CO) emissions,Air Pollution
+o_min,xgb_tree_d3,m048520_o_min_ord4_rk00006,12,0.25972458449144864,4,mean_temp_areaw_o,Temperature
+o_min,xgb_tree_d3,m048520_o_min_ord4_rk00006,12,0.25972458449144864,4,Electricity_demand (kWh),Socioeconomic
+o_min,xgb_tree_d3,m063532_o_min_ord19_rk00018,13,0.2596405313595175,19,Sulphur dioxide (SO₂) emissions,Air Pollution
+o_min,xgb_tree_d3,m063532_o_min_ord19_rk00018,13,0.2596405313595175,19,Carbon monoxide (CO) emissions,Air Pollution
+o_min,xgb_tree_d3,m063532_o_min_ord19_rk00018,13,0.2596405313595175,19,maxgtemp_o,Temperature
+o_min,xgb_tree_d3,m063532_o_min_ord19_rk00018,13,0.2596405313595175,19,mean_anomalies_areaw_o,Temperature
+o_min,xgb_tree_d3,m063532_o_min_ord19_rk00018,13,0.2596405313595175,19,sd_lr_o,Temperature
+o_min,xgb_tree_d3,m063532_o_min_ord19_rk00018,13,0.2596405313595175,19,mean_temp_areaw_o,Temperature
+o_min,xgb_tree_d3,m063532_o_min_ord19_rk00018,13,0.2596405313595175,19,scpdsi_o,Precipitation/droughts
+o_min,xgb_tree_d3,m063532_o_min_ord19_rk00018,13,0.2596405313595175,19,scpdsi_aw_o,Precipitation/droughts
+o_min,xgb_tree_d3,m063532_o_min_ord19_rk00018,13,0.2596405313595175,19,Pop_basic_drinking-water(%),Soil and water quality
+o_min,xgb_tree_d3,m063532_o_min_ord19_rk00018,13,0.2596405313595175,19,deaths_trans,Disease-related mortality
+o_min,xgb_tree_d3,m063532_o_min_ord19_rk00018,13,0.2596405313595175,19,unemp,Socioeconomic
+o_min,xgb_tree_d3,m063532_o_min_ord19_rk00018,13,0.2596405313595175,19,access_just_est,Democracy
+o_min,xgb_tree_d3,m063532_o_min_ord19_rk00018,13,0.2596405313595175,19,free_relig_est,Democracy
+o_min,xgb_tree_d3,m063532_o_min_ord19_rk00018,13,0.2596405313595175,19,basic_welf_est,Democracy
+o_min,xgb_tree_d3,m063532_o_min_ord19_rk00018,13,0.2596405313595175,19,civic_engage_est,Democracy
+o_min,xgb_tree_d3,m063532_o_min_ord19_rk00018,13,0.2596405313595175,19,elect_part_est,Democracy
+o_min,xgb_tree_d3,m063532_o_min_ord19_rk00018,13,0.2596405313595175,19,direct_dem_est,Democracy
+o_min,xgb_tree_d3,m063532_o_min_ord19_rk00018,13,0.2596405313595175,19,migration,Migration
+o_min,xgb_tree_d3,m063532_o_min_ord19_rk00018,13,0.2596405313595175,19,Average share of green area in city/ urban area,Green space access
+o_min,xgb_tree_d3,m066520_o_min_ord22_rk00006,14,0.25954191091678624,22,Nitrogen oxide (NOx),Air Pollution
+o_min,xgb_tree_d3,m066520_o_min_ord22_rk00006,14,0.25954191091678624,22,Sulphur dioxide (SO₂) emissions,Air Pollution
+o_min,xgb_tree_d3,m066520_o_min_ord22_rk00006,14,0.25954191091678624,22,agri_emp_o,Soil and water quality
+o_min,xgb_tree_d3,m066520_o_min_ord22_rk00006,14,0.25954191091678624,22,maxgtemp_o,Temperature
+o_min,xgb_tree_d3,m066520_o_min_ord22_rk00006,14,0.25954191091678624,22,mean_anomalies_o,Temperature
+o_min,xgb_tree_d3,m066520_o_min_ord22_rk00006,14,0.25954191091678624,22,mean_anomalies_areaw_o,Temperature
+o_min,xgb_tree_d3,m066520_o_min_ord22_rk00006,14,0.25954191091678624,22,sd_lr_o,Temperature
+o_min,xgb_tree_d3,m066520_o_min_ord22_rk00006,14,0.25954191091678624,22,mean_temp_areaw_o,Temperature
+o_min,xgb_tree_d3,m066520_o_min_ord22_rk00006,14,0.25954191091678624,22,scpdsi_o,Precipitation/droughts
+o_min,xgb_tree_d3,m066520_o_min_ord22_rk00006,14,0.25954191091678624,22,scpdsi_aw_o,Precipitation/droughts
+o_min,xgb_tree_d3,m066520_o_min_ord22_rk00006,14,0.25954191091678624,22,Pop_basic_drinking-water(%),Soil and water quality
+o_min,xgb_tree_d3,m066520_o_min_ord22_rk00006,14,0.25954191091678624,22,Poisoning_mortality_rate,Soil and water quality
+o_min,xgb_tree_d3,m066520_o_min_ord22_rk00006,14,0.25954191091678624,22,deaths_trans,Disease-related mortality
+o_min,xgb_tree_d3,m066520_o_min_ord22_rk00006,14,0.25954191091678624,22,GINI,Socioeconomic
+o_min,xgb_tree_d3,m066520_o_min_ord22_rk00006,14,0.25954191091678624,22,unemp,Socioeconomic
+o_min,xgb_tree_d3,m066520_o_min_ord22_rk00006,14,0.25954191091678624,22,basic_welf_est,Democracy
+o_min,xgb_tree_d3,m066520_o_min_ord22_rk00006,14,0.25954191091678624,22,soc_grp_equal_est,Democracy
+o_min,xgb_tree_d3,m066520_o_min_ord22_rk00006,14,0.25954191091678624,22,jud_ind_est,Democracy
+o_min,xgb_tree_d3,m066520_o_min_ord22_rk00006,14,0.25954191091678624,22,civic_engage_est,Democracy
+o_min,xgb_tree_d3,m066520_o_min_ord22_rk00006,14,0.25954191091678624,22,elect_part_est,Democracy
+o_min,xgb_tree_d3,m066520_o_min_ord22_rk00006,14,0.25954191091678624,22,direct_dem_est,Democracy
+o_min,xgb_tree_d3,m066520_o_min_ord22_rk00006,14,0.25954191091678624,22,Average share of green area in city/ urban area,Green space access
+o_min,xgb_tree_d3,m048521_o_min_ord4_rk00007,15,0.25949429177895467,4,PM2.5,Air Pollution
+o_min,xgb_tree_d3,m048521_o_min_ord4_rk00007,15,0.25949429177895467,4,Sulphur dioxide (SO₂) emissions,Air Pollution
+o_min,xgb_tree_d3,m048521_o_min_ord4_rk00007,15,0.25949429177895467,4,mean_temp_areaw_o,Temperature
+o_min,xgb_tree_d3,m048521_o_min_ord4_rk00007,15,0.25949429177895467,4,Electricity_demand (kWh),Socioeconomic
+o_min,xgb_tree_d3,m047517_o_min_ord3_rk00003,16,0.25934016313257935,3,PM2.5,Air Pollution
+o_min,xgb_tree_d3,m047517_o_min_ord3_rk00003,16,0.25934016313257935,3,mean_temp_areaw_o,Temperature
+o_min,xgb_tree_d3,m047517_o_min_ord3_rk00003,16,0.25934016313257935,3,Electricity_demand (kWh),Socioeconomic
+o_min,xgb_tree_d3,m060531_o_min_ord16_rk00017,17,0.2592758894282102,16,Nitrogen oxide (NOx),Air Pollution
+o_min,xgb_tree_d3,m060531_o_min_ord16_rk00017,17,0.2592758894282102,16,Sulphur dioxide (SO₂) emissions,Air Pollution
+o_min,xgb_tree_d3,m060531_o_min_ord16_rk00017,17,0.2592758894282102,16,agri_emp_o,Soil and water quality
+o_min,xgb_tree_d3,m060531_o_min_ord16_rk00017,17,0.2592758894282102,16,mean_anomalies_o,Temperature
+o_min,xgb_tree_d3,m060531_o_min_ord16_rk00017,17,0.2592758894282102,16,mean_anomalies_areaw_o,Temperature
+o_min,xgb_tree_d3,m060531_o_min_ord16_rk00017,17,0.2592758894282102,16,mean_prec2_areaw_o,Precipitation/droughts
+o_min,xgb_tree_d3,m060531_o_min_ord16_rk00017,17,0.2592758894282102,16,mean_prec2_o,Precipitation/droughts
+o_min,xgb_tree_d3,m060531_o_min_ord16_rk00017,17,0.2592758894282102,16,mean_temp_areaw_o,Temperature
+o_min,xgb_tree_d3,m060531_o_min_ord16_rk00017,17,0.2592758894282102,16,mean_temp_o,Temperature
+o_min,xgb_tree_d3,m060531_o_min_ord16_rk00017,17,0.2592758894282102,16,Pop_basic_drinking-water(%),Soil and water quality
+o_min,xgb_tree_d3,m060531_o_min_ord16_rk00017,17,0.2592758894282102,16,unemp,Socioeconomic
+o_min,xgb_tree_d3,m060531_o_min_ord16_rk00017,17,0.2592758894282102,16,rights_est,Democracy
+o_min,xgb_tree_d3,m060531_o_min_ord16_rk00017,17,0.2592758894282102,16,free_relig_est,Democracy
+o_min,xgb_tree_d3,m060531_o_min_ord16_rk00017,17,0.2592758894282102,16,civic_engage_est,Democracy
+o_min,xgb_tree_d3,m060531_o_min_ord16_rk00017,17,0.2592758894282102,16,elect_part_est,Democracy
+o_min,xgb_tree_d3,m060531_o_min_ord16_rk00017,17,0.2592758894282102,16,migration,Migration
+o_min,xgb_tree_d3,m063525_o_min_ord19_rk00011,18,0.2592146858694727,19,Nitrogen oxide (NOx),Air Pollution
+o_min,xgb_tree_d3,m063525_o_min_ord19_rk00011,18,0.2592146858694727,19,Sulphur dioxide (SO₂) emissions,Air Pollution
+o_min,xgb_tree_d3,m063525_o_min_ord19_rk00011,18,0.2592146858694727,19,agri_emp_o,Soil and water quality
+o_min,xgb_tree_d3,m063525_o_min_ord19_rk00011,18,0.2592146858694727,19,maxgtemp_o,Temperature
+o_min,xgb_tree_d3,m063525_o_min_ord19_rk00011,18,0.2592146858694727,19,mean_anomalies_o,Temperature
+o_min,xgb_tree_d3,m063525_o_min_ord19_rk00011,18,0.2592146858694727,19,sd_lr_o,Temperature
+o_min,xgb_tree_d3,m063525_o_min_ord19_rk00011,18,0.2592146858694727,19,mean_temp_areaw_o,Temperature
+o_min,xgb_tree_d3,m063525_o_min_ord19_rk00011,18,0.2592146858694727,19,scpdsi_o,Precipitation/droughts
+o_min,xgb_tree_d3,m063525_o_min_ord19_rk00011,18,0.2592146858694727,19,scpdsi_aw_o,Precipitation/droughts
+o_min,xgb_tree_d3,m063525_o_min_ord19_rk00011,18,0.2592146858694727,19,Pop_basic_drinking-water(%),Soil and water quality
+o_min,xgb_tree_d3,m063525_o_min_ord19_rk00011,18,0.2592146858694727,19,deaths_trans,Disease-related mortality
+o_min,xgb_tree_d3,m063525_o_min_ord19_rk00011,18,0.2592146858694727,19,unemp,Socioeconomic
+o_min,xgb_tree_d3,m063525_o_min_ord19_rk00011,18,0.2592146858694727,19,basic_welf_est,Democracy
+o_min,xgb_tree_d3,m063525_o_min_ord19_rk00011,18,0.2592146858694727,19,soc_grp_equal_est,Democracy
+o_min,xgb_tree_d3,m063525_o_min_ord19_rk00011,18,0.2592146858694727,19,jud_ind_est,Democracy
+o_min,xgb_tree_d3,m063525_o_min_ord19_rk00011,18,0.2592146858694727,19,civic_engage_est,Democracy
+o_min,xgb_tree_d3,m063525_o_min_ord19_rk00011,18,0.2592146858694727,19,elect_part_est,Democracy
+o_min,xgb_tree_d3,m063525_o_min_ord19_rk00011,18,0.2592146858694727,19,direct_dem_est,Democracy
+o_min,xgb_tree_d3,m063525_o_min_ord19_rk00011,18,0.2592146858694727,19,Average share of green area in city/ urban area,Green space access
+o_min,xgb_tree_d3,m052530_o_min_ord8_rk00016,19,0.25917453912348154,8,PM2.5,Air Pollution
+o_min,xgb_tree_d3,m052530_o_min_ord8_rk00016,19,0.25917453912348154,8,Carbon monoxide (CO) emissions,Air Pollution
+o_min,xgb_tree_d3,m052530_o_min_ord8_rk00016,19,0.25917453912348154,8,Ammonia (NH₃) emissions,Air Pollution
+o_min,xgb_tree_d3,m052530_o_min_ord8_rk00016,19,0.25917453912348154,8,mean_anomalies_o,Temperature
+o_min,xgb_tree_d3,m052530_o_min_ord8_rk00016,19,0.25917453912348154,8,mean_prec2_areaw_o,Precipitation/droughts
+o_min,xgb_tree_d3,m052530_o_min_ord8_rk00016,19,0.25917453912348154,8,mean_temp_areaw_o,Temperature
+o_min,xgb_tree_d3,m052530_o_min_ord8_rk00016,19,0.25917453912348154,8,Electricity_demand (kWh),Socioeconomic
+o_min,xgb_tree_d3,m052530_o_min_ord8_rk00016,19,0.25917453912348154,8,elect_part_est,Democracy
+o_min,xgb_tree_d3,m048518_o_min_ord4_rk00004,20,0.2591473792610599,4,PM2.5,Air Pollution
+o_min,xgb_tree_d3,m048518_o_min_ord4_rk00004,20,0.2591473792610599,4,Nitrogen oxide (NOx),Air Pollution
+o_min,xgb_tree_d3,m048518_o_min_ord4_rk00004,20,0.2591473792610599,4,mean_temp_o,Temperature
+o_min,xgb_tree_d3,m048518_o_min_ord4_rk00004,20,0.2591473792610599,4,Electricity_demand (kWh),Socioeconomic
+o_max,xgb_tree_d3,m026012_o_max_ord29_rk00013,1,0.27055189615611996,29,PM2.5,Air Pollution
+o_max,xgb_tree_d3,m026012_o_max_ord29_rk00013,1,0.27055189615611996,29,agri_emp_o,Soil and water quality
+o_max,xgb_tree_d3,m026012_o_max_ord29_rk00013,1,0.27055189615611996,29,GINI,Socioeconomic
+o_max,xgb_tree_d3,m026012_o_max_ord29_rk00013,1,0.27055189615611996,29,HDI,Socioeconomic
+o_max,xgb_tree_d3,m026012_o_max_ord29_rk00013,1,0.27055189615611996,29,GII,Socioeconomic
+o_max,xgb_tree_d3,m026012_o_max_ord29_rk00013,1,0.27055189615611996,29,GDP,Socioeconomic
+o_max,xgb_tree_d3,m026012_o_max_ord29_rk00013,1,0.27055189615611996,29,representation_est,Democracy
+o_max,xgb_tree_d3,m026012_o_max_ord29_rk00013,1,0.27055189615611996,29,cred_elect_est,Democracy
+o_max,xgb_tree_d3,m026012_o_max_ord29_rk00013,1,0.27055189615611996,29,free_parties_est,Democracy
+o_max,xgb_tree_d3,m026012_o_max_ord29_rk00013,1,0.27055189615611996,29,effect_parl_est,Democracy
+o_max,xgb_tree_d3,m026012_o_max_ord29_rk00013,1,0.27055189615611996,29,local_dem_est,Democracy
+o_max,xgb_tree_d3,m026012_o_max_ord29_rk00013,1,0.27055189615611996,29,rights_est,Democracy
+o_max,xgb_tree_d3,m026012_o_max_ord29_rk00013,1,0.27055189615611996,29,access_just_est,Democracy
+o_max,xgb_tree_d3,m026012_o_max_ord29_rk00013,1,0.27055189615611996,29,civil_lib_est,Democracy
+o_max,xgb_tree_d3,m026012_o_max_ord29_rk00013,1,0.27055189615611996,29,free_express_est,Democracy
+o_max,xgb_tree_d3,m026012_o_max_ord29_rk00013,1,0.27055189615611996,29,free_press_est,Democracy
+o_max,xgb_tree_d3,m026012_o_max_ord29_rk00013,1,0.27055189615611996,29,free_assoc_assem_est,Democracy
+o_max,xgb_tree_d3,m026012_o_max_ord29_rk00013,1,0.27055189615611996,29,pol_equal_est,Democracy
+o_max,xgb_tree_d3,m026012_o_max_ord29_rk00013,1,0.27055189615611996,29,soc_grp_equal_est,Democracy
+o_max,xgb_tree_d3,m026012_o_max_ord29_rk00013,1,0.27055189615611996,29,econ_equal_est,Democracy
+o_max,xgb_tree_d3,m026012_o_max_ord29_rk00013,1,0.27055189615611996,29,gender_equal_est,Democracy
+o_max,xgb_tree_d3,m026012_o_max_ord29_rk00013,1,0.27055189615611996,29,rule_law_est,Democracy
+o_max,xgb_tree_d3,m026012_o_max_ord29_rk00013,1,0.27055189615611996,29,jud_ind_est,Democracy
+o_max,xgb_tree_d3,m026012_o_max_ord29_rk00013,1,0.27055189615611996,29,abs_corrupt_est,Democracy
+o_max,xgb_tree_d3,m026012_o_max_ord29_rk00013,1,0.27055189615611996,29,predict_enf_est,Democracy
+o_max,xgb_tree_d3,m026012_o_max_ord29_rk00013,1,0.27055189615611996,29,pers_integ_sec_est,Democracy
+o_max,xgb_tree_d3,m026012_o_max_ord29_rk00013,1,0.27055189615611996,29,participation_est,Democracy
+o_max,xgb_tree_d3,m026012_o_max_ord29_rk00013,1,0.27055189615611996,29,civil_soc_est,Democracy
+o_max,xgb_tree_d3,m026012_o_max_ord29_rk00013,1,0.27055189615611996,29,migration,Migration
+o_max,xgb_tree_d3,m025008_o_max_ord28_rk00009,2,0.2668202796255392,28,PM2.5,Air Pollution
+o_max,xgb_tree_d3,m025008_o_max_ord28_rk00009,2,0.2668202796255392,28,agri_emp_o,Soil and water quality
+o_max,xgb_tree_d3,m025008_o_max_ord28_rk00009,2,0.2668202796255392,28,HDI,Socioeconomic
+o_max,xgb_tree_d3,m025008_o_max_ord28_rk00009,2,0.2668202796255392,28,GII,Socioeconomic
+o_max,xgb_tree_d3,m025008_o_max_ord28_rk00009,2,0.2668202796255392,28,GDP,Socioeconomic
+o_max,xgb_tree_d3,m025008_o_max_ord28_rk00009,2,0.2668202796255392,28,representation_est,Democracy
+o_max,xgb_tree_d3,m025008_o_max_ord28_rk00009,2,0.2668202796255392,28,cred_elect_est,Democracy
+o_max,xgb_tree_d3,m025008_o_max_ord28_rk00009,2,0.2668202796255392,28,effect_parl_est,Democracy
+o_max,xgb_tree_d3,m025008_o_max_ord28_rk00009,2,0.2668202796255392,28,local_dem_est,Democracy
+o_max,xgb_tree_d3,m025008_o_max_ord28_rk00009,2,0.2668202796255392,28,rights_est,Democracy
+o_max,xgb_tree_d3,m025008_o_max_ord28_rk00009,2,0.2668202796255392,28,access_just_est,Democracy
+o_max,xgb_tree_d3,m025008_o_max_ord28_rk00009,2,0.2668202796255392,28,civil_lib_est,Democracy
+o_max,xgb_tree_d3,m025008_o_max_ord28_rk00009,2,0.2668202796255392,28,free_express_est,Democracy
+o_max,xgb_tree_d3,m025008_o_max_ord28_rk00009,2,0.2668202796255392,28,free_press_est,Democracy
+o_max,xgb_tree_d3,m025008_o_max_ord28_rk00009,2,0.2668202796255392,28,free_assoc_assem_est,Democracy
+o_max,xgb_tree_d3,m025008_o_max_ord28_rk00009,2,0.2668202796255392,28,pol_equal_est,Democracy
+o_max,xgb_tree_d3,m025008_o_max_ord28_rk00009,2,0.2668202796255392,28,soc_grp_equal_est,Democracy
+o_max,xgb_tree_d3,m025008_o_max_ord28_rk00009,2,0.2668202796255392,28,econ_equal_est,Democracy
+o_max,xgb_tree_d3,m025008_o_max_ord28_rk00009,2,0.2668202796255392,28,gender_equal_est,Democracy
+o_max,xgb_tree_d3,m025008_o_max_ord28_rk00009,2,0.2668202796255392,28,rule_law_est,Democracy
+o_max,xgb_tree_d3,m025008_o_max_ord28_rk00009,2,0.2668202796255392,28,jud_ind_est,Democracy
+o_max,xgb_tree_d3,m025008_o_max_ord28_rk00009,2,0.2668202796255392,28,abs_corrupt_est,Democracy
+o_max,xgb_tree_d3,m025008_o_max_ord28_rk00009,2,0.2668202796255392,28,predict_enf_est,Democracy
+o_max,xgb_tree_d3,m025008_o_max_ord28_rk00009,2,0.2668202796255392,28,pers_integ_sec_est,Democracy
+o_max,xgb_tree_d3,m025008_o_max_ord28_rk00009,2,0.2668202796255392,28,participation_est,Democracy
+o_max,xgb_tree_d3,m025008_o_max_ord28_rk00009,2,0.2668202796255392,28,civil_soc_est,Democracy
+o_max,xgb_tree_d3,m025008_o_max_ord28_rk00009,2,0.2668202796255392,28,migration,Migration
+o_max,xgb_tree_d3,m025008_o_max_ord28_rk00009,2,0.2668202796255392,28,Green area per capita (m2/person),Green space access
+o_max,xgb_tree_d3,m026005_o_max_ord29_rk00006,3,0.26454609974408483,29,PM2.5,Air Pollution
+o_max,xgb_tree_d3,m026005_o_max_ord29_rk00006,3,0.26454609974408483,29,agri_emp_o,Soil and water quality
+o_max,xgb_tree_d3,m026005_o_max_ord29_rk00006,3,0.26454609974408483,29,HDI,Socioeconomic
+o_max,xgb_tree_d3,m026005_o_max_ord29_rk00006,3,0.26454609974408483,29,GII,Socioeconomic
+o_max,xgb_tree_d3,m026005_o_max_ord29_rk00006,3,0.26454609974408483,29,GDP,Socioeconomic
+o_max,xgb_tree_d3,m026005_o_max_ord29_rk00006,3,0.26454609974408483,29,representation_est,Democracy
+o_max,xgb_tree_d3,m026005_o_max_ord29_rk00006,3,0.26454609974408483,29,cred_elect_est,Democracy
+o_max,xgb_tree_d3,m026005_o_max_ord29_rk00006,3,0.26454609974408483,29,inclu_suff_est,Democracy
+o_max,xgb_tree_d3,m026005_o_max_ord29_rk00006,3,0.26454609974408483,29,free_parties_est,Democracy
+o_max,xgb_tree_d3,m026005_o_max_ord29_rk00006,3,0.26454609974408483,29,effect_parl_est,Democracy
+o_max,xgb_tree_d3,m026005_o_max_ord29_rk00006,3,0.26454609974408483,29,local_dem_est,Democracy
+o_max,xgb_tree_d3,m026005_o_max_ord29_rk00006,3,0.26454609974408483,29,rights_est,Democracy
+o_max,xgb_tree_d3,m026005_o_max_ord29_rk00006,3,0.26454609974408483,29,access_just_est,Democracy
+o_max,xgb_tree_d3,m026005_o_max_ord29_rk00006,3,0.26454609974408483,29,civil_lib_est,Democracy
+o_max,xgb_tree_d3,m026005_o_max_ord29_rk00006,3,0.26454609974408483,29,free_express_est,Democracy
+o_max,xgb_tree_d3,m026005_o_max_ord29_rk00006,3,0.26454609974408483,29,free_press_est,Democracy
+o_max,xgb_tree_d3,m026005_o_max_ord29_rk00006,3,0.26454609974408483,29,free_assoc_assem_est,Democracy
+o_max,xgb_tree_d3,m026005_o_max_ord29_rk00006,3,0.26454609974408483,29,pol_equal_est,Democracy
+o_max,xgb_tree_d3,m026005_o_max_ord29_rk00006,3,0.26454609974408483,29,soc_grp_equal_est,Democracy
+o_max,xgb_tree_d3,m026005_o_max_ord29_rk00006,3,0.26454609974408483,29,econ_equal_est,Democracy
+o_max,xgb_tree_d3,m026005_o_max_ord29_rk00006,3,0.26454609974408483,29,gender_equal_est,Democracy
+o_max,xgb_tree_d3,m026005_o_max_ord29_rk00006,3,0.26454609974408483,29,rule_law_est,Democracy
+o_max,xgb_tree_d3,m026005_o_max_ord29_rk00006,3,0.26454609974408483,29,jud_ind_est,Democracy
+o_max,xgb_tree_d3,m026005_o_max_ord29_rk00006,3,0.26454609974408483,29,abs_corrupt_est,Democracy
+o_max,xgb_tree_d3,m026005_o_max_ord29_rk00006,3,0.26454609974408483,29,predict_enf_est,Democracy
+o_max,xgb_tree_d3,m026005_o_max_ord29_rk00006,3,0.26454609974408483,29,pers_integ_sec_est,Democracy
+o_max,xgb_tree_d3,m026005_o_max_ord29_rk00006,3,0.26454609974408483,29,participation_est,Democracy
+o_max,xgb_tree_d3,m026005_o_max_ord29_rk00006,3,0.26454609974408483,29,civil_soc_est,Democracy
+o_max,xgb_tree_d3,m026005_o_max_ord29_rk00006,3,0.26454609974408483,29,migration,Migration
+o_max,xgb_tree_d3,m024001_o_max_ord27_rk00002,4,0.2642733064973639,27,PM2.5,Air Pollution
+o_max,xgb_tree_d3,m024001_o_max_ord27_rk00002,4,0.2642733064973639,27,agri_emp_o,Soil and water quality
+o_max,xgb_tree_d3,m024001_o_max_ord27_rk00002,4,0.2642733064973639,27,HDI,Socioeconomic
+o_max,xgb_tree_d3,m024001_o_max_ord27_rk00002,4,0.2642733064973639,27,GII,Socioeconomic
+o_max,xgb_tree_d3,m024001_o_max_ord27_rk00002,4,0.2642733064973639,27,GDP,Socioeconomic
+o_max,xgb_tree_d3,m024001_o_max_ord27_rk00002,4,0.2642733064973639,27,representation_est,Democracy
+o_max,xgb_tree_d3,m024001_o_max_ord27_rk00002,4,0.2642733064973639,27,cred_elect_est,Democracy
+o_max,xgb_tree_d3,m024001_o_max_ord27_rk00002,4,0.2642733064973639,27,effect_parl_est,Democracy
+o_max,xgb_tree_d3,m024001_o_max_ord27_rk00002,4,0.2642733064973639,27,local_dem_est,Democracy
+o_max,xgb_tree_d3,m024001_o_max_ord27_rk00002,4,0.2642733064973639,27,rights_est,Democracy
+o_max,xgb_tree_d3,m024001_o_max_ord27_rk00002,4,0.2642733064973639,27,access_just_est,Democracy
+o_max,xgb_tree_d3,m024001_o_max_ord27_rk00002,4,0.2642733064973639,27,civil_lib_est,Democracy
+o_max,xgb_tree_d3,m024001_o_max_ord27_rk00002,4,0.2642733064973639,27,free_express_est,Democracy
+o_max,xgb_tree_d3,m024001_o_max_ord27_rk00002,4,0.2642733064973639,27,free_press_est,Democracy
+o_max,xgb_tree_d3,m024001_o_max_ord27_rk00002,4,0.2642733064973639,27,free_assoc_assem_est,Democracy
+o_max,xgb_tree_d3,m024001_o_max_ord27_rk00002,4,0.2642733064973639,27,pol_equal_est,Democracy
+o_max,xgb_tree_d3,m024001_o_max_ord27_rk00002,4,0.2642733064973639,27,soc_grp_equal_est,Democracy
+o_max,xgb_tree_d3,m024001_o_max_ord27_rk00002,4,0.2642733064973639,27,econ_equal_est,Democracy
+o_max,xgb_tree_d3,m024001_o_max_ord27_rk00002,4,0.2642733064973639,27,gender_equal_est,Democracy
+o_max,xgb_tree_d3,m024001_o_max_ord27_rk00002,4,0.2642733064973639,27,rule_law_est,Democracy
+o_max,xgb_tree_d3,m024001_o_max_ord27_rk00002,4,0.2642733064973639,27,jud_ind_est,Democracy
+o_max,xgb_tree_d3,m024001_o_max_ord27_rk00002,4,0.2642733064973639,27,abs_corrupt_est,Democracy
+o_max,xgb_tree_d3,m024001_o_max_ord27_rk00002,4,0.2642733064973639,27,predict_enf_est,Democracy
+o_max,xgb_tree_d3,m024001_o_max_ord27_rk00002,4,0.2642733064973639,27,pers_integ_sec_est,Democracy
+o_max,xgb_tree_d3,m024001_o_max_ord27_rk00002,4,0.2642733064973639,27,participation_est,Democracy
+o_max,xgb_tree_d3,m024001_o_max_ord27_rk00002,4,0.2642733064973639,27,civil_soc_est,Democracy
+o_max,xgb_tree_d3,m024001_o_max_ord27_rk00002,4,0.2642733064973639,27,migration,Migration
+o_max,xgb_tree_d3,m026019_o_max_ord29_rk00020,5,0.2631815113225894,29,PM2.5,Air Pollution
+o_max,xgb_tree_d3,m026019_o_max_ord29_rk00020,5,0.2631815113225894,29,agri_emp_o,Soil and water quality
+o_max,xgb_tree_d3,m026019_o_max_ord29_rk00020,5,0.2631815113225894,29,HDI,Socioeconomic
+o_max,xgb_tree_d3,m026019_o_max_ord29_rk00020,5,0.2631815113225894,29,GII,Socioeconomic
+o_max,xgb_tree_d3,m026019_o_max_ord29_rk00020,5,0.2631815113225894,29,GDP,Socioeconomic
+o_max,xgb_tree_d3,m026019_o_max_ord29_rk00020,5,0.2631815113225894,29,representation_est,Democracy
+o_max,xgb_tree_d3,m026019_o_max_ord29_rk00020,5,0.2631815113225894,29,cred_elect_est,Democracy
+o_max,xgb_tree_d3,m026019_o_max_ord29_rk00020,5,0.2631815113225894,29,effect_parl_est,Democracy
+o_max,xgb_tree_d3,m026019_o_max_ord29_rk00020,5,0.2631815113225894,29,local_dem_est,Democracy
+o_max,xgb_tree_d3,m026019_o_max_ord29_rk00020,5,0.2631815113225894,29,rights_est,Democracy
+o_max,xgb_tree_d3,m026019_o_max_ord29_rk00020,5,0.2631815113225894,29,access_just_est,Democracy
+o_max,xgb_tree_d3,m026019_o_max_ord29_rk00020,5,0.2631815113225894,29,civil_lib_est,Democracy
+o_max,xgb_tree_d3,m026019_o_max_ord29_rk00020,5,0.2631815113225894,29,free_express_est,Democracy
+o_max,xgb_tree_d3,m026019_o_max_ord29_rk00020,5,0.2631815113225894,29,free_press_est,Democracy
+o_max,xgb_tree_d3,m026019_o_max_ord29_rk00020,5,0.2631815113225894,29,free_assoc_assem_est,Democracy
+o_max,xgb_tree_d3,m026019_o_max_ord29_rk00020,5,0.2631815113225894,29,basic_welf_est,Democracy
+o_max,xgb_tree_d3,m026019_o_max_ord29_rk00020,5,0.2631815113225894,29,pol_equal_est,Democracy
+o_max,xgb_tree_d3,m026019_o_max_ord29_rk00020,5,0.2631815113225894,29,soc_grp_equal_est,Democracy
+o_max,xgb_tree_d3,m026019_o_max_ord29_rk00020,5,0.2631815113225894,29,econ_equal_est,Democracy
+o_max,xgb_tree_d3,m026019_o_max_ord29_rk00020,5,0.2631815113225894,29,gender_equal_est,Democracy
+o_max,xgb_tree_d3,m026019_o_max_ord29_rk00020,5,0.2631815113225894,29,rule_law_est,Democracy
+o_max,xgb_tree_d3,m026019_o_max_ord29_rk00020,5,0.2631815113225894,29,jud_ind_est,Democracy
+o_max,xgb_tree_d3,m026019_o_max_ord29_rk00020,5,0.2631815113225894,29,abs_corrupt_est,Democracy
+o_max,xgb_tree_d3,m026019_o_max_ord29_rk00020,5,0.2631815113225894,29,predict_enf_est,Democracy
+o_max,xgb_tree_d3,m026019_o_max_ord29_rk00020,5,0.2631815113225894,29,pers_integ_sec_est,Democracy
+o_max,xgb_tree_d3,m026019_o_max_ord29_rk00020,5,0.2631815113225894,29,participation_est,Democracy
+o_max,xgb_tree_d3,m026019_o_max_ord29_rk00020,5,0.2631815113225894,29,civil_soc_est,Democracy
+o_max,xgb_tree_d3,m026019_o_max_ord29_rk00020,5,0.2631815113225894,29,migration,Migration
+o_max,xgb_tree_d3,m026019_o_max_ord29_rk00020,5,0.2631815113225894,29,Green area per capita (m2/person),Green space access
+o_max,xgb_tree_d3,m020013_o_max_ord23_rk00014,6,0.2627362077025093,23,PM2.5,Air Pollution
+o_max,xgb_tree_d3,m020013_o_max_ord23_rk00014,6,0.2627362077025093,23,agri_emp_o,Soil and water quality
+o_max,xgb_tree_d3,m020013_o_max_ord23_rk00014,6,0.2627362077025093,23,representation_est,Democracy
+o_max,xgb_tree_d3,m020013_o_max_ord23_rk00014,6,0.2627362077025093,23,cred_elect_est,Democracy
+o_max,xgb_tree_d3,m020013_o_max_ord23_rk00014,6,0.2627362077025093,23,effect_parl_est,Democracy
+o_max,xgb_tree_d3,m020013_o_max_ord23_rk00014,6,0.2627362077025093,23,local_dem_est,Democracy
+o_max,xgb_tree_d3,m020013_o_max_ord23_rk00014,6,0.2627362077025093,23,rights_est,Democracy
+o_max,xgb_tree_d3,m020013_o_max_ord23_rk00014,6,0.2627362077025093,23,access_just_est,Democracy
+o_max,xgb_tree_d3,m020013_o_max_ord23_rk00014,6,0.2627362077025093,23,civil_lib_est,Democracy
+o_max,xgb_tree_d3,m020013_o_max_ord23_rk00014,6,0.2627362077025093,23,free_express_est,Democracy
+o_max,xgb_tree_d3,m020013_o_max_ord23_rk00014,6,0.2627362077025093,23,free_press_est,Democracy
+o_max,xgb_tree_d3,m020013_o_max_ord23_rk00014,6,0.2627362077025093,23,free_assoc_assem_est,Democracy
+o_max,xgb_tree_d3,m020013_o_max_ord23_rk00014,6,0.2627362077025093,23,pol_equal_est,Democracy
+o_max,xgb_tree_d3,m020013_o_max_ord23_rk00014,6,0.2627362077025093,23,soc_grp_equal_est,Democracy
+o_max,xgb_tree_d3,m020013_o_max_ord23_rk00014,6,0.2627362077025093,23,gender_equal_est,Democracy
+o_max,xgb_tree_d3,m020013_o_max_ord23_rk00014,6,0.2627362077025093,23,rule_law_est,Democracy
+o_max,xgb_tree_d3,m020013_o_max_ord23_rk00014,6,0.2627362077025093,23,jud_ind_est,Democracy
+o_max,xgb_tree_d3,m020013_o_max_ord23_rk00014,6,0.2627362077025093,23,abs_corrupt_est,Democracy
+o_max,xgb_tree_d3,m020013_o_max_ord23_rk00014,6,0.2627362077025093,23,predict_enf_est,Democracy
+o_max,xgb_tree_d3,m020013_o_max_ord23_rk00014,6,0.2627362077025093,23,pers_integ_sec_est,Democracy
+o_max,xgb_tree_d3,m020013_o_max_ord23_rk00014,6,0.2627362077025093,23,participation_est,Democracy
+o_max,xgb_tree_d3,m020013_o_max_ord23_rk00014,6,0.2627362077025093,23,civil_soc_est,Democracy
+o_max,xgb_tree_d3,m020013_o_max_ord23_rk00014,6,0.2627362077025093,23,migration,Migration
+o_max,xgb_tree_d3,m026011_o_max_ord29_rk00012,7,0.26254194258037933,29,PM2.5,Air Pollution
+o_max,xgb_tree_d3,m026011_o_max_ord29_rk00012,7,0.26254194258037933,29,agri_emp_o,Soil and water quality
+o_max,xgb_tree_d3,m026011_o_max_ord29_rk00012,7,0.26254194258037933,29,HDI,Socioeconomic
+o_max,xgb_tree_d3,m026011_o_max_ord29_rk00012,7,0.26254194258037933,29,GII,Socioeconomic
+o_max,xgb_tree_d3,m026011_o_max_ord29_rk00012,7,0.26254194258037933,29,GDP,Socioeconomic
+o_max,xgb_tree_d3,m026011_o_max_ord29_rk00012,7,0.26254194258037933,29,representation_est,Democracy
+o_max,xgb_tree_d3,m026011_o_max_ord29_rk00012,7,0.26254194258037933,29,cred_elect_est,Democracy
+o_max,xgb_tree_d3,m026011_o_max_ord29_rk00012,7,0.26254194258037933,29,free_parties_est,Democracy
+o_max,xgb_tree_d3,m026011_o_max_ord29_rk00012,7,0.26254194258037933,29,effect_parl_est,Democracy
+o_max,xgb_tree_d3,m026011_o_max_ord29_rk00012,7,0.26254194258037933,29,local_dem_est,Democracy
+o_max,xgb_tree_d3,m026011_o_max_ord29_rk00012,7,0.26254194258037933,29,rights_est,Democracy
+o_max,xgb_tree_d3,m026011_o_max_ord29_rk00012,7,0.26254194258037933,29,access_just_est,Democracy
+o_max,xgb_tree_d3,m026011_o_max_ord29_rk00012,7,0.26254194258037933,29,civil_lib_est,Democracy
+o_max,xgb_tree_d3,m026011_o_max_ord29_rk00012,7,0.26254194258037933,29,free_express_est,Democracy
+o_max,xgb_tree_d3,m026011_o_max_ord29_rk00012,7,0.26254194258037933,29,free_press_est,Democracy
+o_max,xgb_tree_d3,m026011_o_max_ord29_rk00012,7,0.26254194258037933,29,free_assoc_assem_est,Democracy
+o_max,xgb_tree_d3,m026011_o_max_ord29_rk00012,7,0.26254194258037933,29,pol_equal_est,Democracy
+o_max,xgb_tree_d3,m026011_o_max_ord29_rk00012,7,0.26254194258037933,29,soc_grp_equal_est,Democracy
+o_max,xgb_tree_d3,m026011_o_max_ord29_rk00012,7,0.26254194258037933,29,econ_equal_est,Democracy
+o_max,xgb_tree_d3,m026011_o_max_ord29_rk00012,7,0.26254194258037933,29,gender_equal_est,Democracy
+o_max,xgb_tree_d3,m026011_o_max_ord29_rk00012,7,0.26254194258037933,29,rule_law_est,Democracy
+o_max,xgb_tree_d3,m026011_o_max_ord29_rk00012,7,0.26254194258037933,29,jud_ind_est,Democracy
+o_max,xgb_tree_d3,m026011_o_max_ord29_rk00012,7,0.26254194258037933,29,abs_corrupt_est,Democracy
+o_max,xgb_tree_d3,m026011_o_max_ord29_rk00012,7,0.26254194258037933,29,predict_enf_est,Democracy
+o_max,xgb_tree_d3,m026011_o_max_ord29_rk00012,7,0.26254194258037933,29,pers_integ_sec_est,Democracy
+o_max,xgb_tree_d3,m026011_o_max_ord29_rk00012,7,0.26254194258037933,29,participation_est,Democracy
+o_max,xgb_tree_d3,m026011_o_max_ord29_rk00012,7,0.26254194258037933,29,civil_soc_est,Democracy
+o_max,xgb_tree_d3,m026011_o_max_ord29_rk00012,7,0.26254194258037933,29,migration,Migration
+o_max,xgb_tree_d3,m026011_o_max_ord29_rk00012,7,0.26254194258037933,29,Green area per capita (m2/person),Green space access
+o_max,xgb_tree_d3,m027019_o_max_ord30_rk00020,8,0.2624916316421987,30,PM2.5,Air Pollution
+o_max,xgb_tree_d3,m027019_o_max_ord30_rk00020,8,0.2624916316421987,30,agri_emp_o,Soil and water quality
+o_max,xgb_tree_d3,m027019_o_max_ord30_rk00020,8,0.2624916316421987,30,HDI,Socioeconomic
+o_max,xgb_tree_d3,m027019_o_max_ord30_rk00020,8,0.2624916316421987,30,GII,Socioeconomic
+o_max,xgb_tree_d3,m027019_o_max_ord30_rk00020,8,0.2624916316421987,30,GDP,Socioeconomic
+o_max,xgb_tree_d3,m027019_o_max_ord30_rk00020,8,0.2624916316421987,30,representation_est,Democracy
+o_max,xgb_tree_d3,m027019_o_max_ord30_rk00020,8,0.2624916316421987,30,cred_elect_est,Democracy
+o_max,xgb_tree_d3,m027019_o_max_ord30_rk00020,8,0.2624916316421987,30,inclu_suff_est,Democracy
+o_max,xgb_tree_d3,m027019_o_max_ord30_rk00020,8,0.2624916316421987,30,free_parties_est,Democracy
+o_max,xgb_tree_d3,m027019_o_max_ord30_rk00020,8,0.2624916316421987,30,elected_gov_est,Democracy
+o_max,xgb_tree_d3,m027019_o_max_ord30_rk00020,8,0.2624916316421987,30,effect_parl_est,Democracy
+o_max,xgb_tree_d3,m027019_o_max_ord30_rk00020,8,0.2624916316421987,30,local_dem_est,Democracy
+o_max,xgb_tree_d3,m027019_o_max_ord30_rk00020,8,0.2624916316421987,30,rights_est,Democracy
+o_max,xgb_tree_d3,m027019_o_max_ord30_rk00020,8,0.2624916316421987,30,access_just_est,Democracy
+o_max,xgb_tree_d3,m027019_o_max_ord30_rk00020,8,0.2624916316421987,30,civil_lib_est,Democracy
+o_max,xgb_tree_d3,m027019_o_max_ord30_rk00020,8,0.2624916316421987,30,free_express_est,Democracy
+o_max,xgb_tree_d3,m027019_o_max_ord30_rk00020,8,0.2624916316421987,30,free_press_est,Democracy
+o_max,xgb_tree_d3,m027019_o_max_ord30_rk00020,8,0.2624916316421987,30,free_assoc_assem_est,Democracy
+o_max,xgb_tree_d3,m027019_o_max_ord30_rk00020,8,0.2624916316421987,30,pol_equal_est,Democracy
+o_max,xgb_tree_d3,m027019_o_max_ord30_rk00020,8,0.2624916316421987,30,soc_grp_equal_est,Democracy
+o_max,xgb_tree_d3,m027019_o_max_ord30_rk00020,8,0.2624916316421987,30,econ_equal_est,Democracy
+o_max,xgb_tree_d3,m027019_o_max_ord30_rk00020,8,0.2624916316421987,30,gender_equal_est,Democracy
+o_max,xgb_tree_d3,m027019_o_max_ord30_rk00020,8,0.2624916316421987,30,rule_law_est,Democracy
+o_max,xgb_tree_d3,m027019_o_max_ord30_rk00020,8,0.2624916316421987,30,jud_ind_est,Democracy
+o_max,xgb_tree_d3,m027019_o_max_ord30_rk00020,8,0.2624916316421987,30,abs_corrupt_est,Democracy
+o_max,xgb_tree_d3,m027019_o_max_ord30_rk00020,8,0.2624916316421987,30,predict_enf_est,Democracy
+o_max,xgb_tree_d3,m027019_o_max_ord30_rk00020,8,0.2624916316421987,30,pers_integ_sec_est,Democracy
+o_max,xgb_tree_d3,m027019_o_max_ord30_rk00020,8,0.2624916316421987,30,participation_est,Democracy
+o_max,xgb_tree_d3,m027019_o_max_ord30_rk00020,8,0.2624916316421987,30,civil_soc_est,Democracy
+o_max,xgb_tree_d3,m027019_o_max_ord30_rk00020,8,0.2624916316421987,30,migration,Migration
+o_max,xgb_tree_d3,m026007_o_max_ord29_rk00008,9,0.26178698361667463,29,PM2.5,Air Pollution
+o_max,xgb_tree_d3,m026007_o_max_ord29_rk00008,9,0.26178698361667463,29,agri_emp_o,Soil and water quality
+o_max,xgb_tree_d3,m026007_o_max_ord29_rk00008,9,0.26178698361667463,29,GINI,Socioeconomic
+o_max,xgb_tree_d3,m026007_o_max_ord29_rk00008,9,0.26178698361667463,29,HDI,Socioeconomic
+o_max,xgb_tree_d3,m026007_o_max_ord29_rk00008,9,0.26178698361667463,29,GII,Socioeconomic
+o_max,xgb_tree_d3,m026007_o_max_ord29_rk00008,9,0.26178698361667463,29,GDP,Socioeconomic
+o_max,xgb_tree_d3,m026007_o_max_ord29_rk00008,9,0.26178698361667463,29,representation_est,Democracy
+o_max,xgb_tree_d3,m026007_o_max_ord29_rk00008,9,0.26178698361667463,29,cred_elect_est,Democracy
+o_max,xgb_tree_d3,m026007_o_max_ord29_rk00008,9,0.26178698361667463,29,inclu_suff_est,Democracy
+o_max,xgb_tree_d3,m026007_o_max_ord29_rk00008,9,0.26178698361667463,29,effect_parl_est,Democracy
+o_max,xgb_tree_d3,m026007_o_max_ord29_rk00008,9,0.26178698361667463,29,local_dem_est,Democracy
+o_max,xgb_tree_d3,m026007_o_max_ord29_rk00008,9,0.26178698361667463,29,rights_est,Democracy
+o_max,xgb_tree_d3,m026007_o_max_ord29_rk00008,9,0.26178698361667463,29,access_just_est,Democracy
+o_max,xgb_tree_d3,m026007_o_max_ord29_rk00008,9,0.26178698361667463,29,civil_lib_est,Democracy
+o_max,xgb_tree_d3,m026007_o_max_ord29_rk00008,9,0.26178698361667463,29,free_express_est,Democracy
+o_max,xgb_tree_d3,m026007_o_max_ord29_rk00008,9,0.26178698361667463,29,free_press_est,Democracy
+o_max,xgb_tree_d3,m026007_o_max_ord29_rk00008,9,0.26178698361667463,29,free_assoc_assem_est,Democracy
+o_max,xgb_tree_d3,m026007_o_max_ord29_rk00008,9,0.26178698361667463,29,pol_equal_est,Democracy
+o_max,xgb_tree_d3,m026007_o_max_ord29_rk00008,9,0.26178698361667463,29,soc_grp_equal_est,Democracy
+o_max,xgb_tree_d3,m026007_o_max_ord29_rk00008,9,0.26178698361667463,29,econ_equal_est,Democracy
+o_max,xgb_tree_d3,m026007_o_max_ord29_rk00008,9,0.26178698361667463,29,gender_equal_est,Democracy
+o_max,xgb_tree_d3,m026007_o_max_ord29_rk00008,9,0.26178698361667463,29,rule_law_est,Democracy
+o_max,xgb_tree_d3,m026007_o_max_ord29_rk00008,9,0.26178698361667463,29,jud_ind_est,Democracy
+o_max,xgb_tree_d3,m026007_o_max_ord29_rk00008,9,0.26178698361667463,29,abs_corrupt_est,Democracy
+o_max,xgb_tree_d3,m026007_o_max_ord29_rk00008,9,0.26178698361667463,29,predict_enf_est,Democracy
+o_max,xgb_tree_d3,m026007_o_max_ord29_rk00008,9,0.26178698361667463,29,pers_integ_sec_est,Democracy
+o_max,xgb_tree_d3,m026007_o_max_ord29_rk00008,9,0.26178698361667463,29,participation_est,Democracy
+o_max,xgb_tree_d3,m026007_o_max_ord29_rk00008,9,0.26178698361667463,29,civil_soc_est,Democracy
+o_max,xgb_tree_d3,m026007_o_max_ord29_rk00008,9,0.26178698361667463,29,migration,Migration
+o_max,xgb_tree_d3,m023006_o_max_ord26_rk00007,10,0.26155487520896026,26,PM2.5,Air Pollution
+o_max,xgb_tree_d3,m023006_o_max_ord26_rk00007,10,0.26155487520896026,26,agri_emp_o,Soil and water quality
+o_max,xgb_tree_d3,m023006_o_max_ord26_rk00007,10,0.26155487520896026,26,HDI,Socioeconomic
+o_max,xgb_tree_d3,m023006_o_max_ord26_rk00007,10,0.26155487520896026,26,GII,Socioeconomic
+o_max,xgb_tree_d3,m023006_o_max_ord26_rk00007,10,0.26155487520896026,26,GDP,Socioeconomic
+o_max,xgb_tree_d3,m023006_o_max_ord26_rk00007,10,0.26155487520896026,26,representation_est,Democracy
+o_max,xgb_tree_d3,m023006_o_max_ord26_rk00007,10,0.26155487520896026,26,cred_elect_est,Democracy
+o_max,xgb_tree_d3,m023006_o_max_ord26_rk00007,10,0.26155487520896026,26,effect_parl_est,Democracy
+o_max,xgb_tree_d3,m023006_o_max_ord26_rk00007,10,0.26155487520896026,26,local_dem_est,Democracy
+o_max,xgb_tree_d3,m023006_o_max_ord26_rk00007,10,0.26155487520896026,26,rights_est,Democracy
+o_max,xgb_tree_d3,m023006_o_max_ord26_rk00007,10,0.26155487520896026,26,access_just_est,Democracy
+o_max,xgb_tree_d3,m023006_o_max_ord26_rk00007,10,0.26155487520896026,26,civil_lib_est,Democracy
+o_max,xgb_tree_d3,m023006_o_max_ord26_rk00007,10,0.26155487520896026,26,free_express_est,Democracy
+o_max,xgb_tree_d3,m023006_o_max_ord26_rk00007,10,0.26155487520896026,26,free_press_est,Democracy
+o_max,xgb_tree_d3,m023006_o_max_ord26_rk00007,10,0.26155487520896026,26,pol_equal_est,Democracy
+o_max,xgb_tree_d3,m023006_o_max_ord26_rk00007,10,0.26155487520896026,26,soc_grp_equal_est,Democracy
+o_max,xgb_tree_d3,m023006_o_max_ord26_rk00007,10,0.26155487520896026,26,econ_equal_est,Democracy
+o_max,xgb_tree_d3,m023006_o_max_ord26_rk00007,10,0.26155487520896026,26,gender_equal_est,Democracy
+o_max,xgb_tree_d3,m023006_o_max_ord26_rk00007,10,0.26155487520896026,26,rule_law_est,Democracy
+o_max,xgb_tree_d3,m023006_o_max_ord26_rk00007,10,0.26155487520896026,26,jud_ind_est,Democracy
+o_max,xgb_tree_d3,m023006_o_max_ord26_rk00007,10,0.26155487520896026,26,abs_corrupt_est,Democracy
+o_max,xgb_tree_d3,m023006_o_max_ord26_rk00007,10,0.26155487520896026,26,predict_enf_est,Democracy
+o_max,xgb_tree_d3,m023006_o_max_ord26_rk00007,10,0.26155487520896026,26,pers_integ_sec_est,Democracy
+o_max,xgb_tree_d3,m023006_o_max_ord26_rk00007,10,0.26155487520896026,26,participation_est,Democracy
+o_max,xgb_tree_d3,m023006_o_max_ord26_rk00007,10,0.26155487520896026,26,civil_soc_est,Democracy
+o_max,xgb_tree_d3,m023006_o_max_ord26_rk00007,10,0.26155487520896026,26,migration,Migration
+o_max,xgb_tree_d3,m023009_o_max_ord26_rk00010,11,0.2612644839314252,26,PM2.5,Air Pollution
+o_max,xgb_tree_d3,m023009_o_max_ord26_rk00010,11,0.2612644839314252,26,agri_emp_o,Soil and water quality
+o_max,xgb_tree_d3,m023009_o_max_ord26_rk00010,11,0.2612644839314252,26,HDI,Socioeconomic
+o_max,xgb_tree_d3,m023009_o_max_ord26_rk00010,11,0.2612644839314252,26,GDP,Socioeconomic
+o_max,xgb_tree_d3,m023009_o_max_ord26_rk00010,11,0.2612644839314252,26,representation_est,Democracy
+o_max,xgb_tree_d3,m023009_o_max_ord26_rk00010,11,0.2612644839314252,26,cred_elect_est,Democracy
+o_max,xgb_tree_d3,m023009_o_max_ord26_rk00010,11,0.2612644839314252,26,effect_parl_est,Democracy
+o_max,xgb_tree_d3,m023009_o_max_ord26_rk00010,11,0.2612644839314252,26,local_dem_est,Democracy
+o_max,xgb_tree_d3,m023009_o_max_ord26_rk00010,11,0.2612644839314252,26,rights_est,Democracy
+o_max,xgb_tree_d3,m023009_o_max_ord26_rk00010,11,0.2612644839314252,26,access_just_est,Democracy
+o_max,xgb_tree_d3,m023009_o_max_ord26_rk00010,11,0.2612644839314252,26,civil_lib_est,Democracy
+o_max,xgb_tree_d3,m023009_o_max_ord26_rk00010,11,0.2612644839314252,26,free_express_est,Democracy
+o_max,xgb_tree_d3,m023009_o_max_ord26_rk00010,11,0.2612644839314252,26,free_press_est,Democracy
+o_max,xgb_tree_d3,m023009_o_max_ord26_rk00010,11,0.2612644839314252,26,free_assoc_assem_est,Democracy
+o_max,xgb_tree_d3,m023009_o_max_ord26_rk00010,11,0.2612644839314252,26,pol_equal_est,Democracy
+o_max,xgb_tree_d3,m023009_o_max_ord26_rk00010,11,0.2612644839314252,26,soc_grp_equal_est,Democracy
+o_max,xgb_tree_d3,m023009_o_max_ord26_rk00010,11,0.2612644839314252,26,econ_equal_est,Democracy
+o_max,xgb_tree_d3,m023009_o_max_ord26_rk00010,11,0.2612644839314252,26,gender_equal_est,Democracy
+o_max,xgb_tree_d3,m023009_o_max_ord26_rk00010,11,0.2612644839314252,26,rule_law_est,Democracy
+o_max,xgb_tree_d3,m023009_o_max_ord26_rk00010,11,0.2612644839314252,26,jud_ind_est,Democracy
+o_max,xgb_tree_d3,m023009_o_max_ord26_rk00010,11,0.2612644839314252,26,abs_corrupt_est,Democracy
+o_max,xgb_tree_d3,m023009_o_max_ord26_rk00010,11,0.2612644839314252,26,predict_enf_est,Democracy
+o_max,xgb_tree_d3,m023009_o_max_ord26_rk00010,11,0.2612644839314252,26,pers_integ_sec_est,Democracy
+o_max,xgb_tree_d3,m023009_o_max_ord26_rk00010,11,0.2612644839314252,26,participation_est,Democracy
+o_max,xgb_tree_d3,m023009_o_max_ord26_rk00010,11,0.2612644839314252,26,civil_soc_est,Democracy
+o_max,xgb_tree_d3,m023009_o_max_ord26_rk00010,11,0.2612644839314252,26,migration,Migration
+o_max,xgb_tree_d3,m022010_o_max_ord25_rk00011,12,0.2611967133695249,25,PM2.5,Air Pollution
+o_max,xgb_tree_d3,m022010_o_max_ord25_rk00011,12,0.2611967133695249,25,agri_emp_o,Soil and water quality
+o_max,xgb_tree_d3,m022010_o_max_ord25_rk00011,12,0.2611967133695249,25,HDI,Socioeconomic
+o_max,xgb_tree_d3,m022010_o_max_ord25_rk00011,12,0.2611967133695249,25,GII,Socioeconomic
+o_max,xgb_tree_d3,m022010_o_max_ord25_rk00011,12,0.2611967133695249,25,GDP,Socioeconomic
+o_max,xgb_tree_d3,m022010_o_max_ord25_rk00011,12,0.2611967133695249,25,representation_est,Democracy
+o_max,xgb_tree_d3,m022010_o_max_ord25_rk00011,12,0.2611967133695249,25,cred_elect_est,Democracy
+o_max,xgb_tree_d3,m022010_o_max_ord25_rk00011,12,0.2611967133695249,25,effect_parl_est,Democracy
+o_max,xgb_tree_d3,m022010_o_max_ord25_rk00011,12,0.2611967133695249,25,local_dem_est,Democracy
+o_max,xgb_tree_d3,m022010_o_max_ord25_rk00011,12,0.2611967133695249,25,rights_est,Democracy
+o_max,xgb_tree_d3,m022010_o_max_ord25_rk00011,12,0.2611967133695249,25,access_just_est,Democracy
+o_max,xgb_tree_d3,m022010_o_max_ord25_rk00011,12,0.2611967133695249,25,civil_lib_est,Democracy
+o_max,xgb_tree_d3,m022010_o_max_ord25_rk00011,12,0.2611967133695249,25,free_express_est,Democracy
+o_max,xgb_tree_d3,m022010_o_max_ord25_rk00011,12,0.2611967133695249,25,free_press_est,Democracy
+o_max,xgb_tree_d3,m022010_o_max_ord25_rk00011,12,0.2611967133695249,25,pol_equal_est,Democracy
+o_max,xgb_tree_d3,m022010_o_max_ord25_rk00011,12,0.2611967133695249,25,soc_grp_equal_est,Democracy
+o_max,xgb_tree_d3,m022010_o_max_ord25_rk00011,12,0.2611967133695249,25,econ_equal_est,Democracy
+o_max,xgb_tree_d3,m022010_o_max_ord25_rk00011,12,0.2611967133695249,25,gender_equal_est,Democracy
+o_max,xgb_tree_d3,m022010_o_max_ord25_rk00011,12,0.2611967133695249,25,rule_law_est,Democracy
+o_max,xgb_tree_d3,m022010_o_max_ord25_rk00011,12,0.2611967133695249,25,jud_ind_est,Democracy
+o_max,xgb_tree_d3,m022010_o_max_ord25_rk00011,12,0.2611967133695249,25,abs_corrupt_est,Democracy
+o_max,xgb_tree_d3,m022010_o_max_ord25_rk00011,12,0.2611967133695249,25,predict_enf_est,Democracy
+o_max,xgb_tree_d3,m022010_o_max_ord25_rk00011,12,0.2611967133695249,25,pers_integ_sec_est,Democracy
+o_max,xgb_tree_d3,m022010_o_max_ord25_rk00011,12,0.2611967133695249,25,civil_soc_est,Democracy
+o_max,xgb_tree_d3,m022010_o_max_ord25_rk00011,12,0.2611967133695249,25,migration,Migration
+o_max,xgb_tree_d3,m023001_o_max_ord26_rk00002,13,0.2609072061656249,26,agri_emp_o,Soil and water quality
+o_max,xgb_tree_d3,m023001_o_max_ord26_rk00002,13,0.2609072061656249,26,HDI,Socioeconomic
+o_max,xgb_tree_d3,m023001_o_max_ord26_rk00002,13,0.2609072061656249,26,GII,Socioeconomic
+o_max,xgb_tree_d3,m023001_o_max_ord26_rk00002,13,0.2609072061656249,26,GDP,Socioeconomic
+o_max,xgb_tree_d3,m023001_o_max_ord26_rk00002,13,0.2609072061656249,26,representation_est,Democracy
+o_max,xgb_tree_d3,m023001_o_max_ord26_rk00002,13,0.2609072061656249,26,cred_elect_est,Democracy
+o_max,xgb_tree_d3,m023001_o_max_ord26_rk00002,13,0.2609072061656249,26,effect_parl_est,Democracy
+o_max,xgb_tree_d3,m023001_o_max_ord26_rk00002,13,0.2609072061656249,26,local_dem_est,Democracy
+o_max,xgb_tree_d3,m023001_o_max_ord26_rk00002,13,0.2609072061656249,26,rights_est,Democracy
+o_max,xgb_tree_d3,m023001_o_max_ord26_rk00002,13,0.2609072061656249,26,access_just_est,Democracy
+o_max,xgb_tree_d3,m023001_o_max_ord26_rk00002,13,0.2609072061656249,26,civil_lib_est,Democracy
+o_max,xgb_tree_d3,m023001_o_max_ord26_rk00002,13,0.2609072061656249,26,free_express_est,Democracy
+o_max,xgb_tree_d3,m023001_o_max_ord26_rk00002,13,0.2609072061656249,26,free_press_est,Democracy
+o_max,xgb_tree_d3,m023001_o_max_ord26_rk00002,13,0.2609072061656249,26,free_assoc_assem_est,Democracy
+o_max,xgb_tree_d3,m023001_o_max_ord26_rk00002,13,0.2609072061656249,26,pol_equal_est,Democracy
+o_max,xgb_tree_d3,m023001_o_max_ord26_rk00002,13,0.2609072061656249,26,soc_grp_equal_est,Democracy
+o_max,xgb_tree_d3,m023001_o_max_ord26_rk00002,13,0.2609072061656249,26,econ_equal_est,Democracy
+o_max,xgb_tree_d3,m023001_o_max_ord26_rk00002,13,0.2609072061656249,26,gender_equal_est,Democracy
+o_max,xgb_tree_d3,m023001_o_max_ord26_rk00002,13,0.2609072061656249,26,rule_law_est,Democracy
+o_max,xgb_tree_d3,m023001_o_max_ord26_rk00002,13,0.2609072061656249,26,jud_ind_est,Democracy
+o_max,xgb_tree_d3,m023001_o_max_ord26_rk00002,13,0.2609072061656249,26,abs_corrupt_est,Democracy
+o_max,xgb_tree_d3,m023001_o_max_ord26_rk00002,13,0.2609072061656249,26,predict_enf_est,Democracy
+o_max,xgb_tree_d3,m023001_o_max_ord26_rk00002,13,0.2609072061656249,26,pers_integ_sec_est,Democracy
+o_max,xgb_tree_d3,m023001_o_max_ord26_rk00002,13,0.2609072061656249,26,participation_est,Democracy
+o_max,xgb_tree_d3,m023001_o_max_ord26_rk00002,13,0.2609072061656249,26,civil_soc_est,Democracy
+o_max,xgb_tree_d3,m023001_o_max_ord26_rk00002,13,0.2609072061656249,26,migration,Migration
+o_max,xgb_tree_d3,m020015_o_max_ord23_rk00016,14,0.26079310487820995,23,agri_emp_o,Soil and water quality
+o_max,xgb_tree_d3,m020015_o_max_ord23_rk00016,14,0.26079310487820995,23,HDI,Socioeconomic
+o_max,xgb_tree_d3,m020015_o_max_ord23_rk00016,14,0.26079310487820995,23,GII,Socioeconomic
+o_max,xgb_tree_d3,m020015_o_max_ord23_rk00016,14,0.26079310487820995,23,GDP,Socioeconomic
+o_max,xgb_tree_d3,m020015_o_max_ord23_rk00016,14,0.26079310487820995,23,representation_est,Democracy
+o_max,xgb_tree_d3,m020015_o_max_ord23_rk00016,14,0.26079310487820995,23,cred_elect_est,Democracy
+o_max,xgb_tree_d3,m020015_o_max_ord23_rk00016,14,0.26079310487820995,23,effect_parl_est,Democracy
+o_max,xgb_tree_d3,m020015_o_max_ord23_rk00016,14,0.26079310487820995,23,local_dem_est,Democracy
+o_max,xgb_tree_d3,m020015_o_max_ord23_rk00016,14,0.26079310487820995,23,rights_est,Democracy
+o_max,xgb_tree_d3,m020015_o_max_ord23_rk00016,14,0.26079310487820995,23,access_just_est,Democracy
+o_max,xgb_tree_d3,m020015_o_max_ord23_rk00016,14,0.26079310487820995,23,free_express_est,Democracy
+o_max,xgb_tree_d3,m020015_o_max_ord23_rk00016,14,0.26079310487820995,23,free_press_est,Democracy
+o_max,xgb_tree_d3,m020015_o_max_ord23_rk00016,14,0.26079310487820995,23,pol_equal_est,Democracy
+o_max,xgb_tree_d3,m020015_o_max_ord23_rk00016,14,0.26079310487820995,23,soc_grp_equal_est,Democracy
+o_max,xgb_tree_d3,m020015_o_max_ord23_rk00016,14,0.26079310487820995,23,econ_equal_est,Democracy
+o_max,xgb_tree_d3,m020015_o_max_ord23_rk00016,14,0.26079310487820995,23,gender_equal_est,Democracy
+o_max,xgb_tree_d3,m020015_o_max_ord23_rk00016,14,0.26079310487820995,23,rule_law_est,Democracy
+o_max,xgb_tree_d3,m020015_o_max_ord23_rk00016,14,0.26079310487820995,23,jud_ind_est,Democracy
+o_max,xgb_tree_d3,m020015_o_max_ord23_rk00016,14,0.26079310487820995,23,abs_corrupt_est,Democracy
+o_max,xgb_tree_d3,m020015_o_max_ord23_rk00016,14,0.26079310487820995,23,predict_enf_est,Democracy
+o_max,xgb_tree_d3,m020015_o_max_ord23_rk00016,14,0.26079310487820995,23,pers_integ_sec_est,Democracy
+o_max,xgb_tree_d3,m020015_o_max_ord23_rk00016,14,0.26079310487820995,23,civil_soc_est,Democracy
+o_max,xgb_tree_d3,m020015_o_max_ord23_rk00016,14,0.26079310487820995,23,migration,Migration
+o_max,xgb_tree_d3,m024016_o_max_ord27_rk00017,15,0.26067991927377965,27,agri_emp_o,Soil and water quality
+o_max,xgb_tree_d3,m024016_o_max_ord27_rk00017,15,0.26067991927377965,27,HDI,Socioeconomic
+o_max,xgb_tree_d3,m024016_o_max_ord27_rk00017,15,0.26067991927377965,27,GII,Socioeconomic
+o_max,xgb_tree_d3,m024016_o_max_ord27_rk00017,15,0.26067991927377965,27,GDP,Socioeconomic
+o_max,xgb_tree_d3,m024016_o_max_ord27_rk00017,15,0.26067991927377965,27,representation_est,Democracy
+o_max,xgb_tree_d3,m024016_o_max_ord27_rk00017,15,0.26067991927377965,27,cred_elect_est,Democracy
+o_max,xgb_tree_d3,m024016_o_max_ord27_rk00017,15,0.26067991927377965,27,effect_parl_est,Democracy
+o_max,xgb_tree_d3,m024016_o_max_ord27_rk00017,15,0.26067991927377965,27,local_dem_est,Democracy
+o_max,xgb_tree_d3,m024016_o_max_ord27_rk00017,15,0.26067991927377965,27,rights_est,Democracy
+o_max,xgb_tree_d3,m024016_o_max_ord27_rk00017,15,0.26067991927377965,27,access_just_est,Democracy
+o_max,xgb_tree_d3,m024016_o_max_ord27_rk00017,15,0.26067991927377965,27,civil_lib_est,Democracy
+o_max,xgb_tree_d3,m024016_o_max_ord27_rk00017,15,0.26067991927377965,27,free_express_est,Democracy
+o_max,xgb_tree_d3,m024016_o_max_ord27_rk00017,15,0.26067991927377965,27,free_press_est,Democracy
+o_max,xgb_tree_d3,m024016_o_max_ord27_rk00017,15,0.26067991927377965,27,free_assoc_assem_est,Democracy
+o_max,xgb_tree_d3,m024016_o_max_ord27_rk00017,15,0.26067991927377965,27,pol_equal_est,Democracy
+o_max,xgb_tree_d3,m024016_o_max_ord27_rk00017,15,0.26067991927377965,27,soc_grp_equal_est,Democracy
+o_max,xgb_tree_d3,m024016_o_max_ord27_rk00017,15,0.26067991927377965,27,econ_equal_est,Democracy
+o_max,xgb_tree_d3,m024016_o_max_ord27_rk00017,15,0.26067991927377965,27,gender_equal_est,Democracy
+o_max,xgb_tree_d3,m024016_o_max_ord27_rk00017,15,0.26067991927377965,27,rule_law_est,Democracy
+o_max,xgb_tree_d3,m024016_o_max_ord27_rk00017,15,0.26067991927377965,27,jud_ind_est,Democracy
+o_max,xgb_tree_d3,m024016_o_max_ord27_rk00017,15,0.26067991927377965,27,abs_corrupt_est,Democracy
+o_max,xgb_tree_d3,m024016_o_max_ord27_rk00017,15,0.26067991927377965,27,predict_enf_est,Democracy
+o_max,xgb_tree_d3,m024016_o_max_ord27_rk00017,15,0.26067991927377965,27,pers_integ_sec_est,Democracy
+o_max,xgb_tree_d3,m024016_o_max_ord27_rk00017,15,0.26067991927377965,27,participation_est,Democracy
+o_max,xgb_tree_d3,m024016_o_max_ord27_rk00017,15,0.26067991927377965,27,civil_soc_est,Democracy
+o_max,xgb_tree_d3,m024016_o_max_ord27_rk00017,15,0.26067991927377965,27,migration,Migration
+o_max,xgb_tree_d3,m024016_o_max_ord27_rk00017,15,0.26067991927377965,27,Green area per capita (m2/person),Green space access
+o_max,xgb_tree_d3,m027008_o_max_ord30_rk00009,16,0.26066271359330206,30,PM2.5,Air Pollution
+o_max,xgb_tree_d3,m027008_o_max_ord30_rk00009,16,0.26066271359330206,30,agri_emp_o,Soil and water quality
+o_max,xgb_tree_d3,m027008_o_max_ord30_rk00009,16,0.26066271359330206,30,GINI,Socioeconomic
+o_max,xgb_tree_d3,m027008_o_max_ord30_rk00009,16,0.26066271359330206,30,HDI,Socioeconomic
+o_max,xgb_tree_d3,m027008_o_max_ord30_rk00009,16,0.26066271359330206,30,GII,Socioeconomic
+o_max,xgb_tree_d3,m027008_o_max_ord30_rk00009,16,0.26066271359330206,30,GDP,Socioeconomic
+o_max,xgb_tree_d3,m027008_o_max_ord30_rk00009,16,0.26066271359330206,30,representation_est,Democracy
+o_max,xgb_tree_d3,m027008_o_max_ord30_rk00009,16,0.26066271359330206,30,cred_elect_est,Democracy
+o_max,xgb_tree_d3,m027008_o_max_ord30_rk00009,16,0.26066271359330206,30,inclu_suff_est,Democracy
+o_max,xgb_tree_d3,m027008_o_max_ord30_rk00009,16,0.26066271359330206,30,free_parties_est,Democracy
+o_max,xgb_tree_d3,m027008_o_max_ord30_rk00009,16,0.26066271359330206,30,effect_parl_est,Democracy
+o_max,xgb_tree_d3,m027008_o_max_ord30_rk00009,16,0.26066271359330206,30,local_dem_est,Democracy
+o_max,xgb_tree_d3,m027008_o_max_ord30_rk00009,16,0.26066271359330206,30,rights_est,Democracy
+o_max,xgb_tree_d3,m027008_o_max_ord30_rk00009,16,0.26066271359330206,30,access_just_est,Democracy
+o_max,xgb_tree_d3,m027008_o_max_ord30_rk00009,16,0.26066271359330206,30,civil_lib_est,Democracy
+o_max,xgb_tree_d3,m027008_o_max_ord30_rk00009,16,0.26066271359330206,30,free_express_est,Democracy
+o_max,xgb_tree_d3,m027008_o_max_ord30_rk00009,16,0.26066271359330206,30,free_press_est,Democracy
+o_max,xgb_tree_d3,m027008_o_max_ord30_rk00009,16,0.26066271359330206,30,free_assoc_assem_est,Democracy
+o_max,xgb_tree_d3,m027008_o_max_ord30_rk00009,16,0.26066271359330206,30,pol_equal_est,Democracy
+o_max,xgb_tree_d3,m027008_o_max_ord30_rk00009,16,0.26066271359330206,30,soc_grp_equal_est,Democracy
+o_max,xgb_tree_d3,m027008_o_max_ord30_rk00009,16,0.26066271359330206,30,econ_equal_est,Democracy
+o_max,xgb_tree_d3,m027008_o_max_ord30_rk00009,16,0.26066271359330206,30,gender_equal_est,Democracy
+o_max,xgb_tree_d3,m027008_o_max_ord30_rk00009,16,0.26066271359330206,30,rule_law_est,Democracy
+o_max,xgb_tree_d3,m027008_o_max_ord30_rk00009,16,0.26066271359330206,30,jud_ind_est,Democracy
+o_max,xgb_tree_d3,m027008_o_max_ord30_rk00009,16,0.26066271359330206,30,abs_corrupt_est,Democracy
+o_max,xgb_tree_d3,m027008_o_max_ord30_rk00009,16,0.26066271359330206,30,predict_enf_est,Democracy
+o_max,xgb_tree_d3,m027008_o_max_ord30_rk00009,16,0.26066271359330206,30,pers_integ_sec_est,Democracy
+o_max,xgb_tree_d3,m027008_o_max_ord30_rk00009,16,0.26066271359330206,30,participation_est,Democracy
+o_max,xgb_tree_d3,m027008_o_max_ord30_rk00009,16,0.26066271359330206,30,civil_soc_est,Democracy
+o_max,xgb_tree_d3,m027008_o_max_ord30_rk00009,16,0.26066271359330206,30,migration,Migration
+o_max,xgb_tree_d3,m023007_o_max_ord26_rk00008,17,0.26053303611098333,26,agri_emp_o,Soil and water quality
+o_max,xgb_tree_d3,m023007_o_max_ord26_rk00008,17,0.26053303611098333,26,HDI,Socioeconomic
+o_max,xgb_tree_d3,m023007_o_max_ord26_rk00008,17,0.26053303611098333,26,GII,Socioeconomic
+o_max,xgb_tree_d3,m023007_o_max_ord26_rk00008,17,0.26053303611098333,26,GDP,Socioeconomic
+o_max,xgb_tree_d3,m023007_o_max_ord26_rk00008,17,0.26053303611098333,26,representation_est,Democracy
+o_max,xgb_tree_d3,m023007_o_max_ord26_rk00008,17,0.26053303611098333,26,cred_elect_est,Democracy
+o_max,xgb_tree_d3,m023007_o_max_ord26_rk00008,17,0.26053303611098333,26,inclu_suff_est,Democracy
+o_max,xgb_tree_d3,m023007_o_max_ord26_rk00008,17,0.26053303611098333,26,effect_parl_est,Democracy
+o_max,xgb_tree_d3,m023007_o_max_ord26_rk00008,17,0.26053303611098333,26,local_dem_est,Democracy
+o_max,xgb_tree_d3,m023007_o_max_ord26_rk00008,17,0.26053303611098333,26,rights_est,Democracy
+o_max,xgb_tree_d3,m023007_o_max_ord26_rk00008,17,0.26053303611098333,26,access_just_est,Democracy
+o_max,xgb_tree_d3,m023007_o_max_ord26_rk00008,17,0.26053303611098333,26,civil_lib_est,Democracy
+o_max,xgb_tree_d3,m023007_o_max_ord26_rk00008,17,0.26053303611098333,26,free_express_est,Democracy
+o_max,xgb_tree_d3,m023007_o_max_ord26_rk00008,17,0.26053303611098333,26,free_press_est,Democracy
+o_max,xgb_tree_d3,m023007_o_max_ord26_rk00008,17,0.26053303611098333,26,pol_equal_est,Democracy
+o_max,xgb_tree_d3,m023007_o_max_ord26_rk00008,17,0.26053303611098333,26,soc_grp_equal_est,Democracy
+o_max,xgb_tree_d3,m023007_o_max_ord26_rk00008,17,0.26053303611098333,26,econ_equal_est,Democracy
+o_max,xgb_tree_d3,m023007_o_max_ord26_rk00008,17,0.26053303611098333,26,gender_equal_est,Democracy
+o_max,xgb_tree_d3,m023007_o_max_ord26_rk00008,17,0.26053303611098333,26,rule_law_est,Democracy
+o_max,xgb_tree_d3,m023007_o_max_ord26_rk00008,17,0.26053303611098333,26,jud_ind_est,Democracy
+o_max,xgb_tree_d3,m023007_o_max_ord26_rk00008,17,0.26053303611098333,26,abs_corrupt_est,Democracy
+o_max,xgb_tree_d3,m023007_o_max_ord26_rk00008,17,0.26053303611098333,26,predict_enf_est,Democracy
+o_max,xgb_tree_d3,m023007_o_max_ord26_rk00008,17,0.26053303611098333,26,pers_integ_sec_est,Democracy
+o_max,xgb_tree_d3,m023007_o_max_ord26_rk00008,17,0.26053303611098333,26,participation_est,Democracy
+o_max,xgb_tree_d3,m023007_o_max_ord26_rk00008,17,0.26053303611098333,26,civil_soc_est,Democracy
+o_max,xgb_tree_d3,m023007_o_max_ord26_rk00008,17,0.26053303611098333,26,migration,Migration
+o_max,xgb_tree_d3,m025003_o_max_ord28_rk00004,18,0.260481934176636,28,PM2.5,Air Pollution
+o_max,xgb_tree_d3,m025003_o_max_ord28_rk00004,18,0.260481934176636,28,agri_emp_o,Soil and water quality
+o_max,xgb_tree_d3,m025003_o_max_ord28_rk00004,18,0.260481934176636,28,GINI,Socioeconomic
+o_max,xgb_tree_d3,m025003_o_max_ord28_rk00004,18,0.260481934176636,28,HDI,Socioeconomic
+o_max,xgb_tree_d3,m025003_o_max_ord28_rk00004,18,0.260481934176636,28,GII,Socioeconomic
+o_max,xgb_tree_d3,m025003_o_max_ord28_rk00004,18,0.260481934176636,28,GDP,Socioeconomic
+o_max,xgb_tree_d3,m025003_o_max_ord28_rk00004,18,0.260481934176636,28,representation_est,Democracy
+o_max,xgb_tree_d3,m025003_o_max_ord28_rk00004,18,0.260481934176636,28,cred_elect_est,Democracy
+o_max,xgb_tree_d3,m025003_o_max_ord28_rk00004,18,0.260481934176636,28,effect_parl_est,Democracy
+o_max,xgb_tree_d3,m025003_o_max_ord28_rk00004,18,0.260481934176636,28,local_dem_est,Democracy
+o_max,xgb_tree_d3,m025003_o_max_ord28_rk00004,18,0.260481934176636,28,rights_est,Democracy
+o_max,xgb_tree_d3,m025003_o_max_ord28_rk00004,18,0.260481934176636,28,access_just_est,Democracy
+o_max,xgb_tree_d3,m025003_o_max_ord28_rk00004,18,0.260481934176636,28,civil_lib_est,Democracy
+o_max,xgb_tree_d3,m025003_o_max_ord28_rk00004,18,0.260481934176636,28,free_express_est,Democracy
+o_max,xgb_tree_d3,m025003_o_max_ord28_rk00004,18,0.260481934176636,28,free_press_est,Democracy
+o_max,xgb_tree_d3,m025003_o_max_ord28_rk00004,18,0.260481934176636,28,free_assoc_assem_est,Democracy
+o_max,xgb_tree_d3,m025003_o_max_ord28_rk00004,18,0.260481934176636,28,pol_equal_est,Democracy
+o_max,xgb_tree_d3,m025003_o_max_ord28_rk00004,18,0.260481934176636,28,soc_grp_equal_est,Democracy
+o_max,xgb_tree_d3,m025003_o_max_ord28_rk00004,18,0.260481934176636,28,econ_equal_est,Democracy
+o_max,xgb_tree_d3,m025003_o_max_ord28_rk00004,18,0.260481934176636,28,gender_equal_est,Democracy
+o_max,xgb_tree_d3,m025003_o_max_ord28_rk00004,18,0.260481934176636,28,rule_law_est,Democracy
+o_max,xgb_tree_d3,m025003_o_max_ord28_rk00004,18,0.260481934176636,28,jud_ind_est,Democracy
+o_max,xgb_tree_d3,m025003_o_max_ord28_rk00004,18,0.260481934176636,28,abs_corrupt_est,Democracy
+o_max,xgb_tree_d3,m025003_o_max_ord28_rk00004,18,0.260481934176636,28,predict_enf_est,Democracy
+o_max,xgb_tree_d3,m025003_o_max_ord28_rk00004,18,0.260481934176636,28,pers_integ_sec_est,Democracy
+o_max,xgb_tree_d3,m025003_o_max_ord28_rk00004,18,0.260481934176636,28,participation_est,Democracy
+o_max,xgb_tree_d3,m025003_o_max_ord28_rk00004,18,0.260481934176636,28,civil_soc_est,Democracy
+o_max,xgb_tree_d3,m025003_o_max_ord28_rk00004,18,0.260481934176636,28,migration,Migration
+o_max,xgb_tree_d3,m027018_o_max_ord30_rk00019,19,0.26027276019479817,30,PM2.5,Air Pollution
+o_max,xgb_tree_d3,m027018_o_max_ord30_rk00019,19,0.26027276019479817,30,agri_emp_o,Soil and water quality
+o_max,xgb_tree_d3,m027018_o_max_ord30_rk00019,19,0.26027276019479817,30,deaths_notrans,Disease-related mortality
+o_max,xgb_tree_d3,m027018_o_max_ord30_rk00019,19,0.26027276019479817,30,GINI,Socioeconomic
+o_max,xgb_tree_d3,m027018_o_max_ord30_rk00019,19,0.26027276019479817,30,HDI,Socioeconomic
+o_max,xgb_tree_d3,m027018_o_max_ord30_rk00019,19,0.26027276019479817,30,GII,Socioeconomic
+o_max,xgb_tree_d3,m027018_o_max_ord30_rk00019,19,0.26027276019479817,30,GDP,Socioeconomic
+o_max,xgb_tree_d3,m027018_o_max_ord30_rk00019,19,0.26027276019479817,30,representation_est,Democracy
+o_max,xgb_tree_d3,m027018_o_max_ord30_rk00019,19,0.26027276019479817,30,cred_elect_est,Democracy
+o_max,xgb_tree_d3,m027018_o_max_ord30_rk00019,19,0.26027276019479817,30,effect_parl_est,Democracy
+o_max,xgb_tree_d3,m027018_o_max_ord30_rk00019,19,0.26027276019479817,30,local_dem_est,Democracy
+o_max,xgb_tree_d3,m027018_o_max_ord30_rk00019,19,0.26027276019479817,30,rights_est,Democracy
+o_max,xgb_tree_d3,m027018_o_max_ord30_rk00019,19,0.26027276019479817,30,access_just_est,Democracy
+o_max,xgb_tree_d3,m027018_o_max_ord30_rk00019,19,0.26027276019479817,30,civil_lib_est,Democracy
+o_max,xgb_tree_d3,m027018_o_max_ord30_rk00019,19,0.26027276019479817,30,free_express_est,Democracy
+o_max,xgb_tree_d3,m027018_o_max_ord30_rk00019,19,0.26027276019479817,30,free_press_est,Democracy
+o_max,xgb_tree_d3,m027018_o_max_ord30_rk00019,19,0.26027276019479817,30,free_assoc_assem_est,Democracy
+o_max,xgb_tree_d3,m027018_o_max_ord30_rk00019,19,0.26027276019479817,30,pol_equal_est,Democracy
+o_max,xgb_tree_d3,m027018_o_max_ord30_rk00019,19,0.26027276019479817,30,soc_grp_equal_est,Democracy
+o_max,xgb_tree_d3,m027018_o_max_ord30_rk00019,19,0.26027276019479817,30,econ_equal_est,Democracy
+o_max,xgb_tree_d3,m027018_o_max_ord30_rk00019,19,0.26027276019479817,30,gender_equal_est,Democracy
+o_max,xgb_tree_d3,m027018_o_max_ord30_rk00019,19,0.26027276019479817,30,rule_law_est,Democracy
+o_max,xgb_tree_d3,m027018_o_max_ord30_rk00019,19,0.26027276019479817,30,jud_ind_est,Democracy
+o_max,xgb_tree_d3,m027018_o_max_ord30_rk00019,19,0.26027276019479817,30,abs_corrupt_est,Democracy
+o_max,xgb_tree_d3,m027018_o_max_ord30_rk00019,19,0.26027276019479817,30,predict_enf_est,Democracy
+o_max,xgb_tree_d3,m027018_o_max_ord30_rk00019,19,0.26027276019479817,30,pers_integ_sec_est,Democracy
+o_max,xgb_tree_d3,m027018_o_max_ord30_rk00019,19,0.26027276019479817,30,participation_est,Democracy
+o_max,xgb_tree_d3,m027018_o_max_ord30_rk00019,19,0.26027276019479817,30,civil_soc_est,Democracy
+o_max,xgb_tree_d3,m027018_o_max_ord30_rk00019,19,0.26027276019479817,30,migration,Migration
+o_max,xgb_tree_d3,m027018_o_max_ord30_rk00019,19,0.26027276019479817,30,Green area per capita (m2/person),Green space access
+o_max,xgb_tree_d3,m026017_o_max_ord29_rk00018,20,0.2598040490026504,29,Nitrogen oxide (NOx),Air Pollution
+o_max,xgb_tree_d3,m026017_o_max_ord29_rk00018,20,0.2598040490026504,29,Sulphur dioxide (SO₂) emissions,Air Pollution
+o_max,xgb_tree_d3,m026017_o_max_ord29_rk00018,20,0.2598040490026504,29,Carbon monoxide (CO) emissions,Air Pollution
+o_max,xgb_tree_d3,m026017_o_max_ord29_rk00018,20,0.2598040490026504,29,Black carbon (BC) emissions,Air Pollution
+o_max,xgb_tree_d3,m026017_o_max_ord29_rk00018,20,0.2598040490026504,29,Ammonia (NH₃) emissions,Air Pollution
+o_max,xgb_tree_d3,m026017_o_max_ord29_rk00018,20,0.2598040490026504,29,Non-methane volatile organic compounds (NMVOC) emissions,Air Pollution
+o_max,xgb_tree_d3,m026017_o_max_ord29_rk00018,20,0.2598040490026504,29,maxgtemp_o,Temperature
+o_max,xgb_tree_d3,m026017_o_max_ord29_rk00018,20,0.2598040490026504,29,representation_est,Democracy
+o_max,xgb_tree_d3,m026017_o_max_ord29_rk00018,20,0.2598040490026504,29,cred_elect_est,Democracy
+o_max,xgb_tree_d3,m026017_o_max_ord29_rk00018,20,0.2598040490026504,29,effect_parl_est,Democracy
+o_max,xgb_tree_d3,m026017_o_max_ord29_rk00018,20,0.2598040490026504,29,local_dem_est,Democracy
+o_max,xgb_tree_d3,m026017_o_max_ord29_rk00018,20,0.2598040490026504,29,rights_est,Democracy
+o_max,xgb_tree_d3,m026017_o_max_ord29_rk00018,20,0.2598040490026504,29,access_just_est,Democracy
+o_max,xgb_tree_d3,m026017_o_max_ord29_rk00018,20,0.2598040490026504,29,civil_lib_est,Democracy
+o_max,xgb_tree_d3,m026017_o_max_ord29_rk00018,20,0.2598040490026504,29,free_express_est,Democracy
+o_max,xgb_tree_d3,m026017_o_max_ord29_rk00018,20,0.2598040490026504,29,free_press_est,Democracy
+o_max,xgb_tree_d3,m026017_o_max_ord29_rk00018,20,0.2598040490026504,29,free_assoc_assem_est,Democracy
+o_max,xgb_tree_d3,m026017_o_max_ord29_rk00018,20,0.2598040490026504,29,pol_equal_est,Democracy
+o_max,xgb_tree_d3,m026017_o_max_ord29_rk00018,20,0.2598040490026504,29,soc_grp_equal_est,Democracy
+o_max,xgb_tree_d3,m026017_o_max_ord29_rk00018,20,0.2598040490026504,29,econ_equal_est,Democracy
+o_max,xgb_tree_d3,m026017_o_max_ord29_rk00018,20,0.2598040490026504,29,gender_equal_est,Democracy
+o_max,xgb_tree_d3,m026017_o_max_ord29_rk00018,20,0.2598040490026504,29,rule_law_est,Democracy
+o_max,xgb_tree_d3,m026017_o_max_ord29_rk00018,20,0.2598040490026504,29,jud_ind_est,Democracy
+o_max,xgb_tree_d3,m026017_o_max_ord29_rk00018,20,0.2598040490026504,29,abs_corrupt_est,Democracy
+o_max,xgb_tree_d3,m026017_o_max_ord29_rk00018,20,0.2598040490026504,29,predict_enf_est,Democracy
+o_max,xgb_tree_d3,m026017_o_max_ord29_rk00018,20,0.2598040490026504,29,pers_integ_sec_est,Democracy
+o_max,xgb_tree_d3,m026017_o_max_ord29_rk00018,20,0.2598040490026504,29,participation_est,Democracy
+o_max,xgb_tree_d3,m026017_o_max_ord29_rk00018,20,0.2598040490026504,29,civil_soc_est,Democracy
+o_max,xgb_tree_d3,m026017_o_max_ord29_rk00018,20,0.2598040490026504,29,migration,Migration

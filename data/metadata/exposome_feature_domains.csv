@@ -1,0 +1,64 @@
+feature_name,domain
+PM2.5,Air Pollution
+Nitrogen oxide (NOx),Air Pollution
+Sulphur dioxide (SO₂) emissions,Air Pollution
+Carbon monoxide (CO) emissions,Air Pollution
+Black carbon (BC) emissions,Air Pollution
+Ammonia (NH₃) emissions,Air Pollution
+Non-methane volatile organic compounds (NMVOC) emissions,Air Pollution
+agri_emp_o,Soil and water quality
+climatedisaster_count_o,Climate disasters
+climatedisaster_naffected_o,Climate disasters
+maxgtemp_o,Temperature
+mean_anomalies_o,Temperature
+mean_anomalies_areaw_o,Temperature
+sd_lr_o,Temperature
+mean_prec2_areaw_o,Precipitation/droughts
+mean_prec2_o,Precipitation/droughts
+mean_temp_areaw_o,Temperature
+mean_temp_o,Temperature
+scpdsi_o,Precipitation/droughts
+scpdsi_aw_o,Precipitation/droughts
+Pop_basic_drinking-water(%),Soil and water quality
+Poisoning_mortality_rate,Soil and water quality
+deaths_notrans,Disease-related mortality
+deaths_trans,Disease-related mortality
+GINI,Socioeconomic
+HDI,Socioeconomic
+GII,Socioeconomic
+GDP,Socioeconomic
+unemp,Socioeconomic
+Electricity_demand (kWh),Socioeconomic
+representation_est,Democracy
+cred_elect_est,Democracy
+inclu_suff_est,Democracy
+free_parties_est,Democracy
+elected_gov_est,Democracy
+effect_parl_est,Democracy
+local_dem_est,Democracy
+rights_est,Democracy
+access_just_est,Democracy
+civil_lib_est,Democracy
+free_express_est,Democracy
+free_press_est,Democracy
+free_assoc_assem_est,Democracy
+free_relig_est,Democracy
+free_move_est,Democracy
+basic_welf_est,Democracy
+pol_equal_est,Democracy
+soc_grp_equal_est,Democracy
+econ_equal_est,Democracy
+gender_equal_est,Democracy
+rule_law_est,Democracy
+jud_ind_est,Democracy
+abs_corrupt_est,Democracy
+predict_enf_est,Democracy
+pers_integ_sec_est,Democracy
+participation_est,Democracy
+civil_soc_est,Democracy
+civic_engage_est,Democracy
+elect_part_est,Democracy
+direct_dem_est,Democracy
+migration,Migration
+Average share of green area in city/ urban area,Green space access
+Green area per capita (m2/person),Green space access

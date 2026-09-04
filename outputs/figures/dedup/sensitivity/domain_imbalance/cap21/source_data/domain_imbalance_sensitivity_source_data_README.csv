@@ -1,0 +1,73 @@
+figure,panel,sheet,item,value
+domain_imbalance_sensitivity,a1_struct_bestsingle_oinfo,a1_struct_bestsingle_oinfo,description,"Minimum and maximum O-information (nats) by set size for the Best single per domain candidate construction, structural BAG."
+domain_imbalance_sensitivity,a1_struct_bestsingle_oinfo,a1_struct_bestsingle_oinfo,n_rows_plotted,32
+domain_imbalance_sensitivity,a1_struct_bestsingle_oinfo,a1_struct_bestsingle_oinfo,notes,O-information is computed on the exposome matrix only and is independent of which BAG target is regressed.
+domain_imbalance_sensitivity,a1_struct_bestsingle_oinfo,a1_struct_bestsingle_oinfo,column: source_label,candidate source the curve was drawn for
+domain_imbalance_sensitivity,a1_struct_bestsingle_oinfo,a1_struct_bestsingle_oinfo,column: order,set size (number of exposures in the set)
+domain_imbalance_sensitivity,a1_struct_bestsingle_oinfo,a1_struct_bestsingle_oinfo,column: min_o_info,minimum O-information in nats at that set size (synergistic extreme)
+domain_imbalance_sensitivity,a1_struct_bestsingle_oinfo,a1_struct_bestsingle_oinfo,column: max_o_info,maximum O-information in nats at that set size (redundant extreme)
+domain_imbalance_sensitivity,a2_struct_bestsingle_perf,a2_struct_bestsingle_perf,description,"Held-out LOCO R² by model level for the Best single per domain candidate construction, structural BAG."
+domain_imbalance_sensitivity,a2_struct_bestsingle_perf,a2_struct_bestsingle_perf,n_rows_plotted,12
+domain_imbalance_sensitivity,a2_struct_bestsingle_perf,a2_struct_bestsingle_perf,notes,Top-K per series: 20.
+domain_imbalance_sensitivity,a2_struct_bestsingle_perf,a2_struct_bestsingle_perf,column: model_level,"model level (OLS, d1, d2, d3)"
+domain_imbalance_sensitivity,a2_struct_bestsingle_perf,a2_struct_bestsingle_perf,column: series,"top20_syn, top20_red, or best_exhaustive"
+domain_imbalance_sensitivity,a2_struct_bestsingle_perf,a2_struct_bestsingle_perf,column: median_r2,median held-out LOCO R² for that series (plotted marker)
+domain_imbalance_sensitivity,a2_struct_bestsingle_perf,a2_struct_bestsingle_perf,column: min_r2,minimum held-out LOCO R² (lower bound of shaded band)
+domain_imbalance_sensitivity,a2_struct_bestsingle_perf,a2_struct_bestsingle_perf,column: max_r2,maximum held-out LOCO R² (upper bound of shaded band)
+domain_imbalance_sensitivity,a2_struct_bestsingle_perf,a2_struct_bestsingle_perf,column: baseline_r2,covariate-only baseline for that level
+domain_imbalance_sensitivity,a2_struct_bestsingle_perf,a2_struct_bestsingle_perf,column: best_single_exposure_r2,best single-exposure model for that level
+domain_imbalance_sensitivity,a2_struct_bestsingle_perf,a2_struct_bestsingle_perf,column: original_complete_best_r2,original complete-pool best model for that level
+domain_imbalance_sensitivity,a3_struct_pc1_oinfo,a3_struct_pc1_oinfo,description,"Minimum and maximum O-information (nats) by set size for the Domain PC1 candidate construction, structural BAG."
+domain_imbalance_sensitivity,a3_struct_pc1_oinfo,a3_struct_pc1_oinfo,n_rows_plotted,8
+domain_imbalance_sensitivity,a3_struct_pc1_oinfo,a3_struct_pc1_oinfo,notes,O-information is computed on the exposome matrix only and is independent of which BAG target is regressed.
+domain_imbalance_sensitivity,a3_struct_pc1_oinfo,a3_struct_pc1_oinfo,column: source_label,candidate source the curve was drawn for
+domain_imbalance_sensitivity,a3_struct_pc1_oinfo,a3_struct_pc1_oinfo,column: order,set size (number of exposures in the set)
+domain_imbalance_sensitivity,a3_struct_pc1_oinfo,a3_struct_pc1_oinfo,column: min_o_info,minimum O-information in nats at that set size (synergistic extreme)
+domain_imbalance_sensitivity,a3_struct_pc1_oinfo,a3_struct_pc1_oinfo,column: max_o_info,maximum O-information in nats at that set size (redundant extreme)
+domain_imbalance_sensitivity,a4_struct_pc1_perf,a4_struct_pc1_perf,description,"Held-out LOCO R² by model level for the Domain PC1 candidate construction, structural BAG."
+domain_imbalance_sensitivity,a4_struct_pc1_perf,a4_struct_pc1_perf,n_rows_plotted,12
+domain_imbalance_sensitivity,a4_struct_pc1_perf,a4_struct_pc1_perf,notes,Top-K per series: 20.
+domain_imbalance_sensitivity,a4_struct_pc1_perf,a4_struct_pc1_perf,column: model_level,"model level (OLS, d1, d2, d3)"
+domain_imbalance_sensitivity,a4_struct_pc1_perf,a4_struct_pc1_perf,column: series,"top20_syn, top20_red, or best_exhaustive"
+domain_imbalance_sensitivity,a4_struct_pc1_perf,a4_struct_pc1_perf,column: median_r2,median held-out LOCO R² for that series (plotted marker)
+domain_imbalance_sensitivity,a4_struct_pc1_perf,a4_struct_pc1_perf,column: min_r2,minimum held-out LOCO R² (lower bound of shaded band)
+domain_imbalance_sensitivity,a4_struct_pc1_perf,a4_struct_pc1_perf,column: max_r2,maximum held-out LOCO R² (upper bound of shaded band)
+domain_imbalance_sensitivity,a4_struct_pc1_perf,a4_struct_pc1_perf,column: baseline_r2,covariate-only baseline for that level
+domain_imbalance_sensitivity,a4_struct_pc1_perf,a4_struct_pc1_perf,column: best_single_exposure_r2,best single-exposure model for that level
+domain_imbalance_sensitivity,a4_struct_pc1_perf,a4_struct_pc1_perf,column: original_complete_best_r2,original complete-pool best model for that level
+domain_imbalance_sensitivity,b1_func_bestsingle_oinfo,b1_func_bestsingle_oinfo,description,"Minimum and maximum O-information (nats) by set size for the Best single per domain candidate construction, functional BAG."
+domain_imbalance_sensitivity,b1_func_bestsingle_oinfo,b1_func_bestsingle_oinfo,n_rows_plotted,32
+domain_imbalance_sensitivity,b1_func_bestsingle_oinfo,b1_func_bestsingle_oinfo,notes,O-information is computed on the exposome matrix only and is independent of which BAG target is regressed.
+domain_imbalance_sensitivity,b1_func_bestsingle_oinfo,b1_func_bestsingle_oinfo,column: source_label,candidate source the curve was drawn for
+domain_imbalance_sensitivity,b1_func_bestsingle_oinfo,b1_func_bestsingle_oinfo,column: order,set size (number of exposures in the set)
+domain_imbalance_sensitivity,b1_func_bestsingle_oinfo,b1_func_bestsingle_oinfo,column: min_o_info,minimum O-information in nats at that set size (synergistic extreme)
+domain_imbalance_sensitivity,b1_func_bestsingle_oinfo,b1_func_bestsingle_oinfo,column: max_o_info,maximum O-information in nats at that set size (redundant extreme)
+domain_imbalance_sensitivity,b2_func_bestsingle_perf,b2_func_bestsingle_perf,description,"Held-out LOCO R² by model level for the Best single per domain candidate construction, functional BAG."
+domain_imbalance_sensitivity,b2_func_bestsingle_perf,b2_func_bestsingle_perf,n_rows_plotted,12
+domain_imbalance_sensitivity,b2_func_bestsingle_perf,b2_func_bestsingle_perf,notes,Top-K per series: 20.
+domain_imbalance_sensitivity,b2_func_bestsingle_perf,b2_func_bestsingle_perf,column: model_level,"model level (OLS, d1, d2, d3)"
+domain_imbalance_sensitivity,b2_func_bestsingle_perf,b2_func_bestsingle_perf,column: series,"top20_syn, top20_red, or best_exhaustive"
+domain_imbalance_sensitivity,b2_func_bestsingle_perf,b2_func_bestsingle_perf,column: median_r2,median held-out LOCO R² for that series (plotted marker)
+domain_imbalance_sensitivity,b2_func_bestsingle_perf,b2_func_bestsingle_perf,column: min_r2,minimum held-out LOCO R² (lower bound of shaded band)
+domain_imbalance_sensitivity,b2_func_bestsingle_perf,b2_func_bestsingle_perf,column: max_r2,maximum held-out LOCO R² (upper bound of shaded band)
+domain_imbalance_sensitivity,b2_func_bestsingle_perf,b2_func_bestsingle_perf,column: baseline_r2,covariate-only baseline for that level
+domain_imbalance_sensitivity,b2_func_bestsingle_perf,b2_func_bestsingle_perf,column: best_single_exposure_r2,best single-exposure model for that level
+domain_imbalance_sensitivity,b2_func_bestsingle_perf,b2_func_bestsingle_perf,column: original_complete_best_r2,original complete-pool best model for that level
+domain_imbalance_sensitivity,b3_func_pc1_oinfo,b3_func_pc1_oinfo,description,"Minimum and maximum O-information (nats) by set size for the Domain PC1 candidate construction, functional BAG."
+domain_imbalance_sensitivity,b3_func_pc1_oinfo,b3_func_pc1_oinfo,n_rows_plotted,8
+domain_imbalance_sensitivity,b3_func_pc1_oinfo,b3_func_pc1_oinfo,notes,O-information is computed on the exposome matrix only and is independent of which BAG target is regressed.
+domain_imbalance_sensitivity,b3_func_pc1_oinfo,b3_func_pc1_oinfo,column: source_label,candidate source the curve was drawn for
+domain_imbalance_sensitivity,b3_func_pc1_oinfo,b3_func_pc1_oinfo,column: order,set size (number of exposures in the set)
+domain_imbalance_sensitivity,b3_func_pc1_oinfo,b3_func_pc1_oinfo,column: min_o_info,minimum O-information in nats at that set size (synergistic extreme)
+domain_imbalance_sensitivity,b3_func_pc1_oinfo,b3_func_pc1_oinfo,column: max_o_info,maximum O-information in nats at that set size (redundant extreme)
+domain_imbalance_sensitivity,b4_func_pc1_perf,b4_func_pc1_perf,description,"Held-out LOCO R² by model level for the Domain PC1 candidate construction, functional BAG."
+domain_imbalance_sensitivity,b4_func_pc1_perf,b4_func_pc1_perf,n_rows_plotted,12
+domain_imbalance_sensitivity,b4_func_pc1_perf,b4_func_pc1_perf,notes,Top-K per series: 20.
+domain_imbalance_sensitivity,b4_func_pc1_perf,b4_func_pc1_perf,column: model_level,"model level (OLS, d1, d2, d3)"
+domain_imbalance_sensitivity,b4_func_pc1_perf,b4_func_pc1_perf,column: series,"top20_syn, top20_red, or best_exhaustive"
+domain_imbalance_sensitivity,b4_func_pc1_perf,b4_func_pc1_perf,column: median_r2,median held-out LOCO R² for that series (plotted marker)
+domain_imbalance_sensitivity,b4_func_pc1_perf,b4_func_pc1_perf,column: min_r2,minimum held-out LOCO R² (lower bound of shaded band)
+domain_imbalance_sensitivity,b4_func_pc1_perf,b4_func_pc1_perf,column: max_r2,maximum held-out LOCO R² (upper bound of shaded band)
+domain_imbalance_sensitivity,b4_func_pc1_perf,b4_func_pc1_perf,column: baseline_r2,covariate-only baseline for that level
+domain_imbalance_sensitivity,b4_func_pc1_perf,b4_func_pc1_perf,column: best_single_exposure_r2,best single-exposure model for that level
+domain_imbalance_sensitivity,b4_func_pc1_perf,b4_func_pc1_perf,column: original_complete_best_r2,original complete-pool best model for that level

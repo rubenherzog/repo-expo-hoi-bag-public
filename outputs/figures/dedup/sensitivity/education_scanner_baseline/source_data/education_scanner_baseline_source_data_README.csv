@@ -1,0 +1,55 @@
+figure,panel,sheet,item,value
+education_scanner_baseline,a1_struct_edu,a1_struct_edu,description,Structural BAG: held-out LOCO R² of the top-20 synergistic and top-20 redundant candidates per model level with + education.
+education_scanner_baseline,a1_struct_edu,a1_struct_edu,n_rows_plotted,4480
+education_scanner_baseline,a1_struct_edu,a1_struct_edu,notes,"Complete-case sample carrying both education and scanner identity. Box is the IQR, centre bar the median, whiskers 1.5x IQR."
+education_scanner_baseline,a1_struct_edu,a1_struct_edu,column: model_level,"model level (OLS, d1, d2, d3)"
+education_scanner_baseline,a1_struct_edu,a1_struct_edu,column: objective,"o_min = synergistic arm, o_max = redundant arm"
+education_scanner_baseline,a1_struct_edu,a1_struct_edu,column: candidate_id,candidate identifier
+education_scanner_baseline,a1_struct_edu,a1_struct_edu,column: full_r2,global out-of-fold LOCO R² for that candidate (plotted point)
+education_scanner_baseline,a1_struct_edu,a1_struct_edu,column: base_r2,covariate baseline R² for that level (black line)
+education_scanner_baseline,a1_struct_edu,a1_struct_edu,column: delta_r2_vs_base,full_r2 minus base_r2
+education_scanner_baseline,a2_struct_scan,a2_struct_scan,description,Structural BAG: held-out LOCO R² of the top-20 synergistic and top-20 redundant candidates per model level with + scanner.
+education_scanner_baseline,a2_struct_scan,a2_struct_scan,n_rows_plotted,4480
+education_scanner_baseline,a2_struct_scan,a2_struct_scan,notes,"Complete-case sample carrying both education and scanner identity. Box is the IQR, centre bar the median, whiskers 1.5x IQR."
+education_scanner_baseline,a2_struct_scan,a2_struct_scan,column: model_level,"model level (OLS, d1, d2, d3)"
+education_scanner_baseline,a2_struct_scan,a2_struct_scan,column: objective,"o_min = synergistic arm, o_max = redundant arm"
+education_scanner_baseline,a2_struct_scan,a2_struct_scan,column: candidate_id,candidate identifier
+education_scanner_baseline,a2_struct_scan,a2_struct_scan,column: full_r2,global out-of-fold LOCO R² for that candidate (plotted point)
+education_scanner_baseline,a2_struct_scan,a2_struct_scan,column: base_r2,covariate baseline R² for that level (black line)
+education_scanner_baseline,a2_struct_scan,a2_struct_scan,column: delta_r2_vs_base,full_r2 minus base_r2
+education_scanner_baseline,a3_struct_eduscan,a3_struct_eduscan,description,Structural BAG: held-out LOCO R² of the top-20 synergistic and top-20 redundant candidates per model level with + education + scanner.
+education_scanner_baseline,a3_struct_eduscan,a3_struct_eduscan,n_rows_plotted,4480
+education_scanner_baseline,a3_struct_eduscan,a3_struct_eduscan,notes,"Complete-case sample carrying both education and scanner identity. Box is the IQR, centre bar the median, whiskers 1.5x IQR."
+education_scanner_baseline,a3_struct_eduscan,a3_struct_eduscan,column: model_level,"model level (OLS, d1, d2, d3)"
+education_scanner_baseline,a3_struct_eduscan,a3_struct_eduscan,column: objective,"o_min = synergistic arm, o_max = redundant arm"
+education_scanner_baseline,a3_struct_eduscan,a3_struct_eduscan,column: candidate_id,candidate identifier
+education_scanner_baseline,a3_struct_eduscan,a3_struct_eduscan,column: full_r2,global out-of-fold LOCO R² for that candidate (plotted point)
+education_scanner_baseline,a3_struct_eduscan,a3_struct_eduscan,column: base_r2,covariate baseline R² for that level (black line)
+education_scanner_baseline,a3_struct_eduscan,a3_struct_eduscan,column: delta_r2_vs_base,full_r2 minus base_r2
+education_scanner_baseline,b1_func_edu,b1_func_edu,description,Functional BAG: held-out LOCO R² of the top-20 synergistic and top-20 redundant candidates per model level with + education.
+education_scanner_baseline,b1_func_edu,b1_func_edu,n_rows_plotted,4480
+education_scanner_baseline,b1_func_edu,b1_func_edu,notes,"Complete-case sample carrying both education and scanner identity. Box is the IQR, centre bar the median, whiskers 1.5x IQR."
+education_scanner_baseline,b1_func_edu,b1_func_edu,column: model_level,"model level (OLS, d1, d2, d3)"
+education_scanner_baseline,b1_func_edu,b1_func_edu,column: objective,"o_min = synergistic arm, o_max = redundant arm"
+education_scanner_baseline,b1_func_edu,b1_func_edu,column: candidate_id,candidate identifier
+education_scanner_baseline,b1_func_edu,b1_func_edu,column: full_r2,global out-of-fold LOCO R² for that candidate (plotted point)
+education_scanner_baseline,b1_func_edu,b1_func_edu,column: base_r2,covariate baseline R² for that level (black line)
+education_scanner_baseline,b1_func_edu,b1_func_edu,column: delta_r2_vs_base,full_r2 minus base_r2
+education_scanner_baseline,b2_func_scan,b2_func_scan,description,Functional BAG: held-out LOCO R² of the top-20 synergistic and top-20 redundant candidates per model level with + scanner.
+education_scanner_baseline,b2_func_scan,b2_func_scan,n_rows_plotted,4480
+education_scanner_baseline,b2_func_scan,b2_func_scan,notes,"Complete-case sample carrying both education and scanner identity. Box is the IQR, centre bar the median, whiskers 1.5x IQR."
+education_scanner_baseline,b2_func_scan,b2_func_scan,column: model_level,"model level (OLS, d1, d2, d3)"
+education_scanner_baseline,b2_func_scan,b2_func_scan,column: objective,"o_min = synergistic arm, o_max = redundant arm"
+education_scanner_baseline,b2_func_scan,b2_func_scan,column: candidate_id,candidate identifier
+education_scanner_baseline,b2_func_scan,b2_func_scan,column: full_r2,global out-of-fold LOCO R² for that candidate (plotted point)
+education_scanner_baseline,b2_func_scan,b2_func_scan,column: base_r2,covariate baseline R² for that level (black line)
+education_scanner_baseline,b2_func_scan,b2_func_scan,column: delta_r2_vs_base,full_r2 minus base_r2
+education_scanner_baseline,b3_func_eduscan,b3_func_eduscan,description,Functional BAG: held-out LOCO R² of the top-20 synergistic and top-20 redundant candidates per model level with + education + scanner.
+education_scanner_baseline,b3_func_eduscan,b3_func_eduscan,n_rows_plotted,4480
+education_scanner_baseline,b3_func_eduscan,b3_func_eduscan,notes,"Complete-case sample carrying both education and scanner identity. Box is the IQR, centre bar the median, whiskers 1.5x IQR."
+education_scanner_baseline,b3_func_eduscan,b3_func_eduscan,column: model_level,"model level (OLS, d1, d2, d3)"
+education_scanner_baseline,b3_func_eduscan,b3_func_eduscan,column: objective,"o_min = synergistic arm, o_max = redundant arm"
+education_scanner_baseline,b3_func_eduscan,b3_func_eduscan,column: candidate_id,candidate identifier
+education_scanner_baseline,b3_func_eduscan,b3_func_eduscan,column: full_r2,global out-of-fold LOCO R² for that candidate (plotted point)
+education_scanner_baseline,b3_func_eduscan,b3_func_eduscan,column: base_r2,covariate baseline R² for that level (black line)
+education_scanner_baseline,b3_func_eduscan,b3_func_eduscan,column: delta_r2_vs_base,full_r2 minus base_r2

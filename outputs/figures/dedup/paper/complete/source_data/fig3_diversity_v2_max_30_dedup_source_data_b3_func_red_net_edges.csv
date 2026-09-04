@@ -1,0 +1,10 @@
+bag,family,rung,domain_a,domain_b,cooccurrence_count,normalized_cooccurrence,in_top1_pair,edge_width_used,edge_rank
+functional,redundancy,xgb_tree_d3,Democracy,Socioeconomic,400,0.17691287041132242,True,,1
+functional,redundancy,xgb_tree_d3,Air Pollution,Democracy,126,0.05572755417956656,False,,2
+functional,redundancy,xgb_tree_d3,Democracy,Soil and water quality,126,0.05572755417956656,True,,3
+functional,redundancy,xgb_tree_d3,Democracy,Migration,83,0.0367094206103494,True,,4
+functional,redundancy,xgb_tree_d3,Socioeconomic,Soil and water quality,19,0.008403361344537815,True,,5
+functional,redundancy,xgb_tree_d3,Migration,Socioeconomic,13,0.005749668288367979,True,,6
+functional,redundancy,xgb_tree_d3,Air Pollution,Socioeconomic,12,0.005307386112339673,False,,7
+functional,redundancy,xgb_tree_d3,Air Pollution,Soil and water quality,6,0.0026536930561698365,False,,8
+functional,redundancy,xgb_tree_d3,Migration,Soil and water quality,4,0.0017691287041132243,True,,9

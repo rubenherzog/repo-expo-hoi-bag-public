@@ -1,0 +1,9 @@
+bag,family,rung,domain,display_label,domain_color,model_presence_topk,model_presence_fraction,within_domain_pair_count,in_top1_model,rank1_model_id,node_size_used,frequency_rank
+structural,redundancy,xgb_tree_d3,Democracy,Democracy,#ACD0A7,20,1.0,4300,True,m026012_o_max_ord29_rk00013,,1
+structural,redundancy,xgb_tree_d3,Socioeconomic,Socioeconomic,#CEBAAF,18,0.9,67,True,m026012_o_max_ord29_rk00013,,2
+structural,redundancy,xgb_tree_d3,Air Pollution,Air Pollution,#A6BCD3,16,0.8,15,True,m026012_o_max_ord29_rk00013,,3
+structural,redundancy,xgb_tree_d3,Migration,Migration,#F6E4A4,20,1.0,0,True,m026012_o_max_ord29_rk00013,,4
+structural,redundancy,xgb_tree_d3,Soil and water quality,Soil and water quality,#F0BEDE,19,0.95,0,True,m026012_o_max_ord29_rk00013,,5
+structural,redundancy,xgb_tree_d3,Green space access,Green space access,#BADBD8,5,0.25,0,False,,,6
+structural,redundancy,xgb_tree_d3,Disease-related mortality,Disease-related mortality,#F0ABAC,1,0.05,0,False,,,7
+structural,redundancy,xgb_tree_d3,Temperature,Temperature,#A4CCCA,1,0.05,0,False,,,8

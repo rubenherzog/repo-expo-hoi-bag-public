@@ -1,0 +1,64 @@
+feature_name
+PM2.5
+Nitrogen oxide (NOx)
+Sulphur dioxide (SO₂) emissions
+Carbon monoxide (CO) emissions
+Black carbon (BC) emissions
+Ammonia (NH₃) emissions
+Non-methane volatile organic compounds (NMVOC) emissions
+agri_emp_o
+climatedisaster_count_o
+climatedisaster_naffected_o
+maxgtemp_o
+mean_anomalies_o
+mean_anomalies_areaw_o
+sd_lr_o
+mean_prec2_areaw_o
+mean_prec2_o
+mean_temp_areaw_o
+mean_temp_o
+scpdsi_o
+scpdsi_aw_o
+Pop_basic_drinking-water(%)
+Poisoning_mortality_rate
+deaths_notrans
+deaths_trans
+GINI
+HDI
+GII
+GDP
+unemp
+Electricity_demand (kWh)
+representation_est
+cred_elect_est
+inclu_suff_est
+free_parties_est
+elected_gov_est
+effect_parl_est
+local_dem_est
+rights_est
+access_just_est
+civil_lib_est
+free_express_est
+free_press_est
+free_assoc_assem_est
+free_relig_est
+free_move_est
+basic_welf_est
+pol_equal_est
+soc_grp_equal_est
+econ_equal_est
+gender_equal_est
+rule_law_est
+jud_ind_est
+abs_corrupt_est
+predict_enf_est
+pers_integ_sec_est
+participation_est
+civil_soc_est
+civic_engage_est
+elect_part_est
+direct_dem_est
+migration
+Average share of green area in city/ urban area
+Green area per capita (m2/person)

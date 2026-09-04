@@ -1,0 +1,103 @@
+figure,panel,sheet,item,value
+fig3_diversity_v2_max_30_dedup,a1_struct_diversity_scatter,a1_struct_diversity_scatter,description,Structural BAG prediction against domain diversity: one point per candidate of the best-performing model level.
+fig3_diversity_v2_max_30_dedup,a1_struct_diversity_scatter,a1_struct_diversity_scatter,n_rows_plotted,1120
+fig3_diversity_v2_max_30_dedup,a1_struct_diversity_scatter,a1_struct_diversity_scatter,notes,Only candidates of the best model level per arm are plotted. The fitted line and its 95% band come from the regression in the companion stats sheet.
+fig3_diversity_v2_max_30_dedup,a1_struct_diversity_scatter,a1_struct_diversity_scatter,column: objective,o_min = synergistic (min O-information) arm; o_max = redundant (max O-information) arm
+fig3_diversity_v2_max_30_dedup,a1_struct_diversity_scatter,a1_struct_diversity_scatter,column: rung,model level the candidates were drawn from (highest-R² level for that arm)
+fig3_diversity_v2_max_30_dedup,a1_struct_diversity_scatter,a1_struct_diversity_scatter,column: model_id,identifier of the exposure set
+fig3_diversity_v2_max_30_dedup,a1_struct_diversity_scatter,a1_struct_diversity_scatter,column: order,set size (number of exposures)
+fig3_diversity_v2_max_30_dedup,a1_struct_diversity_scatter,a1_struct_diversity_scatter,column: global_oof_r2,held-out LOCO R² -- the y axis
+fig3_diversity_v2_max_30_dedup,a1_struct_diversity_scatter,a1_struct_diversity_scatter,column: shannon_h,Shannon domain entropy H (bits) -- the x axis
+fig3_diversity_v2_max_30_dedup,a1_struct_diversity_scatter,a1_struct_diversity_scatter,column: n_domains,unique exposome domains in the set
+fig3_diversity_v2_max_30_dedup,a1_struct_diversity_scatter,a1_struct_diversity_scatter,column: dominant_domain,most frequent domain in the set
+fig3_diversity_v2_max_30_dedup,a1s_struct_diversity_stats,a1s_struct_diversity_stats,description,"Structural BAG: least-squares fit of held-out LOCO R² on Shannon domain entropy H, per arm -- the line and statistics annotated on the scatter."
+fig3_diversity_v2_max_30_dedup,a1s_struct_diversity_stats,a1s_struct_diversity_stats,n_rows_plotted,2
+fig3_diversity_v2_max_30_dedup,a1s_struct_diversity_stats,a1s_struct_diversity_stats,statistical_test,Two-sided t-test on the slope of an ordinary least-squares regression (scipy.stats.linregress).
+fig3_diversity_v2_max_30_dedup,a1s_struct_diversity_stats,a1s_struct_diversity_stats,notes,p_value is the exact value returned by the test; it is never rounded to or reported as a bound.
+fig3_diversity_v2_max_30_dedup,a1s_struct_diversity_stats,a1s_struct_diversity_stats,column: objective,o_min = synergistic (min O-information) arm; o_max = redundant (max O-information) arm
+fig3_diversity_v2_max_30_dedup,a1s_struct_diversity_stats,a1s_struct_diversity_stats,column: arm_label,arm as labelled in the panel legend
+fig3_diversity_v2_max_30_dedup,a1s_struct_diversity_stats,a1s_struct_diversity_stats,column: n_candidates,candidates entering the fit
+fig3_diversity_v2_max_30_dedup,a1s_struct_diversity_stats,a1s_struct_diversity_stats,column: slope_beta_h,slope on Shannon domain entropy H (R² per bit)
+fig3_diversity_v2_max_30_dedup,a1s_struct_diversity_stats,a1s_struct_diversity_stats,column: intercept,fitted intercept
+fig3_diversity_v2_max_30_dedup,a1s_struct_diversity_stats,a1s_struct_diversity_stats,column: pearson_r,Pearson correlation coefficient
+fig3_diversity_v2_max_30_dedup,a1s_struct_diversity_stats,a1s_struct_diversity_stats,column: p_value,exact two-sided p-value for the slope
+fig3_diversity_v2_max_30_dedup,a1s_struct_diversity_stats,a1s_struct_diversity_stats,column: stderr,standard error of the slope
+fig3_diversity_v2_max_30_dedup,a2_struct_domain_composition,a2_struct_domain_composition,description,"Structural BAG domain composition: every predictor of the top-20 candidates per arm, with the domain it belongs to."
+fig3_diversity_v2_max_30_dedup,a2_struct_domain_composition,a2_struct_domain_composition,n_rows_plotted,783
+fig3_diversity_v2_max_30_dedup,a2_struct_domain_composition,a2_struct_domain_composition,notes,"One row per predictor per candidate, so a candidate of set size k contributes k rows."
+fig3_diversity_v2_max_30_dedup,a2_struct_domain_composition,a2_struct_domain_composition,column: objective,o_min = synergistic (min O-information) arm; o_max = redundant (max O-information) arm
+fig3_diversity_v2_max_30_dedup,a2_struct_domain_composition,a2_struct_domain_composition,column: rung,model level the candidates were drawn from
+fig3_diversity_v2_max_30_dedup,a2_struct_domain_composition,a2_struct_domain_composition,column: model_id,identifier of the exposure set
+fig3_diversity_v2_max_30_dedup,a2_struct_domain_composition,a2_struct_domain_composition,column: model_rank,"rank of that candidate within its arm, 1 = highest R²"
+fig3_diversity_v2_max_30_dedup,a2_struct_domain_composition,a2_struct_domain_composition,column: global_oof_r2,held-out LOCO R² of that candidate
+fig3_diversity_v2_max_30_dedup,a2_struct_domain_composition,a2_struct_domain_composition,column: order,set size (number of exposures)
+fig3_diversity_v2_max_30_dedup,a2_struct_domain_composition,a2_struct_domain_composition,column: variable,exposome predictor name
+fig3_diversity_v2_max_30_dedup,a2_struct_domain_composition,a2_struct_domain_composition,column: domain,exposome domain of that predictor
+fig3_diversity_v2_max_30_dedup,a3_struct_red_net_nodes,a3_struct_red_net_nodes,description,"Structural BAG redundancy domain network: node sizes, i.e. how often each domain appears across the top-20 candidates."
+fig3_diversity_v2_max_30_dedup,a3_struct_red_net_nodes,a3_struct_red_net_nodes,n_rows_plotted,8
+fig3_diversity_v2_max_30_dedup,a3_struct_red_net_nodes,a3_struct_red_net_nodes,notes,Node and edge sheets together define the drawn network.
+fig3_diversity_v2_max_30_dedup,a3_struct_red_net_nodes,a3_struct_red_net_nodes,column: node size reflects the domain's frequency across the plotted candidates,
+fig3_diversity_v2_max_30_dedup,a3_struct_red_net_edges,a3_struct_red_net_edges,description,"Structural BAG redundancy domain network: edge weights, i.e. how often each domain pair co-occurs within a candidate."
+fig3_diversity_v2_max_30_dedup,a3_struct_red_net_edges,a3_struct_red_net_edges,n_rows_plotted,24
+fig3_diversity_v2_max_30_dedup,a3_struct_red_net_edges,a3_struct_red_net_edges,notes,Edge width bins and the colour maximum are computed across every network in the figure so panels are comparable.
+fig3_diversity_v2_max_30_dedup,a3_struct_red_net_edges,a3_struct_red_net_edges,"column: edge width and colour are binned on the weight, shared across all four networks",
+fig3_diversity_v2_max_30_dedup,a4_struct_syn_net_nodes,a4_struct_syn_net_nodes,description,"Structural BAG synergy domain network: node sizes, i.e. how often each domain appears across the top-20 candidates."
+fig3_diversity_v2_max_30_dedup,a4_struct_syn_net_nodes,a4_struct_syn_net_nodes,n_rows_plotted,10
+fig3_diversity_v2_max_30_dedup,a4_struct_syn_net_nodes,a4_struct_syn_net_nodes,notes,Node and edge sheets together define the drawn network.
+fig3_diversity_v2_max_30_dedup,a4_struct_syn_net_nodes,a4_struct_syn_net_nodes,column: node size reflects the domain's frequency across the plotted candidates,
+fig3_diversity_v2_max_30_dedup,a4_struct_syn_net_edges,a4_struct_syn_net_edges,description,"Structural BAG synergy domain network: edge weights, i.e. how often each domain pair co-occurs within a candidate."
+fig3_diversity_v2_max_30_dedup,a4_struct_syn_net_edges,a4_struct_syn_net_edges,n_rows_plotted,44
+fig3_diversity_v2_max_30_dedup,a4_struct_syn_net_edges,a4_struct_syn_net_edges,notes,Edge width bins and the colour maximum are computed across every network in the figure so panels are comparable.
+fig3_diversity_v2_max_30_dedup,a4_struct_syn_net_edges,a4_struct_syn_net_edges,"column: edge width and colour are binned on the weight, shared across all four networks",
+fig3_diversity_v2_max_30_dedup,b1_func_diversity_scatter,b1_func_diversity_scatter,description,Functional BAG prediction against domain diversity: one point per candidate of the best-performing model level.
+fig3_diversity_v2_max_30_dedup,b1_func_diversity_scatter,b1_func_diversity_scatter,n_rows_plotted,1120
+fig3_diversity_v2_max_30_dedup,b1_func_diversity_scatter,b1_func_diversity_scatter,notes,Only candidates of the best model level per arm are plotted. The fitted line and its 95% band come from the regression in the companion stats sheet.
+fig3_diversity_v2_max_30_dedup,b1_func_diversity_scatter,b1_func_diversity_scatter,column: objective,o_min = synergistic (min O-information) arm; o_max = redundant (max O-information) arm
+fig3_diversity_v2_max_30_dedup,b1_func_diversity_scatter,b1_func_diversity_scatter,column: rung,model level the candidates were drawn from (highest-R² level for that arm)
+fig3_diversity_v2_max_30_dedup,b1_func_diversity_scatter,b1_func_diversity_scatter,column: model_id,identifier of the exposure set
+fig3_diversity_v2_max_30_dedup,b1_func_diversity_scatter,b1_func_diversity_scatter,column: order,set size (number of exposures)
+fig3_diversity_v2_max_30_dedup,b1_func_diversity_scatter,b1_func_diversity_scatter,column: global_oof_r2,held-out LOCO R² -- the y axis
+fig3_diversity_v2_max_30_dedup,b1_func_diversity_scatter,b1_func_diversity_scatter,column: shannon_h,Shannon domain entropy H (bits) -- the x axis
+fig3_diversity_v2_max_30_dedup,b1_func_diversity_scatter,b1_func_diversity_scatter,column: n_domains,unique exposome domains in the set
+fig3_diversity_v2_max_30_dedup,b1_func_diversity_scatter,b1_func_diversity_scatter,column: dominant_domain,most frequent domain in the set
+fig3_diversity_v2_max_30_dedup,b1s_func_diversity_stats,b1s_func_diversity_stats,description,"Functional BAG: least-squares fit of held-out LOCO R² on Shannon domain entropy H, per arm -- the line and statistics annotated on the scatter."
+fig3_diversity_v2_max_30_dedup,b1s_func_diversity_stats,b1s_func_diversity_stats,n_rows_plotted,2
+fig3_diversity_v2_max_30_dedup,b1s_func_diversity_stats,b1s_func_diversity_stats,statistical_test,Two-sided t-test on the slope of an ordinary least-squares regression (scipy.stats.linregress).
+fig3_diversity_v2_max_30_dedup,b1s_func_diversity_stats,b1s_func_diversity_stats,notes,p_value is the exact value returned by the test; it is never rounded to or reported as a bound.
+fig3_diversity_v2_max_30_dedup,b1s_func_diversity_stats,b1s_func_diversity_stats,column: objective,o_min = synergistic (min O-information) arm; o_max = redundant (max O-information) arm
+fig3_diversity_v2_max_30_dedup,b1s_func_diversity_stats,b1s_func_diversity_stats,column: arm_label,arm as labelled in the panel legend
+fig3_diversity_v2_max_30_dedup,b1s_func_diversity_stats,b1s_func_diversity_stats,column: n_candidates,candidates entering the fit
+fig3_diversity_v2_max_30_dedup,b1s_func_diversity_stats,b1s_func_diversity_stats,column: slope_beta_h,slope on Shannon domain entropy H (R² per bit)
+fig3_diversity_v2_max_30_dedup,b1s_func_diversity_stats,b1s_func_diversity_stats,column: intercept,fitted intercept
+fig3_diversity_v2_max_30_dedup,b1s_func_diversity_stats,b1s_func_diversity_stats,column: pearson_r,Pearson correlation coefficient
+fig3_diversity_v2_max_30_dedup,b1s_func_diversity_stats,b1s_func_diversity_stats,column: p_value,exact two-sided p-value for the slope
+fig3_diversity_v2_max_30_dedup,b1s_func_diversity_stats,b1s_func_diversity_stats,column: stderr,standard error of the slope
+fig3_diversity_v2_max_30_dedup,b2_func_domain_composition,b2_func_domain_composition,description,"Functional BAG domain composition: every predictor of the top-20 candidates per arm, with the domain it belongs to."
+fig3_diversity_v2_max_30_dedup,b2_func_domain_composition,b2_func_domain_composition,n_rows_plotted,685
+fig3_diversity_v2_max_30_dedup,b2_func_domain_composition,b2_func_domain_composition,notes,"One row per predictor per candidate, so a candidate of set size k contributes k rows."
+fig3_diversity_v2_max_30_dedup,b2_func_domain_composition,b2_func_domain_composition,column: objective,o_min = synergistic (min O-information) arm; o_max = redundant (max O-information) arm
+fig3_diversity_v2_max_30_dedup,b2_func_domain_composition,b2_func_domain_composition,column: rung,model level the candidates were drawn from
+fig3_diversity_v2_max_30_dedup,b2_func_domain_composition,b2_func_domain_composition,column: model_id,identifier of the exposure set
+fig3_diversity_v2_max_30_dedup,b2_func_domain_composition,b2_func_domain_composition,column: model_rank,"rank of that candidate within its arm, 1 = highest R²"
+fig3_diversity_v2_max_30_dedup,b2_func_domain_composition,b2_func_domain_composition,column: global_oof_r2,held-out LOCO R² of that candidate
+fig3_diversity_v2_max_30_dedup,b2_func_domain_composition,b2_func_domain_composition,column: order,set size (number of exposures)
+fig3_diversity_v2_max_30_dedup,b2_func_domain_composition,b2_func_domain_composition,column: variable,exposome predictor name
+fig3_diversity_v2_max_30_dedup,b2_func_domain_composition,b2_func_domain_composition,column: domain,exposome domain of that predictor
+fig3_diversity_v2_max_30_dedup,b3_func_red_net_nodes,b3_func_red_net_nodes,description,"Functional BAG redundancy domain network: node sizes, i.e. how often each domain appears across the top-20 candidates."
+fig3_diversity_v2_max_30_dedup,b3_func_red_net_nodes,b3_func_red_net_nodes,n_rows_plotted,5
+fig3_diversity_v2_max_30_dedup,b3_func_red_net_nodes,b3_func_red_net_nodes,notes,Node and edge sheets together define the drawn network.
+fig3_diversity_v2_max_30_dedup,b3_func_red_net_nodes,b3_func_red_net_nodes,column: node size reflects the domain's frequency across the plotted candidates,
+fig3_diversity_v2_max_30_dedup,b3_func_red_net_edges,b3_func_red_net_edges,description,"Functional BAG redundancy domain network: edge weights, i.e. how often each domain pair co-occurs within a candidate."
+fig3_diversity_v2_max_30_dedup,b3_func_red_net_edges,b3_func_red_net_edges,n_rows_plotted,9
+fig3_diversity_v2_max_30_dedup,b3_func_red_net_edges,b3_func_red_net_edges,notes,Edge width bins and the colour maximum are computed across every network in the figure so panels are comparable.
+fig3_diversity_v2_max_30_dedup,b3_func_red_net_edges,b3_func_red_net_edges,"column: edge width and colour are binned on the weight, shared across all four networks",
+fig3_diversity_v2_max_30_dedup,b4_func_syn_net_nodes,b4_func_syn_net_nodes,description,"Functional BAG synergy domain network: node sizes, i.e. how often each domain appears across the top-20 candidates."
+fig3_diversity_v2_max_30_dedup,b4_func_syn_net_nodes,b4_func_syn_net_nodes,n_rows_plotted,9
+fig3_diversity_v2_max_30_dedup,b4_func_syn_net_nodes,b4_func_syn_net_nodes,notes,Node and edge sheets together define the drawn network.
+fig3_diversity_v2_max_30_dedup,b4_func_syn_net_nodes,b4_func_syn_net_nodes,column: node size reflects the domain's frequency across the plotted candidates,
+fig3_diversity_v2_max_30_dedup,b4_func_syn_net_edges,b4_func_syn_net_edges,description,"Functional BAG synergy domain network: edge weights, i.e. how often each domain pair co-occurs within a candidate."
+fig3_diversity_v2_max_30_dedup,b4_func_syn_net_edges,b4_func_syn_net_edges,n_rows_plotted,36
+fig3_diversity_v2_max_30_dedup,b4_func_syn_net_edges,b4_func_syn_net_edges,notes,Edge width bins and the colour maximum are computed across every network in the figure so panels are comparable.
+fig3_diversity_v2_max_30_dedup,b4_func_syn_net_edges,b4_func_syn_net_edges,"column: edge width and colour are binned on the weight, shared across all four networks",
+fig3_diversity_v2_max_30_dedup,,,generated_from,/data/workspaces/neuromodelling/rherzog/Brainlat/expo_hoi_bag_repro_data_dedup/runs/oinfo_only/variant_a/families/pooled_oinfo_ladder/canonical/per_experiment/pooled_oinfo_ladder_<bag>/metrics_global_long.parquet
+fig3_diversity_v2_max_30_dedup,,,generated_from,/data/workspaces/neuromodelling/rherzog/Brainlat/expo_hoi_bag_repro_data_dedup/work/compatibility_runtime/data/exposome_feature_domains.csv
