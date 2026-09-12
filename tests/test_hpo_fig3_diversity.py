@@ -3,7 +3,6 @@ from pathlib import Path
 import pandas as pd
 
 from repo_expo_hoi_bag.stages.plot_hpo_fig3_diversity import (
-    _adjusted_regression_table,
     _build_tables,
     _country_balanced,
     _metrics_path,
@@ -57,22 +56,3 @@ def test_fig3_selects_the_best_rung_then_its_candidates() -> None:
     assert len(scatter) == 80
     assert len(recipe) == 240
     assert set(scatter["rung"]) == {"xgb_tree_d3"}
-
-
-def test_adjusted_diversity_regression_reports_entropy_and_set_size_terms() -> None:
-    rows = []
-    for index in range(12):
-        rows.append(
-            {
-                "bag": "structural",
-                "objective": "o_min",
-                "country_balanced_r2": 0.1 + index * 0.01,
-                "shannon_h": index / 10,
-                "order": 3 + (index % 4),
-            }
-        )
-
-    result = _adjusted_regression_table(pd.DataFrame(rows))
-
-    assert result.loc[0, "formula"] == "country_balanced_r2 ~ shannon_h + order"
-    assert int(result.loc[0, "n_candidates"]) == 12

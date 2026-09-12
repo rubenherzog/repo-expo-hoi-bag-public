@@ -209,33 +209,6 @@ def _regression_table(scatter: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def _adjusted_regression_table(scatter: pd.DataFrame) -> pd.DataFrame:
-    """Estimate diversity associations after adjusting for candidate set size."""
-    import statsmodels.formula.api as smf
-
-    rows: list[dict[str, object]] = []
-    for (bag, objective), group in scatter.groupby(["bag", "objective"], observed=True):
-        group = group.dropna(subset=["country_balanced_r2", "shannon_h", "order"])
-        if len(group) < 10:
-            raise ValueError(f"Too few candidates for adjusted regression: {bag}/{objective}")
-        model = smf.ols("country_balanced_r2 ~ shannon_h + order", data=group).fit()
-        rows.append({
-            "bag": bag,
-            "objective": objective,
-            "n_candidates": int(model.nobs),
-            "r_squared": float(model.rsquared),
-            "intercept": float(model.params["Intercept"]),
-            "entropy_beta": float(model.params["shannon_h"]),
-            "entropy_stderr": float(model.bse["shannon_h"]),
-            "entropy_p_value": float(model.pvalues["shannon_h"]),
-            "set_size_beta": float(model.params["order"]),
-            "set_size_stderr": float(model.bse["order"]),
-            "set_size_p_value": float(model.pvalues["order"]),
-            "formula": "country_balanced_r2 ~ shannon_h + order",
-        })
-    return pd.DataFrame(rows)
-
-
 def _render(scatter: pd.DataFrame, recipe: pd.DataFrame, output_dir: Path, sources: list[str]) -> None:
     figure = _legacy_figure_module()
     networks: dict[tuple[str, str], Any] = {}
@@ -346,14 +319,12 @@ def main() -> None:
     metrics = pd.concat(all_metrics, ignore_index=True)
     scatter, recipe, selected = _build_tables(metrics, domains)
     regressions = _regression_table(scatter)
-    adjusted_regressions = _adjusted_regression_table(scatter)
     stats_dir = repro_root / "results" / "analysis_runs" / "paper_reanalysis_k10" / "main_statistics" / "fig3_diversity"
     _atomic_csv(metrics, stats_dir / "candidate_country_balanced_metrics.csv")
     _atomic_csv(selected, stats_dir / "selected_rungs.csv")
     _atomic_csv(scatter, stats_dir / "per_candidate_diversity_scatter.csv")
     _atomic_csv(recipe, stats_dir / "per_candidate_recipe_top20.csv")
     _atomic_csv(regressions, stats_dir / "domain_diversity_regression.csv")
-    _atomic_csv(adjusted_regressions, stats_dir / "domain_diversity_adjusted_for_set_size.csv")
     manifest = {"hpo_set": "k10", "performance_estimator": "mean R2 over held-out countries", "order_max": ORDER_MAX,
                 "top_k": TOP_K, "sources": sources}
     (stats_dir / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
