@@ -1,0 +1,15 @@
+bag,condition,rung_id,single_r2,single_feature,source
+structural,CN->CN,ols,0.2107802977284502,maxgtemp_o,normative_single
+structural,AD->AD,ols,0.1806190699648445,mean_temp_areaw_o,normative_single
+structural,AD->FTD,ols,0.2904470787338744,GINI,normative_single
+structural,FTD->FTD,ols,0.3285248454545891,scpdsi_aw_o,normative_single
+structural,FTD->AD,ols,0.191454363253598,migration,normative_single
+structural,AD+FTD->AD,ols,0.2024376776046063,mean_temp_areaw_o,normative_single
+structural,AD+FTD->FTD,ols,0.3270315564560495,GINI,normative_single
+functional,CN->CN,ols,0.4415968840687448,mean_temp_o,normative_single
+functional,AD->AD,ols,0.4879865210046337,free_parties_est,normative_single
+functional,AD->FTD,ols,0.2856759024839819,scpdsi_o,normative_single
+functional,FTD->FTD,ols,0.4621929952680293,free_press_est,normative_single
+functional,FTD->AD,ols,0.3202847010261647,Green area per capita (m2/person),normative_single
+functional,AD+FTD->AD,ols,0.4923146324894579,pol_equal_est,normative_single
+functional,AD+FTD->FTD,ols,0.4677305726524557,agri_emp_o,normative_single

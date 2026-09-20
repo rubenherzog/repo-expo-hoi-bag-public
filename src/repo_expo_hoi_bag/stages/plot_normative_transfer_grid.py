@@ -56,18 +56,39 @@ REPRO_DATA_ROOT = Path(_repro_data_root) if _repro_data_root else REPO_ROOT
 _default_output_root = Path(_repro_data_root) / "results" / VARIANT if _repro_data_root else Path("outputs") / VARIANT
 V3_OUTPUT_ROOT = Path(os.environ.get("V3_OUTPUT_ROOT", str(_default_output_root)))
 BUNDLE_ROOT = V3_OUTPUT_ROOT if V3_OUTPUT_ROOT.name == VARIANT else V3_OUTPUT_ROOT / VARIANT
+POOLED_CANONICAL_ROOT = Path(
+    os.environ.get(
+        "NORM_POOLED_CANONICAL_ROOT",
+        str(BUNDLE_ROOT / "families" / "pooled_oinfo_ladder" / "canonical"),
+    )
+)
 
 PAPER_FIGURES_DIR = Path(os.environ.get("REPRO_FIGURES_ROOT", str(REPO_ROOT / "paper_figures")))
-LOCAL_STATS_DIR = BUNDLE_ROOT / "stats" / "normative_transfer_grid"
+LOCAL_STATS_DIR = Path(
+    os.environ.get(
+        "NORM_TRANSFER_STATS_DIR",
+        str(BUNDLE_ROOT / "stats" / "normative_transfer_grid"),
+    )
+)
 FIG_SUFFIX = os.environ.get("NORM_FIG_SUFFIX", "").strip()
 FIG_SUFFIX_PART = f"_{FIG_SUFFIX}" if FIG_SUFFIX else ""
+FIG_STEM_TEMPLATE = os.environ.get(
+    "NORM_FIG_STEM_TEMPLATE",
+    "fig_normative_transfer_grid_{bag}{suffix}",
+)
 
 SINGLE_COLOR = "#E07B00"
 SYN_COLOR = "#1B6B2E"
 RED_COLOR = "#4B0082"
 
-RUNG_ORDER = ["ols", "xgb_tree_d1", "xgb_tree_d2", "xgb_tree_d3"]
-RUNG_LABELS = ["OLS", "d1", "d2", "d3"]
+RUNG_ORDER = [
+    rung.strip()
+    for rung in os.environ.get(
+        "NORM_TRANSFER_RUNGS",
+        "ols,xgb_tree_d1,xgb_tree_d2,xgb_tree_d3",
+    ).split(",")
+    if rung.strip()
+]
 RUNG_COLORS = {
     "ols": "#666666",
     "xgb_tree_d1": "#E6AB02",
@@ -80,6 +101,7 @@ RUNG_DISPLAY = {
     "xgb_tree_d2": "d2",
     "xgb_tree_d3": "d3",
 }
+RUNG_LABELS = [RUNG_DISPLAY.get(rung, rung) for rung in RUNG_ORDER]
 
 BAGS = ["functional", "structural"]
 CONDITION_ORDER = [
@@ -139,22 +161,74 @@ def _cohen_f2(r2: pd.Series, baseline_r2: pd.Series) -> pd.Series:
     return out.replace([np.inf, -np.inf], np.nan)
 
 
+def _country_balanced_r2(path: Path) -> pd.Series:
+    """Return the unweighted country mean used by the main Fig. 2."""
+    frame = pd.read_csv(_require(path))
+    frame["r2"] = pd.to_numeric(frame["r2"], errors="coerce")
+    if "n_test" in frame.columns:
+        frame = frame[pd.to_numeric(frame["n_test"], errors="coerce").gt(0)]
+    frame = frame[np.isfinite(frame["r2"])].copy()
+    return frame.groupby("candidate_id", observed=True)["r2"].mean()
+
+
+def _apply_main_pooled_scores(df: pd.DataFrame, bag: str) -> pd.DataFrame:
+    """Replace adapter scores with the exact country-balanced Fig. 2 scores."""
+    configured_root = os.environ.get("NORM_POOLED_MAIN_RUN_ROOT", "").strip()
+    if not configured_root:
+        return df
+    root = Path(configured_root)
+    parts = []
+    for rung in RUNG_ORDER:
+        family = "ols" if rung == "ols" else "xgb"
+        leaf = "ols" if rung == "ols" else "k10"
+        rung_root = root / family / bag / rung
+        scores = _country_balanced_r2(rung_root / leaf / "metrics_country.csv")
+        baseline = float(
+            _country_balanced_r2(rung_root / "baseline" / "metrics_country.csv").iloc[0]
+        )
+        part = df[df["rung_id"].astype(str).eq(rung)].copy()
+        part["r2"] = part["candidate_id"].map(scores)
+        if part["r2"].isna().any():
+            missing = sorted(part.loc[part["r2"].isna(), "candidate_id"].astype(str).unique())
+            raise ValueError(f"Main pooled scores are missing {bag}/{rung}: {missing[:5]}")
+        part["baseline_r2"] = baseline
+        part["delta_r2"] = part["r2"] - baseline
+        part["source"] = "main_fig2_country_balanced"
+        parts.append(part)
+    return pd.concat(parts, ignore_index=True)
+
+
 def _load_pooled(bag: str) -> pd.DataFrame:
     path = (
-        BUNDLE_ROOT
-        / "families"
-        / "pooled_oinfo_ladder"
-        / "canonical"
+        POOLED_CANONICAL_ROOT
         / "per_experiment"
         / f"pooled_oinfo_ladder_{bag}"
         / "metrics_global_long.parquet"
     )
     df = pd.read_parquet(_require(path))
+    pooled_ols_root = os.environ.get("NORM_POOLED_OLS_CANONICAL_ROOT", "").strip()
+    if pooled_ols_root:
+        ols_path = (
+            Path(pooled_ols_root)
+            / "per_experiment"
+            / f"pooled_oinfo_ladder_{bag}"
+            / "metrics_global_long.parquet"
+        )
+        historical_ols = pd.read_parquet(_require(ols_path))
+        historical_ols = historical_ols[historical_ols["rung_id"].astype(str).eq("ols")]
+        df = pd.concat([df, historical_ols], ignore_index=True)
     df = df[
         df["rung_id"].isin(RUNG_ORDER)
         & df["objective"].isin(["o_min", "o_max"])
         & (pd.to_numeric(df["order"], errors="coerce") <= ORDER_MAX)
     ].copy()
+    full_r2 = pd.to_numeric(df["full_r2"], errors="coerce")
+    base_r2 = pd.to_numeric(df["base_r2"], errors="coerce")
+    delta_r2 = (
+        pd.to_numeric(df["delta_r2_vs_base"], errors="coerce")
+        if "delta_r2_vs_base" in df.columns
+        else full_r2 - base_r2
+    )
     out = pd.DataFrame(
         {
             "bag": bag,
@@ -167,21 +241,29 @@ def _load_pooled(bag: str) -> pd.DataFrame:
             "order": pd.to_numeric(df["order"], errors="coerce"),
             "candidate_id": df["candidate_id"],
             "predictors_identity": df.get("predictors_identity", ""),
-            "r2": pd.to_numeric(df["full_r2"], errors="coerce"),
-            "baseline_r2": pd.to_numeric(df["base_r2"], errors="coerce"),
-            "delta_r2": pd.to_numeric(df["delta_r2_vs_base"], errors="coerce"),
+            "r2": full_r2,
+            "baseline_r2": base_r2,
+            "delta_r2": delta_r2,
             # Evaluated O-information, carried through for the optional negative-
             # O-info synergy criterion (SYN_OINFO_NEGATIVE) in downstream stages.
             "oinfo": pd.to_numeric(df.get("thoi_o", np.nan), errors="coerce"),
             "source": "pooled_canonical",
         }
     )
+    out = _apply_main_pooled_scores(out, bag)
     out["cohen_f2"] = _cohen_f2(out["r2"], out["baseline_r2"])
     return out
 
 
 def _load_normative_model(bag: str, model_family: str) -> pd.DataFrame:
-    path = REPRO_DATA_ROOT / f"{model_family}_normative_loco" / bag / f"{model_family}_norm_global_all.csv"
+    configured_root = os.environ.get(f"NORM_{model_family.upper()}_ROOT", "").strip()
+    normative_root = (
+        Path(configured_root)
+        if configured_root
+        else REPRO_DATA_ROOT / f"{model_family}_normative_loco"
+    )
+    path = normative_root / bag / f"{model_family}_norm_global_all.csv"
+    country_path = normative_root / bag / f"{model_family}_norm_country_all.csv"
     # When NORM_ALLOW_MISSING is set, treat an absent normative aggregate as "no
     # data yet" and return an empty frame (the consumer concatenates only the
     # non-empty parts), instead of raising. Used for partial/interim order-cap
@@ -191,15 +273,37 @@ def _load_normative_model(bag: str, model_family: str) -> pd.DataFrame:
         warnings.warn(f"Normative model not found for {bag}/{model_family}: {path} (left blank)")
         return pd.DataFrame()
     df = pd.read_csv(_require(path))
+    country = pd.read_csv(_require(country_path))
+    country["r2"] = pd.to_numeric(country["r2"], errors="coerce")
+    if "n_test" in country.columns:
+        country = country[pd.to_numeric(country["n_test"], errors="coerce").gt(0)]
+    country = country[np.isfinite(country["r2"])].copy()
+    country_balanced = (
+        country.groupby(
+            ["candidate_id", "rung_id", "family_id", "train_dx", "test_dx"],
+            observed=True,
+        )["r2"]
+        .mean()
+        .rename("country_balanced_r2")
+        .reset_index()
+    )
+    df = df.merge(
+        country_balanced,
+        on=["candidate_id", "rung_id", "family_id", "train_dx", "test_dx"],
+        how="left",
+        validate="one_to_one",
+    )
+    if df["country_balanced_r2"].isna().any():
+        raise ValueError(f"Missing country-balanced normative scores in {country_path}")
     df["condition"] = df.apply(_condition_from_family, axis=1)
     df = df[df["condition"].isin(CONDITION_ORDER)].copy()
 
     baseline = (
         df[df["objective"] == "baseline"][
-            ["family_id", "train_dx", "test_dx", "condition", "rung_id", "global_oof_r2"]
+            ["family_id", "train_dx", "test_dx", "condition", "rung_id", "country_balanced_r2"]
         ]
         .drop_duplicates()
-        .rename(columns={"global_oof_r2": "baseline_r2"})
+        .rename(columns={"country_balanced_r2": "baseline_r2"})
     )
     models = df[
         df["rung_id"].isin(RUNG_ORDER)
@@ -224,11 +328,11 @@ def _load_normative_model(bag: str, model_family: str) -> pd.DataFrame:
             "order": pd.to_numeric(models["order"], errors="coerce"),
             "candidate_id": models["candidate_id"],
             "predictors_identity": models.get("predictors_identity", ""),
-            "r2": pd.to_numeric(models["global_oof_r2"], errors="coerce"),
+            "r2": pd.to_numeric(models["country_balanced_r2"], errors="coerce"),
             "baseline_r2": pd.to_numeric(models["baseline_r2"], errors="coerce"),
             # Evaluated O-information (normative CSVs carry it as `score`).
             "oinfo": pd.to_numeric(models.get("score", np.nan), errors="coerce"),
-            "source": f"{model_family}_normative",
+            "source": f"{model_family}_normative_country_balanced",
         }
     )
     out["delta_r2"] = out["r2"] - out["baseline_r2"]
@@ -249,21 +353,47 @@ def load_plot_data(bag: str) -> pd.DataFrame:
 def _load_single_pooled(bag: str) -> pd.DataFrame:
     rows = []
     for rung, root in SINGLE_EXP_DIRS.items():
-        path = root / bag / "single_exposure_global.csv"
+        configured_root = os.environ.get("NORM_POOLED_MAIN_RUN_ROOT", "").strip()
+        if configured_root:
+            family = "ols" if rung == "ols" else "xgb"
+            path = Path(configured_root) / family / bag / rung / "single" / "metrics_country.csv"
+        else:
+            legacy_root = os.environ.get("NORM_POOLED_SINGLE_RUN_ROOT", "").strip()
+            path = (
+                Path(legacy_root) / "xgb" / bag / rung / "single" / "metrics_global.csv"
+                if legacy_root
+                else root / bag / "single_exposure_global.csv"
+            )
+        if rung not in RUNG_ORDER:
+            continue
         if not path.exists():
             print(f"WARNING: missing pooled single exposure file for {bag}/{rung}: {path}")
             continue
         df = pd.read_csv(path)
-        if df.empty or "global_oof_r2" not in df.columns:
+        if df.empty:
             continue
-        best = df.loc[pd.to_numeric(df["global_oof_r2"], errors="coerce").idxmax()]
+        if configured_root:
+            scores = df.assign(r2=pd.to_numeric(df["r2"], errors="coerce")).groupby(
+                "candidate_id", observed=True
+            )["r2"].mean()
+            best_id = str(scores.idxmax())
+            best_r2 = float(scores.loc[best_id])
+            best = df[df["candidate_id"].astype(str).eq(best_id)].iloc[0]
+        else:
+            if "global_oof_r2" not in df.columns:
+                continue
+            best = df.loc[pd.to_numeric(df["global_oof_r2"], errors="coerce").idxmax()]
+            best_r2 = float(best["global_oof_r2"])
+        feature = best.get("feature_name", "")
+        if not feature:
+            feature = str(best.get("candidate_id", "")).removeprefix("__single__")
         rows.append(
             {
                 "bag": bag,
                 "condition": "Pooled",
                 "rung_id": rung,
-                "single_r2": float(best["global_oof_r2"]),
-                "single_feature": best.get("feature_name", ""),
+                "single_r2": best_r2,
+                "single_feature": feature,
                 "source": "pooled_single",
             }
         )
@@ -271,29 +401,99 @@ def _load_single_pooled(bag: str) -> pd.DataFrame:
 
 
 def _load_single_normative(bag: str) -> pd.DataFrame:
-    path = REPRO_DATA_ROOT / "single_exposure_normative" / "single_exposure_normative_global_all.csv"
+    configured_root = os.environ.get("NORM_SINGLE_NORMATIVE_ROOT", "").strip()
+    if configured_root:
+        root = Path(configured_root)
+        per_bag = root / bag / "single_exposure_normative_global_all.csv"
+        nested = root / bag / "single_exposure" / "single_exposure_normative_global_all.csv"
+        path = per_bag if per_bag.exists() else nested if nested.exists() else root / "single_exposure_normative_global_all.csv"
+        per_bag_country = root / bag / "single_exposure_normative_country_all.csv"
+        nested_country = root / bag / "single_exposure" / "single_exposure_normative_country_all.csv"
+        country_path = (
+            per_bag_country
+            if per_bag_country.exists()
+            else nested_country
+            if nested_country.exists()
+            else root / "single_exposure_normative_country_all.csv"
+        )
+    else:
+        path = REPRO_DATA_ROOT / "single_exposure_normative" / "single_exposure_normative_global_all.csv"
+        country_path = REPRO_DATA_ROOT / "single_exposure_normative" / "single_exposure_normative_country_all.csv"
     df = pd.read_csv(_require(path))
+    country = pd.read_csv(_require(country_path))
+    if configured_root and "ols" in RUNG_ORDER and not df["rung_id"].astype(str).eq("ols").any():
+        legacy_root = REPRO_DATA_ROOT / "single_exposure_normative"
+        legacy_global = pd.read_csv(_require(legacy_root / "single_exposure_normative_global_all.csv"))
+        legacy_country = pd.read_csv(_require(legacy_root / "single_exposure_normative_country_all.csv"))
+        df = pd.concat([df, legacy_global[legacy_global["rung_id"].astype(str).eq("ols")]], ignore_index=True)
+        country = pd.concat(
+            [country, legacy_country[legacy_country["rung_id"].astype(str).eq("ols")]],
+            ignore_index=True,
+        )
+    country["r2"] = pd.to_numeric(country["r2"], errors="coerce")
+    if "n_test" in country.columns:
+        country = country[pd.to_numeric(country["n_test"], errors="coerce").gt(0)]
+    country = country[np.isfinite(country["r2"])].copy()
+    balanced = (
+        country.groupby(
+            ["bag", "candidate_id", "rung_id", "family_id", "train_dx", "test_dx"],
+            observed=True,
+        )["r2"]
+        .mean()
+        .rename("country_balanced_r2")
+        .reset_index()
+    )
+    df = df.merge(
+        balanced,
+        on=["bag", "candidate_id", "rung_id", "family_id", "train_dx", "test_dx"],
+        how="left",
+        validate="one_to_one",
+    )
+    if df["country_balanced_r2"].isna().any():
+        raise ValueError(f"Missing country-balanced single-exposure scores in {country_path}")
+    reference_path = os.environ.get("NORM_OLS_SINGLE_REFERENCE_CSV", "").strip()
+    if reference_path and "ols" in RUNG_ORDER:
+        reference = pd.read_csv(_require(Path(reference_path)))
+        reference = reference[
+            reference["bag"].astype(str).eq(bag)
+            & ~reference["condition"].astype(str).eq("Pooled")
+            & reference["rung_id"].astype(str).eq("ols")
+        ].copy()
+    else:
+        reference = pd.DataFrame()
     df = df[df["bag"].eq(bag)].copy()
     df["condition"] = df.apply(_condition_from_family, axis=1)
     df = df[df["condition"].isin(CONDITION_ORDER) & df["rung_id"].isin(RUNG_ORDER)].copy()
     idx = (
-        df.assign(_r2=pd.to_numeric(df["global_oof_r2"], errors="coerce"))
+        df.assign(_r2=pd.to_numeric(df["country_balanced_r2"], errors="coerce"))
         .groupby(["condition", "rung_id"], observed=True)["_r2"]
         .idxmax()
         .dropna()
         .astype(int)
     )
     best = df.loc[idx].copy()
-    return pd.DataFrame(
+    result = pd.DataFrame(
         {
             "bag": bag,
             "condition": best["condition"],
             "rung_id": best["rung_id"],
-            "single_r2": pd.to_numeric(best["global_oof_r2"], errors="coerce"),
+            "single_r2": pd.to_numeric(best["country_balanced_r2"], errors="coerce"),
             "single_feature": best.get("feature_name", ""),
-            "source": "normative_single",
+            "source": "normative_single_country_balanced",
         }
     )
+    if not reference.empty:
+        result = result[~result["rung_id"].astype(str).eq("ols")]
+        result = pd.concat(
+            [
+                result,
+                reference.rename(columns={"single_feature": "single_feature"})[
+                    ["bag", "condition", "rung_id", "single_r2", "single_feature", "source"]
+                ],
+            ],
+            ignore_index=True,
+        )
+    return result
 
 
 def load_single_data(bag: str, df: pd.DataFrame) -> pd.DataFrame:
@@ -319,10 +519,82 @@ def select_top20(df: pd.DataFrame) -> pd.DataFrame:
     return top
 
 
-def load_triplet_omega() -> tuple[dict[frozenset[str], float], float]:
+def load_triplet_omega() -> tuple[dict[object, float], float]:
     """Load all exposome triplets and derive their negative-Omega baseline."""
+    available = pd.read_parquet(_require(SUBCOMB_BASELINE_PARQUET)).columns
+    if {"candidate_id", "frac_neg_k3"}.issubset(available):
+        measured = pd.read_parquet(
+            SUBCOMB_BASELINE_PARQUET,
+            columns=["candidate_id", "frac_neg_k3"],
+        ).drop_duplicates("candidate_id")
+        lookup = dict(
+            zip(
+                measured["candidate_id"].astype(str),
+                pd.to_numeric(measured["frac_neg_k3"], errors="raise"),
+            )
+        )
+        reference_root = os.environ.get("NORM_TRIPLET_REFERENCE_ROOT", "").strip()
+        if reference_root:
+            references = sorted(Path(reference_root).glob("*triplets.csv"))
+            if not references:
+                raise FileNotFoundError(f"No triplet reference tables under {reference_root}")
+            reference = pd.concat([pd.read_csv(path) for path in references], ignore_index=True)
+            reference = reference.drop_duplicates("candidate_id")
+            lookup.update(
+                zip(
+                    reference["candidate_id"].astype(str),
+                    pd.to_numeric(reference["pct_synergistic_triplets"], errors="raise") / 100.0,
+                )
+            )
+            metadata_parts = []
+            for family in ("ols", "xgb"):
+                configured = os.environ.get(f"NORM_{family.upper()}_ROOT", "").strip()
+                if not configured:
+                    continue
+                for bag in ("structural", "functional"):
+                    metadata_path = Path(configured) / bag / f"{family}_norm_global_all.csv"
+                    if metadata_path.exists():
+                        metadata_parts.append(
+                            pd.read_csv(
+                                metadata_path,
+                                usecols=["candidate_id", "predictors_identity"],
+                            )
+                        )
+            canonical_root = os.environ.get("NORM_POOLED_CANONICAL_ROOT", "").strip()
+            if canonical_root:
+                for bag in ("structural", "functional"):
+                    canonical_path = (
+                        Path(canonical_root) / "per_experiment"
+                        / f"pooled_oinfo_ladder_{bag}" / "metrics_global_long.parquet"
+                    )
+                    if canonical_path.exists():
+                        metadata_parts.append(
+                            pd.read_parquet(
+                                canonical_path,
+                                columns=["candidate_id", "predictors_identity"],
+                            )
+                        )
+            if metadata_parts:
+                metadata = pd.concat(metadata_parts, ignore_index=True).drop_duplicates(
+                    "candidate_id"
+                )
+                reference_identity = reference.merge(
+                    metadata, on="candidate_id", how="left", validate="one_to_one"
+                ).dropna(subset=["predictors_identity"])
+                lookup.update(
+                    zip(
+                        "identity:" + reference_identity["predictors_identity"].astype(str),
+                        pd.to_numeric(
+                            reference_identity["pct_synergistic_triplets"], errors="raise"
+                        )
+                        / 100.0,
+                    )
+                )
+        return lookup, float(
+            os.environ.get("EXPOSOME_TRIPLET_NEGATIVE_FRACTION", "0.332301")
+        )
     baseline = pd.read_parquet(
-        _require(SUBCOMB_BASELINE_PARQUET),
+        SUBCOMB_BASELINE_PARQUET,
         filters=[("order_k", "==", 3)],
         columns=["nplet_cols", "o_info"],
     )
@@ -336,7 +608,7 @@ def load_triplet_omega() -> tuple[dict[frozenset[str], float], float]:
 
 def add_synergistic_triplet_fraction(
     top: pd.DataFrame,
-    omega: dict[frozenset[str], float] | None = None,
+    omega: dict[object, float] | None = None,
     baseline_fraction: float | None = None,
 ) -> pd.DataFrame:
     """Add the Fig. 2 triplet measure to every displayed normative candidate.
@@ -371,7 +643,23 @@ def add_synergistic_triplet_fraction(
         cache[key] = result
         return result
 
-    summaries = top["predictors_identity"].map(summarise)
+    def candidate_or_identity(row: pd.Series) -> tuple[int, int, float]:
+        candidate_id = str(row.get("candidate_id", ""))
+        identity_key = "identity:" + str(row["predictors_identity"])
+        lookup_key = candidate_id if candidate_id in omega else identity_key
+        if lookup_key in omega:
+            exposures = [
+                name.strip()
+                for name in str(row["predictors_identity"]).split("|")
+                if name.strip()
+            ]
+            n_total = len(list(combinations(exposures, 3)))
+            fraction = float(omega[lookup_key])
+            n_synergistic = int(round(fraction * n_total))
+            return n_total, n_synergistic, 100.0 * fraction
+        return summarise(row["predictors_identity"])
+
+    summaries = top.apply(candidate_or_identity, axis=1)
     out = top.copy()
     out["n_triplets"] = summaries.map(lambda value: value[0])
     out["n_synergistic_triplets"] = summaries.map(lambda value: value[1])
@@ -619,7 +907,7 @@ def plot_bag(bag: str) -> None:
     save_plot_tables(bag, df, top, single)
 
     r2_vals = list(top["r2"]) + list(top["baseline_r2"]) + list(single["single_r2"])
-    r2_ylim = (0.1, _shared_limits(r2_vals, pad_frac=0.05)[1])
+    r2_ylim = _shared_limits(r2_vals, pad_frac=0.05)
 
     fig, axes = plt.subplots(3, len(CONDITION_ORDER), figsize=(18, 12), constrained_layout=True)
     fig.set_constrained_layout_pads(w_pad=0.005, h_pad=0.02, wspace=0.005, hspace=0.02)
@@ -656,14 +944,15 @@ def plot_bag(bag: str) -> None:
             axes[0, col].legend(handles=handles, fontsize=GRID_FS_TK, loc="lower right", framealpha=0.7)
 
     PAPER_FIGURES_DIR.mkdir(parents=True, exist_ok=True)
+    figure_stem = FIG_STEM_TEMPLATE.format(bag=bag, suffix=FIG_SUFFIX_PART)
     for ext in ("pdf", "svg", "png"):
-        out = PAPER_FIGURES_DIR / f"fig_normative_transfer_grid_{bag}{FIG_SUFFIX_PART}.{ext}"
+        out = PAPER_FIGURES_DIR / f"{figure_stem}.{ext}"
         fig.savefig(out, dpi=300, bbox_inches="tight")
         print(f"Saved: {out}")
     plt.close(fig)
 
     for path in write_source_data(
-        f"fig_normative_transfer_grid_{bag}{FIG_SUFFIX_PART}",
+        figure_stem,
         _build_transfer_panels(bag, top, single),
         PAPER_FIGURES_DIR,
     ):

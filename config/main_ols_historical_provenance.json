@@ -1,0 +1,7 @@
+{
+  "analysis_label": "main",
+  "country_variant": "historical_a",
+  "description": "Frozen historical OLS outputs are the required OLS input for the main k10 assembly. This record is intentionally explicit so no main command refits OLS.",
+  "source_run": "paper_reanalysis_k10/ols",
+  "reuse_policy": "historical_ols_only"
+}

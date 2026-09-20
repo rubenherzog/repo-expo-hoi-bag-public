@@ -153,7 +153,14 @@ def _build_summary_table(frame: pd.DataFrame, bag: str, rungs: list[str]) -> pd.
     return pd.DataFrame(rows)
 
 
-def _draw_residualized_row(summary: pd.DataFrame, bag: str, ax, row_letter: str) -> list[Panel]:
+def _draw_residualized_row(
+    summary: pd.DataFrame,
+    bag: str,
+    ax,
+    row_letter: str,
+    *,
+    r2_estimand: str = "global out-of-fold LOCO R²",
+) -> list[Panel]:
     """Draw one BAG's row and return its Source Data panel.
 
     The row label follows the plot_fig2_grid_v3 convention: "<letter>. <BAG>"
@@ -230,13 +237,20 @@ def _draw_residualized_row(summary: pd.DataFrame, bag: str, ax, row_letter: str)
                 notes=(
                     "Residualization is per-fold and leakage-free: BAG ~ age + sex + diagnosis "
                     "is refit on each LOCO fold's training countries only. Country is "
-                    "deliberately not in the residualization formula."
+                    f"deliberately not in the residualization formula. R² estimand: {r2_estimand}."
                 ),
             )
     ]
 
 
-def _plot_residualized(summary: pd.DataFrame, bags: list[str], outdir, stem: str) -> None:
+def _plot_residualized(
+    summary: pd.DataFrame,
+    bags: list[str],
+    outdir,
+    stem: str,
+    *,
+    r2_estimand: str = "global out-of-fold LOCO R²",
+) -> None:
     """One figure with a COLUMN per BAG, structural leftmost. No suptitle.
 
     Each BAG is a single panel, so they sit side by side rather than stacked;
@@ -253,7 +267,11 @@ def _plot_residualized(summary: pd.DataFrame, bags: list[str], outdir, stem: str
     for i, bag in enumerate(present):
         panels.extend(
             _draw_residualized_row(
-                summary.loc[summary["bag"].eq(bag)].copy(), bag, axes[0][i], ROW_LETTERS[i]
+                summary.loc[summary["bag"].eq(bag)].copy(),
+                bag,
+                axes[0][i],
+                ROW_LETTERS[i],
+                r2_estimand=r2_estimand,
             )
         )
     save_figure(fig, stem, outdir)
@@ -357,13 +375,25 @@ def main() -> None:
 
         all_rows.append(bag_combined)
 
-    combined = pd.concat(all_rows, ignore_index=True) if all_rows else pd.DataFrame()
+    # Main-k10 jobs may be scheduled one BAG at a time.  The paper contract is
+    # nevertheless one Structural+Functional figure, exactly as in the parent
+    # implementation when both bags are selected together.  Re-read any
+    # already-completed sibling BAG summaries before assembling the delivery so
+    # the job that finishes second writes that single complete figure without
+    # repeating a refit.
+    persisted_rows: list[pd.DataFrame] = []
+    for persisted_bag in BAG_ROW_ORDER:
+        persisted = local_root / persisted_bag / f"{persisted_bag}_global_all_rungs.csv"
+        if persisted.is_file():
+            persisted_rows.append(pd.read_csv(persisted))
+    combined = pd.concat(persisted_rows, ignore_index=True) if persisted_rows else pd.DataFrame()
     combined.to_csv(local_root / "global_all_rungs.csv", index=False)
 
     summary_rows = []
-    for bag in selected_bags(cfg, include_combined=True):
+    for bag in BAG_ROW_ORDER:
         bag_frame = combined.loc[combined["bag"].eq(bag)].copy()
-        summary_rows.append(_build_summary_table(bag_frame, bag, rungs))
+        if not bag_frame.empty:
+            summary_rows.append(_build_summary_table(bag_frame, bag, rungs))
     summary = pd.concat(summary_rows, ignore_index=True) if summary_rows else pd.DataFrame()
     summary.to_csv(local_root / "residualized_bag_best_by_rung.csv", index=False)
 

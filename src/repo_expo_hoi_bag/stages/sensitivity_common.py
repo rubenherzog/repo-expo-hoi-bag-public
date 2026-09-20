@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import hashlib
 import itertools
+import json
 import os
 import shutil
 import time
@@ -26,9 +28,19 @@ from loco_fusion_matrix_engine import (
     target_map,
 )
 from oinfo_bag_ladder.rungs import build_xgb_cfg_for_rung, get_rung_specs
-from scripts.pipeline_utils import load_stage_config
-from scripts.run_exposome_greedy_only import prepare_exposome_matrix
+try:
+    # Compatibility workers import these as ``scripts.*`` from the copied
+    # runtime. Spawned joblib workers in the active checkout instead receive
+    # the stages directory directly on PYTHONPATH; support both layouts.
+    from scripts.pipeline_utils import load_stage_config
+    from scripts.run_exposome_greedy_only import prepare_exposome_matrix
+except ModuleNotFoundError as exc:
+    if exc.name not in {"scripts", "scripts.pipeline_utils", "scripts.run_exposome_greedy_only"}:
+        raise
+    from pipeline_utils import load_stage_config
+    from run_exposome_greedy_only import prepare_exposome_matrix
 from xgb_loco_engine import _append_predictors, _build_base_fold_mats, _fit_xgb_fold, require_xgboost
+from xgb_nested_loco_tuning import resolve_tuned_fold_configs
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -37,20 +49,19 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 # (used for INPUT files -- config, raw data, domain metadata -- that only exist
 # in that runtime layout) resolves in the external runtime. That is correct for inputs.
 #
-# All generated sensitivity outputs use the external runtime. The CLI keeps the
-# checkout path separately for public inputs and configuration.
+# Parent delivery contract: lightweight figures and tables are delivered in the
+# checkout, while fold-level evaluation, OOF, checkpoints and logs stay in the
+# external runtime.  The CLI injects REPO_CHECKOUT_ROOT for copied stages.
 CHECKOUT_ROOT = Path(
-    os.environ.get("REPRO_DATA_ROOT", "").strip()
-    or os.environ.get("REPO_CHECKOUT_ROOT", "").strip()
-    or REPO_ROOT
+    os.environ.get("REPO_CHECKOUT_ROOT", "").strip() or REPO_ROOT.parents[1]
 )
 _RUNTIME_CONFIG_PATH = REPO_ROOT / "config" / "sensitivity.yaml"
 _SOURCE_CONFIG_PATH = Path(__file__).resolve().parent / "resources" / "sensitivity.yaml"
 CONFIG_PATH = (
     _RUNTIME_CONFIG_PATH if _RUNTIME_CONFIG_PATH.is_file() else _SOURCE_CONFIG_PATH
 )
-DOMAIN_CSV = REPO_ROOT / "data" / "metadata" / "exposome_feature_domains.csv"
-RAW_CSV = REPO_ROOT / "data" / "raw" / "all_exposome_bag_clean_expo63_countryyear_only_complete_cases.csv"
+DOMAIN_CSV = CHECKOUT_ROOT / "data" / "metadata" / "exposome_feature_domains.csv"
+RAW_CSV = CHECKOUT_ROOT / "data" / "raw" / "all_exposome_bag_clean_expo63_countryyear_only_complete_cases.csv"
 
 ACTIVE_RUNGS = ["ols", "xgb_tree_d1", "xgb_tree_d2", "xgb_tree_d3"]
 RUNG_LABELS = {
@@ -66,6 +77,17 @@ RUNG_COLORS = {
     "xgb_tree_d3": "#b2182b",
 }
 BAG_ORDER = ["functional", "structural", "combined"]
+
+_MAIN_K10_HPO_ENV = {
+    "baseline": "XGB_TUNING_BASELINE_ARTIFACT",
+    "single_exposure": "XGB_TUNING_SINGLE_ARTIFACT",
+    "k10": "XGB_TUNING_ARTIFACT",
+}
+_MAIN_K10_HPO_FEATURE_SCOPE = {
+    "baseline": "baseline",
+    "single_exposure": "single_exposure",
+    "k10": "domain_balanced_k10",
+}
 
 
 @dataclass(frozen=True)
@@ -190,7 +212,24 @@ def _ols_dx_interactions() -> bool:
 
 def load_sensitivity_config() -> dict:
     with CONFIG_PATH.open("r", encoding="utf-8") as f:
-        return yaml.safe_load(f)
+        config = yaml.safe_load(f)
+    # Main k10 sensitivity jobs preserve the parent-stage implementation while
+    # switching only the explicitly requested BAG population and model rungs.
+    # OLS is deliberately absent: it is an immutable reused reference, never a
+    # sensitivity refit.
+    if env_bool("MAIN_K10_MODE"):
+        run_id = os.environ.get("MAIN_K10_CLUSTER_RUN_ID", "").strip()
+        if not run_id:
+            raise ValueError("MAIN_K10_CLUSTER_RUN_ID is required when MAIN_K10_MODE is enabled")
+        defaults = config["defaults"]
+        defaults["exclude_countries"] = ["France", "Italy", "Egypt", "Greece", "Poland"]
+        defaults["exclude_diagnosis"] = ["Other", "AFM", "MCI"]
+        defaults["active_rungs"] = ["xgb_tree_d1", "xgb_tree_d2", "xgb_tree_d3"]
+        defaults["primary_bags"] = ["structural", "functional"]
+        defaults["optional_bags"] = []
+        defaults["output_root"] = f"outputs/main/{run_id}/sensitivity"
+        defaults["bundle_sensitivity_subdir"] = f"results/analysis_runs/{run_id}/sensitivity_bundle"
+    return config
 
 
 def paper_analysis_config(cfg: dict) -> PaperAnalysisConfig:
@@ -296,15 +335,21 @@ def bundle_variant_root() -> Path:
 
 
 def canonical_root() -> Path:
+    main_k10_root = os.environ.get("MAIN_K10_CANONICAL_ROOT", "").strip()
+    if main_k10_root:
+        root = Path(main_k10_root).resolve()
+        marker = root / "main_k10_adapter_manifest.json"
+        if not marker.is_file():
+            raise FileNotFoundError(
+                "MAIN_K10_CANONICAL_ROOT must point to a prepared main-k10 adapter "
+                f"with its manifest: {marker}"
+            )
+        return root
     return bundle_variant_root() / "families" / "pooled_oinfo_ladder" / "canonical"
 
 
 def repo_sensitivity_root(cfg: dict) -> Path:
-    """External destination for sensitivity summary tables and figures.
-
-    Heavy and lightweight generated artifacts share the external runtime root;
-    the checkout remains unchanged during a reproduction run.
-    """
+    """Checkout destination for lightweight sensitivity tables."""
     root = CHECKOUT_ROOT / str(cfg["defaults"].get("output_root", "outputs/sensitivity"))
     # Dedup re-analysis writes its lightweight CSVs to a parallel dedup/ subtree
     # (README "outputs/ layout"), never mixing with canonical sensitivity outputs.
@@ -334,14 +379,17 @@ def cap_split_subdir() -> str:
 
 
 def repo_sensitivity_figures_root(cfg: dict, name: str) -> Path:
-    """External destination for sensitivity figures, kept under
+    """Checkout destination for sensitivity figures, kept under
     outputs/figures/sensitivity/<name>/ -- never inside repo_sensitivity_root()
     (which is also used for CSVs/lightweight tables). Mirrors the split already
     used by compute_order_cap_reconciliation.py's OUT_DIR/FIGURES_DIR pair.
     """
     # Dedup figures land under outputs/figures/dedup/sensitivity/<name>;
     # canonical figures stay under outputs/figures/sensitivity.
-    if env_bool("SENSITIVITY_DEDUP"):
+    main_run_id = os.environ.get("MAIN_K10_CLUSTER_RUN_ID", "").strip()
+    if env_bool("MAIN_K10_MODE"):
+        root = CHECKOUT_ROOT / "outputs" / "main" / main_run_id / "sensitivity" / "figures" / name
+    elif env_bool("SENSITIVITY_DEDUP"):
         root = CHECKOUT_ROOT / "outputs" / "figures" / dedup_namespace() / "sensitivity" / name
         leaf = cap_split_subdir()
         if leaf:
@@ -362,7 +410,17 @@ def sensitivity_eval_work_root(cfg: dict, name: str) -> Path:
     # candidate pool regardless of the synergy criterion), so it is NOT namespaced:
     # a dedup_neg_o re-derivation resumes the same evaluation and only redoes the
     # selection and summaries with the negative-O filter.
-    root = bundle_root() / "work" / "sensitivity_eval" / name
+    # The main k10 re-analysis must never resume or overwrite an earlier
+    # sensitivity cache.  Its candidate universe and five-country population
+    # differ from the generic sensitivity runs, so an immutable run namespace
+    # is required even when the analysis name is the same.
+    if env_bool("MAIN_K10_MODE"):
+        run_id = os.environ.get("MAIN_K10_CLUSTER_RUN_ID", "").strip()
+        if not run_id:
+            raise ValueError("MAIN_K10_CLUSTER_RUN_ID is required when MAIN_K10_MODE is enabled")
+        root = bundle_root() / "work" / "analysis_runs" / run_id / "sensitivity_eval" / name
+    else:
+        root = bundle_root() / "work" / "sensitivity_eval" / name
     root.mkdir(parents=True, exist_ok=True)
     return root
 
@@ -399,6 +457,65 @@ def baseline_candidate_df() -> pd.DataFrame:
             }
         ]
     )
+
+
+def candidate_hpo_scope(row: dict | pd.Series) -> str:
+    """Return the frozen-HPO family required by one main-k10 candidate."""
+    values = {
+        str(row.get(name, "")).strip().lower()
+        for name in ("candidate_id", "candidate_family", "source_label", "objective")
+    }
+    if "__baseline__" in values or "baseline" in values:
+        return "baseline"
+    if (
+        "single_exposure" in values
+        or "single" in values
+        or any(value.startswith(("__single__", "single_")) for value in values)
+    ):
+        return "single_exposure"
+    return "k10"
+
+
+def _validated_hpo_identity(path: Path, expected_feature_scope: str) -> str:
+    if not path.is_file():
+        raise FileNotFoundError(f"Missing frozen HPO artifact: {path}")
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    actual_scope = str(payload.get("provenance", {}).get("feature_scope", ""))
+    if actual_scope != expected_feature_scope:
+        raise ValueError(
+            f"HPO artifact {path} declares feature_scope={actual_scope!r}; "
+            f"expected {expected_feature_scope!r}"
+        )
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def route_main_k10_hpo(
+    candidate_df: pd.DataFrame,
+    default_artifact_path: str | Path,
+) -> tuple[pd.DataFrame, dict[str, Path]]:
+    """Annotate candidates and validate scope-specific main-k10 HPO artifacts."""
+    routed = candidate_df.copy()
+    routed["hpo_scope"] = routed.apply(candidate_hpo_scope, axis=1)
+    artifacts: dict[str, Path] = {}
+    identities: dict[str, str] = {}
+    for scope in sorted(set(routed["hpo_scope"].astype(str))):
+        env_name = _MAIN_K10_HPO_ENV[scope]
+        raw_path = (
+            str(default_artifact_path)
+            if scope == "k10"
+            else os.environ.get(env_name, "").strip()
+        )
+        if not raw_path:
+            raise ValueError(
+                f"MAIN_K10_MODE requires {env_name} for {scope} candidates"
+            )
+        path = Path(raw_path).resolve()
+        identities[scope] = _validated_hpo_identity(
+            path, _MAIN_K10_HPO_FEATURE_SCOPE[scope]
+        )
+        artifacts[scope] = path
+    routed["hpo_artifact_sha256"] = routed["hpo_scope"].map(identities)
+    return routed, artifacts
 
 
 def copy_tree_contents(src: Path, dst: Path) -> None:
@@ -473,6 +590,10 @@ def load_greedy_reference_exposome() -> tuple[pd.DataFrame, dict]:
     # structure-on-X (O-info, domain PCA loadings) uses this; LOCO evaluation stays
     # subject-level.
     _dedup_csv = os.environ.get("DEDUP_EXPOSOME_CSV", "").strip()
+    if env_bool("MAIN_K10_MODE") and not _dedup_csv:
+        raise EnvironmentError(
+            "MAIN_K10_MODE requires DEDUP_EXPOSOME_CSV for exposome-structure analyses"
+        )
     input_csv = Path(_dedup_csv) if _dedup_csv else REPO_ROOT / str(greedy_cfg["input_csv"])
     X, feature_idx, summary = prepare_exposome_matrix(
         input_csv=input_csv,
@@ -634,6 +755,10 @@ def build_whole_pca_model_df(
     # pseudo-replicated subject rows. Scores are still projected for every subject
     # row (model_df), so the downstream LOCO evaluation stays subject-level.
     _dedup_csv = os.environ.get("DEDUP_EXPOSOME_CSV", "").strip()
+    if env_bool("MAIN_K10_MODE") and not _dedup_csv:
+        raise EnvironmentError(
+            "MAIN_K10_MODE requires DEDUP_EXPOSOME_CSV for whole-exposome PCA"
+        )
     if _dedup_csv:
         dd = pd.read_csv(_dedup_csv, low_memory=False)
         fit_values = dd[feature_names].to_numpy(dtype=float)
@@ -929,10 +1054,22 @@ def score_oinfo_with_cache(
     cache_path.parent.mkdir(parents=True, exist_ok=True)
     out = candidate_df.copy()
     out["predictors_identity"] = out["nplet_vars"].apply(lambda v: "|".join(str(x) for x in parse_literal_list(v)))
+    reference = reference_df[exposome_cols]
+    reference_hash = hashlib.sha256()
+    reference_hash.update("\0".join(exposome_cols).encode("utf-8"))
+    reference_hash.update(pd.util.hash_pandas_object(reference, index=False).values.tobytes())
+    reference_sha256 = reference_hash.hexdigest()
     if cache_path.exists():
         cache = pd.read_csv(cache_path)
     else:
-        cache = pd.DataFrame(columns=["predictors_identity", "order", "score", "thoi_o"])
+        cache = pd.DataFrame(
+            columns=["predictors_identity", "order", "score", "thoi_o", "reference_sha256"]
+        )
+    if "reference_sha256" not in cache.columns:
+        cache = cache.iloc[0:0].copy()
+        cache["reference_sha256"] = pd.Series(dtype=str)
+    else:
+        cache = cache[cache["reference_sha256"].astype(str).eq(reference_sha256)].copy()
     cached_ids = set(cache["predictors_identity"].astype(str).tolist()) if not cache.empty else set()
     missing = out[~out["predictors_identity"].astype(str).isin(cached_ids)].copy()
     log_msg(
@@ -948,6 +1085,7 @@ def score_oinfo_with_cache(
         new_cache = scored_missing[["predictors_identity", "order", "score", "thoi_o"]].drop_duplicates(
             "predictors_identity"
         )
+        new_cache["reference_sha256"] = reference_sha256
         if cache.empty:
             cache = new_cache.copy()
         else:
@@ -961,6 +1099,7 @@ def score_oinfo_with_cache(
     out["thoi_o"] = out["score"]
     out["rank_o_min"] = out.groupby("order")["score"].rank(method="first", ascending=True)
     out["rank_o_max"] = out.groupby("order")["score"].rank(method="first", ascending=False)
+    out["oinfo_reference_sha256"] = reference_sha256
     return out
 
 
@@ -1023,6 +1162,8 @@ def _fit_candidate(
     exposome_cols: list[str],
     rung_id: str,
     xgb_cfg: dict | None,
+    fold_xgb_cfgs: dict | None = None,
+    fold_xgb_ensembles: dict[str, list[dict]] | None = None,
     fold_pc: dict | None = None,
     fold_y: dict | None = None,
 ) -> tuple[dict, pd.DataFrame]:
@@ -1078,10 +1219,19 @@ def _fit_candidate(
                 X_tr_inner = _append_predictors(fd["Xb_train_inner"], X_exp_use, tr_inner, pred_used)
                 X_val = _append_predictors(fd["Xb_val"], X_exp_use, val_idx, pred_used)
                 X_test = _append_predictors(fd["Xb_test"], X_exp_use, test_idx, pred_used)
-                params = dict(xgb_cfg or {})
-                params["random_state"] = int(base_seed + fold_i)
-                reg = _fit_xgb_fold(xgb_mod, params, X_tr_inner, y_use[tr_inner], X_val, y_use[val_idx])
-                y_pred = reg.predict(X_test)
+                ensemble = (fold_xgb_ensembles or {}).get(country)
+                members = ensemble if ensemble is not None else [dict((fold_xgb_cfgs or {}).get(country, xgb_cfg or {}))]
+                if not members:
+                    raise ValueError(f"XGBoost ensemble has no members for outer country {country}")
+                member_predictions = []
+                for member in members:
+                    params = dict(member)
+                    params["random_state"] = int(params.get("random_state", base_seed) + fold_i)
+                    reg = _fit_xgb_fold(
+                        xgb_mod, params, X_tr_inner, y_use[tr_inner], X_val, y_use[val_idx]
+                    )
+                    member_predictions.append(reg.predict(X_test))
+                y_pred = np.mean(np.vstack(member_predictions), axis=0)
         except Exception:
             y_pred = np.full(len(test_idx), np.nan, dtype=float)
 
@@ -1142,6 +1292,10 @@ def evaluate_candidates_by_rung(
     fold_pca: dict | None = None,
     fold_residualize: bool = False,
     cv_override: dict | None = None,
+    tuning_artifact_path: str | Path | None = None,
+    tuning_strict: bool = False,
+    fold_xgb_cfgs: dict[str, dict] | None = None,
+    fold_xgb_ensembles: dict[str, list[dict]] | None = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     # Pin BLAS/OpenMP threads to 1 in this process before fanning out joblib
     # workers below -- every other stage (run_null_model, run_single_exposure_eval,
@@ -1174,6 +1328,7 @@ def evaluate_candidates_by_rung(
     # contributes to the basis. Re-derive the analysis table (deterministic, same
     # row order as prepare_bag_context) to align the raw feature matrix to folds.
     fold_pc = None
+    fold_pca_sha256 = ""
     if fold_pca is not None:
         spec = dict(fold_pca)
         raw_cols = list(spec["raw_cols"])
@@ -1185,9 +1340,15 @@ def evaluate_candidates_by_rung(
         # rows. Read from disk; no on-the-fly re-deduplication. Scoring stays
         # subject-level (projection onto x_raw / subject rows).
         _dedup_csv = os.environ.get("DEDUP_EXPOSOME_CSV", "").strip()
+        if env_bool("MAIN_K10_MODE") and not _dedup_csv:
+            raise EnvironmentError(
+                "MAIN_K10_MODE requires DEDUP_EXPOSOME_CSV for fold-wise PCA"
+            )
         if _dedup_csv:
+            dedup_path = Path(_dedup_csv).resolve()
+            fold_pca_sha256 = hashlib.sha256(dedup_path.read_bytes()).hexdigest()
             split_col = str(cv["split_col"])
-            _dd = pd.read_csv(_dedup_csv, low_memory=False)
+            _dd = pd.read_csv(dedup_path, low_memory=False)
             missing = [c for c in raw_cols + [split_col] if c not in _dd.columns]
             if missing:
                 raise ValueError(f"DEDUP_EXPOSOME_CSV missing columns for fold PCA: {missing[:8]}")
@@ -1226,16 +1387,83 @@ def evaluate_candidates_by_rung(
 
     for rung_id in rungs:
         xgb_cfg = None if rung_id == "ols" else build_xgb_cfg_for_rung(rung_specs[rung_id])
-        expected_ids = set(candidate_df["candidate_id"].astype(str).tolist())
+        # Preserve the existing environment override for legacy callers, while
+        # allowing a paired comparison to explicitly disable it for its fixed arm.
+        artifact_path = (
+            os.environ.get("XGB_TUNING_ARTIFACT", "").strip()
+            if tuning_artifact_path is None
+            else str(tuning_artifact_path)
+        )
+        main_k10_routing = xgb_cfg is not None and env_bool("MAIN_K10_MODE")
+        if main_k10_routing and fold_xgb_cfgs is not None:
+            raise ValueError("Direct fold_xgb_cfgs cannot bypass main-k10 HPO scope routing")
+        if main_k10_routing:
+            rung_candidate_df, hpo_artifacts = route_main_k10_hpo(candidate_df, artifact_path)
+            fold_cfgs_by_scope = {
+                scope: resolve_tuned_fold_configs(
+                    path,
+                    bag,
+                    rung_id,
+                    xgb_cfg,
+                    context["countries"],
+                    strict=True,
+                )
+                for scope, path in hpo_artifacts.items()
+            }
+            artifact_fold_xgb_cfgs = None
+        else:
+            rung_candidate_df = candidate_df.copy()
+            rung_candidate_df["hpo_scope"] = "ols" if xgb_cfg is None else "configured"
+            rung_candidate_df["hpo_artifact_sha256"] = ""
+            fold_cfgs_by_scope = {}
+            artifact_fold_xgb_cfgs = None if xgb_cfg is None else resolve_tuned_fold_configs(
+                artifact_path, bag, rung_id, xgb_cfg, context["countries"],
+                strict=tuning_strict if tuning_artifact_path is not None else env_bool("XGB_TUNING_STRICT", default=False),
+            )
+        if fold_pca is not None:
+            rung_candidate_df["fold_pca_sha256"] = fold_pca_sha256
+        if fold_xgb_cfgs is not None and artifact_fold_xgb_cfgs is not None:
+            raise ValueError("Provide either direct fold_xgb_cfgs or a tuning artifact, not both")
+        resolved_fold_xgb_cfgs = fold_xgb_cfgs or artifact_fold_xgb_cfgs
+        expected_ids = set(rung_candidate_df["candidate_id"].astype(str).tolist())
+        identity_columns = ["hpo_scope", "hpo_artifact_sha256"]
+        if fold_pca is not None:
+            identity_columns.append("fold_pca_sha256")
+        expected_hpo = (
+            rung_candidate_df.set_index("candidate_id")[identity_columns]
+            .astype(str)
+            .sort_index()
+        )
         global_path = outdir / f"{bag}_{rung_id}_global.csv"
         country_path = outdir / f"{bag}_{rung_id}_country.csv"
         if global_path.exists() and country_path.exists():
             try:
                 existing_global = pd.read_csv(global_path)
                 existing_ids = set(existing_global.get("candidate_id", pd.Series(dtype=str)).astype(str).tolist())
-                complete = expected_ids == existing_ids and len(existing_global) == len(expected_ids)
+                has_hpo_identity = set(identity_columns).issubset(existing_global.columns)
+                existing_hpo = (
+                    existing_global.set_index("candidate_id")[identity_columns]
+                    .astype(str)
+                    .sort_index()
+                    if has_hpo_identity
+                    else pd.DataFrame()
+                )
+                complete = (
+                    expected_ids == existing_ids
+                    and len(existing_global) == len(expected_ids)
+                    and has_hpo_identity
+                    and existing_hpo.equals(expected_hpo)
+                )
                 if complete:
                     existing_country = pd.read_csv(country_path)
+                    current_metadata = rung_candidate_df.set_index("candidate_id")
+                    for column in current_metadata.columns:
+                        if column == "candidate_id":
+                            continue
+                        values = current_metadata[column]
+                        existing_global[column] = existing_global["candidate_id"].map(values)
+                        if "candidate_id" in existing_country.columns:
+                            existing_country[column] = existing_country["candidate_id"].map(values)
                     log_msg(
                         f"LOCO eval resume hit bag={bag} rung={rung_id} "
                         f"candidates={len(existing_global)}; loading existing outputs"
@@ -1249,19 +1477,21 @@ def evaluate_candidates_by_rung(
                 )
             except Exception as exc:
                 log_msg(f"LOCO eval resume read failed bag={bag} rung={rung_id}: {exc!r}; recomputing")
-        fit_candidate_df = candidate_df.drop_duplicates("predictors_identity", keep="first").reset_index(drop=True)
+        fit_candidate_df = rung_candidate_df.drop_duplicates("predictors_identity", keep="first").reset_index(drop=True)
         records = fit_candidate_df.to_dict(orient="records")
         fit_map = fit_candidate_df[["candidate_id", "predictors_identity"]].rename(
             columns={"candidate_id": "fit_candidate_id"}
         )
         fit_manifest_path = outdir / f"{bag}_{rung_id}_fit_manifest.csv"
         fit_manifest = (
-            candidate_df.groupby("predictors_identity", as_index=False, dropna=False)
+            rung_candidate_df.groupby("predictors_identity", as_index=False, dropna=False)
             .agg(
                 candidate_count=("candidate_id", "size"),
                 candidate_ids=("candidate_id", lambda x: "|".join(map(str, x))),
                 candidate_families=("candidate_family", lambda x: "|".join(sorted(set(map(str, x))))),
                 source_labels=("source_label", lambda x: "|".join(sorted(set(map(str, x))))),
+                hpo_scopes=("hpo_scope", lambda x: "|".join(sorted(set(map(str, x))))),
+                hpo_artifact_sha256=("hpo_artifact_sha256", lambda x: "|".join(sorted(set(map(str, x))))),
                 order=("order", "first"),
             )
             .merge(fit_map, on="predictors_identity", how="left")
@@ -1284,6 +1514,12 @@ def evaluate_candidates_by_rung(
                         exposome_cols=exposome_cols,
                         rung_id=rung_id,
                         xgb_cfg=xgb_cfg,
+                        fold_xgb_cfgs=(
+                            fold_cfgs_by_scope[str(row["hpo_scope"])]
+                            if main_k10_routing
+                            else resolved_fold_xgb_cfgs
+                        ),
+                        fold_xgb_ensembles=fold_xgb_ensembles,
                         fold_pc=fold_pc,
                         fold_y=fold_y,
                     )
@@ -1298,6 +1534,12 @@ def evaluate_candidates_by_rung(
                         exposome_cols=exposome_cols,
                         rung_id=rung_id,
                         xgb_cfg=xgb_cfg,
+                        fold_xgb_cfgs=(
+                            fold_cfgs_by_scope[str(row["hpo_scope"])]
+                            if main_k10_routing
+                            else resolved_fold_xgb_cfgs
+                        ),
+                        fold_xgb_ensembles=fold_xgb_ensembles,
                         fold_pc=fold_pc,
                         fold_y=fold_y,
                     )
@@ -1315,7 +1557,7 @@ def evaluate_candidates_by_rung(
             on="fit_candidate_id",
             how="left",
         )
-        metadata = candidate_df.drop(columns=["nplet_vars"], errors="ignore").copy()
+        metadata = rung_candidate_df.drop(columns=["nplet_vars"], errors="ignore").copy()
         metric_cols = [
             "predictors_identity",
             "fit_candidate_id",
@@ -1347,8 +1589,9 @@ def evaluate_candidates_by_rung(
                 "mae",
                 "corr2",
             ]
-            country_meta = candidate_df[
-                ["candidate_id", "candidate_family", "source_label", "order", "score", "predictors_identity"]
+            country_meta = rung_candidate_df[
+                ["candidate_id", "candidate_family", "source_label", "order", "score", "predictors_identity",
+                 "hpo_scope", "hpo_artifact_sha256"]
             ].copy()
             rung_country = country_meta.merge(fit_country[country_metric_cols], on="predictors_identity", how="left")
         rung_summary.to_csv(global_path, index=False)
@@ -1503,6 +1746,33 @@ def load_fig2_candidate_pool(bag: str) -> pd.DataFrame:
 
 
 def load_best_single_by_rung(bag: str) -> pd.DataFrame:
+    if env_bool("MAIN_K10_MODE"):
+        runtime = bundle_root()
+        source_run = os.environ.get("MAIN_K10_SOURCE_RUN_ID", "paper_reanalysis_k10").strip()
+        parts = []
+        for rung in ("xgb_tree_d1", "xgb_tree_d2", "xgb_tree_d3"):
+            root = runtime / "results" / "analysis_runs" / source_run / "xgb" / bag / rung / "single"
+            global_path = root / "metrics_global.csv"
+            country_path = root / "metrics_country.csv"
+            if not global_path.is_file() or not country_path.is_file():
+                raise FileNotFoundError(f"Missing main k10 single-exposure metrics for {bag}/{rung}")
+            global_metrics = pd.read_csv(global_path)
+            country_metrics = pd.read_csv(country_path)
+            balanced = (
+                country_metrics[pd.to_numeric(country_metrics["n_test"], errors="coerce").gt(0)]
+                .groupby("candidate_id", as_index=False, observed=True)["r2"].mean()
+                .rename(columns={"r2": "global_oof_r2"})
+            )
+            frame = global_metrics[["candidate_id"]].merge(balanced, on="candidate_id", how="inner", validate="one_to_one")
+            frame["feature_name"] = frame["candidate_id"].astype(str).str.removeprefix("__single__")
+            domain_map = pd.read_csv(DOMAIN_CSV).set_index("feature_name")["domain"]
+            frame["domain"] = frame["feature_name"].map(domain_map)
+            if frame["domain"].isna().any():
+                missing = frame.loc[frame["domain"].isna(), "feature_name"].astype(str).tolist()
+                raise ValueError(f"Missing canonical domain labels for main k10 single exposures: {missing[:8]}")
+            frame["source_rung"] = rung
+            parts.append(frame)
+        return pd.concat(parts, ignore_index=True)
     root = bundle_variant_root()
     dirs = {
         "ols": root / "single_exposure_eval_ols" / bag / "single_exposure_global.csv",

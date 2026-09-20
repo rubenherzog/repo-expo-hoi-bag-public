@@ -110,6 +110,48 @@ EARLY_STOP_CFG = {
     "val_country_min": 1,
 }
 
+# Disabled by default: the canonical fixed-hyperparameter analysis remains the
+# default scientific contract until a validated tuning artifact is supplied.
+XGB_TUNING_CFG = {
+    "enabled": False,
+    "artifact_path": "",
+    "strict_artifact": False,
+    "bags": ["structural", "functional"],
+    "n_trials": 64,
+    "n_initial_trials": 10,
+    "n_jobs": 4,
+    "seed": 20260304,
+    "sobol_candidates": 2048,
+    # Preserve the existing nested-per-country procedure unless an explicitly
+    # requested alternative fitting mode is supplied at the runtime boundary.
+    "fitting_mode": "nested_per_outer_country",
+    "optimizer": "custom_gp",
+    # Canonical predictor panel for the HPO objective. Runtime may select the
+    # baseline-only or all-single-exposure panels for controlled pilot studies.
+    "feature_scope": "full_exposome",
+    "include_zero_reg_alpha_trial": True,
+    "single_parallel_axis": "country_exposure",
+    # Hyperparameters are selected for country transfer, not pooled subjects:
+    # each inner LOCO country contributes one R² and the lower quartile is the
+    # robust trial objective selected by the local development comparison.
+    "selection_objective": "country_r2_p25",
+    "search_space": {
+        # The domain-balanced k=10 pilot reached these former boundaries.
+        # Broaden only the implicated directions while retaining conservative,
+        # valid XGBoost domains for all HPO scopes.
+        "learning_rate": {"kind": "log", "low": 0.003, "high": 0.10},
+        "min_child_weight": {"kind": "int", "low": 1, "high": 30},
+        "subsample": {"kind": "float", "low": 0.30, "high": 1.00},
+        "colsample_bytree": {"kind": "float", "low": 0.50, "high": 1.00},
+        # Zero is a valid no-L1-penalty case. The tuner evaluates it once for
+        # every outer country before exploring positive values logarithmically.
+        "reg_alpha": {"kind": "log_or_zero", "low": 0.01, "high": 10.0},
+        "reg_lambda": {"kind": "log", "low": 0.10, "high": 10.0},
+        # XGBoost gamma is a non-negative minimum-loss reduction.
+        "gamma": {"kind": "float", "low": 0.0, "high": 5.0},
+    },
+}
+
 TOP_TAIL_FRAC = 0.10
 TOP_TAIL_MIN_N = 10
 FRONTIER_N_BINS = 40

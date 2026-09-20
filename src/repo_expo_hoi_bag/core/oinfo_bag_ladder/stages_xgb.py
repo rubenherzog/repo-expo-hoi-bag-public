@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import gc
+import hashlib
 from pathlib import Path
 
 import pandas as pd
@@ -48,10 +49,18 @@ def run_or_load_xgb_rung(
     perf_cfg: dict,
     xgb_cfg: dict,
     early_stop_cfg: dict,
+    tuning_artifact_path: str | Path | None = None,
+    tuning_strict: bool = False,
     force_recompute: bool = False,
 ) -> dict[str, pd.DataFrame]:
     stage_dir.mkdir(parents=True, exist_ok=True)
     paths = _required_paths(stage_dir)
+    tuning_artifact_hash = ""
+    if tuning_artifact_path:
+        artifact = Path(tuning_artifact_path)
+        if not artifact.is_file():
+            raise FileNotFoundError(f"XGB tuning artifact does not exist: {artifact}")
+        tuning_artifact_hash = hashlib.sha256(artifact.read_bytes()).hexdigest()
     stage_manifest = load_json(paths["manifest"], {})
     stage_hash = stable_hash(
         {
@@ -62,6 +71,8 @@ def run_or_load_xgb_rung(
             "perf_cfg": perf_cfg,
             "xgb_cfg": xgb_cfg,
             "early_stop_cfg": early_stop_cfg,
+            "tuning_artifact_hash": tuning_artifact_hash,
+            "tuning_strict": tuning_strict,
             "candidate_ids": candidate_df["feature_id"].astype(str).tolist(),
         }
     )
@@ -113,6 +124,9 @@ def run_or_load_xgb_rung(
         perf_cfg=perf_cfg,
         xgb_cfg=xgb_cfg,
         early_stop_cfg=early_stop_cfg,
+        tuning_artifact_path=tuning_artifact_path,
+        tuning_rung_id=str(rung_spec["rung_id"]),
+        tuning_strict=tuning_strict,
         enable_progress=True,
         storage_cfg=storage_cfg,
         compare_cfg=compare_cfg,

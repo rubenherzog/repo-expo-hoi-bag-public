@@ -11,13 +11,16 @@ SCANNED_ROOTS = (
     REPO_ROOT / "src",
     REPO_ROOT / "config",
     REPO_ROOT / "docs",
+    REPO_ROOT / "scripts",
+    REPO_ROOT / "results" / "main",
+    REPO_ROOT / "AGENTS.md",
     REPO_ROOT / "README.md",
 )
 FORBIDDEN_PATTERNS = (
-    re.compile(r"/" + "home/rherzog"),
-    re.compile("Documents/" + "Brainlat"),
-    re.compile("miniconda3/" + "envs"),
-    re.compile("/data/" + "workspaces"),
+    re.compile(r"/home/[^/\s]+"),
+    re.compile(r"Documents/[^/\s]+"),
+    re.compile(r"miniconda3/envs"),
+    re.compile(r"/data/workspaces"),
     re.compile(r"exposome_hoi/output_v4"),
     re.compile(r"expo_thoi"),
 )
@@ -27,6 +30,9 @@ REQUIRED_GITIGNORE_PATTERNS = {
     ".pytest_cache/",
     "*.egg-info/",
     "REPRO_DATA_ROOT/",
+    "data/metadata/*.xlsx",
+    "results/main/*.xlsx",
+    "scripts/env.sh",
     # outputs/ is excluded one level at a time so the versioned delivered figure
     # subtree can be re-included; git cannot re-include through an excluded dir.
     "outputs/*",
@@ -44,9 +50,8 @@ PAPER_ANALYSIS_STAGES = (
     REPO_ROOT / "src/repo_expo_hoi_bag/stages/compute_country_meta_regression.py",
     REPO_ROOT / "src/repo_expo_hoi_bag/stages/compute_normative_transfer_stats.py",
     REPO_ROOT / "src/repo_expo_hoi_bag/stages/compute_negative_o_arm_comparison.py",
+    REPO_ROOT / "src/repo_expo_hoi_bag/stages/run_feature_ablation_sensitivity.py",
 )
-
-
 def _text_files() -> list[Path]:
     files: list[Path] = []
     for root in SCANNED_ROOTS:
@@ -70,6 +75,13 @@ def test_active_sources_do_not_contain_personal_absolute_paths() -> None:
     assert offenders == []
 
 
+def test_external_runtime_is_documented_without_a_machine_specific_default() -> None:
+    assert "REPRO_DATA_ROOT" in (REPO_ROOT / "README.md").read_text(encoding="utf-8")
+    assert "operator-selected external runtime" in (
+        REPO_ROOT / "docs" / "REPOSITORY_CONTRACT.md"
+    ).read_text(encoding="utf-8").lower()
+
+
 def test_gitignore_excludes_local_audit_and_runtime_artifacts() -> None:
     patterns = {
         line.strip()
@@ -81,6 +93,37 @@ def test_gitignore_excludes_local_audit_and_runtime_artifacts() -> None:
     # Both negations are needed: git cannot re-include a path whose parent
     # directory is excluded, so each level is unwound in turn.
     assert {"!outputs/figures/", "!outputs/figures/dedup/"}.issubset(patterns)
+
+
+def test_agent_and_country_policy_contracts_are_versioned() -> None:
+    assert (REPO_ROOT / "AGENTS.md").is_file()
+    assert (REPO_ROOT / "docs/REPOSITORY_CONTRACT.md").is_file()
+    assert (REPO_ROOT / "docs/COUNTRY_EXCLUSION_CONTRACT.md").is_file()
+
+    policy = yaml.safe_load((REPO_ROOT / "config/country_exclusions.yaml").read_text(encoding="utf-8"))
+    assert policy["schema_version"] == 1
+    assert policy["greedy"]["countries_to_remove"] == []
+    assert policy["bag"]["variants"]["a"]["exclude_countries"] == [
+        "Egypt", "Greece", "Poland",
+    ]
+    assert policy["bag"]["variants"]["a"]["exclude_diagnosis"] == ["Other", "AFM", "MCI"]
+    assert policy["bag"]["variants"]["historical_a"]["exclude_countries"] == [
+        "France", "Italy", "Egypt", "Greece", "Poland",
+    ]
+    assert policy["bag"]["variants"]["historical_a"]["exclude_diagnosis"] == [
+        "Other", "AFM", "MCI",
+    ]
+
+    pipeline = yaml.safe_load(
+        (REPO_ROOT / "src/repo_expo_hoi_bag/stages/resources/pipeline.yaml").read_text(encoding="utf-8")
+    )
+    sensitivity = yaml.safe_load(
+        (REPO_ROOT / "src/repo_expo_hoi_bag/stages/resources/sensitivity.yaml").read_text(encoding="utf-8")
+    )
+    expected = ",".join(policy["bag"]["variants"]["a"]["exclude_countries"])
+    assert pipeline["variants"]["a"]["exclude_countries"] == expected
+    assert pipeline["variants"]["b"]["exclude_countries"] == expected
+    assert sensitivity["defaults"]["exclude_countries"] == policy["bag"]["variants"]["a"]["exclude_countries"]
 
 
 def test_paper_bias_stages_read_shared_model_and_cohort_configuration() -> None:

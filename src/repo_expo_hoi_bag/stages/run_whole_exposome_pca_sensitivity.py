@@ -51,6 +51,24 @@ from scripts.sensitivity_common import (
 logging.getLogger("matplotlib").setLevel(logging.WARNING)
 
 
+def country_balanced_summary(summary: pd.DataFrame, country: pd.DataFrame) -> pd.DataFrame:
+    """Use the same unweighted country-mean R² as the reference lines."""
+    keys = ["candidate_id", "rung_id"]
+    means = (
+        country.assign(r2=pd.to_numeric(country["r2"], errors="coerce"))
+        .groupby(keys, observed=True)["r2"]
+        .mean()
+        .rename("country_balanced_r2")
+        .reset_index()
+    )
+    out = summary.merge(means, on=keys, how="left", validate="one_to_one")
+    if out["country_balanced_r2"].isna().any():
+        raise ValueError("Country-balanced PCA R² is missing for one or more candidates")
+    out = out.rename(columns={"global_oof_r2": "participant_global_oof_r2"})
+    out["global_oof_r2"] = out["country_balanced_r2"]
+    return out
+
+
 def _draw_pca_rows(
     bag: str,
     variance: pd.DataFrame,
@@ -149,6 +167,11 @@ def _draw_pca_rows(
     perf_frame = perf_frame.rename(columns={"rung_id": "model_level"})
     perf_frame["model_level"] = perf_frame["model_level"].map(LEVEL_LABELS)
 
+    performance_description = (
+        "unweighted mean of held-out country-level LOCO R² for that level and PC count"
+        if os.environ.get("WHOLE_PCA_PERFORMANCE_ESTIMATOR", "").strip() == "country-balanced"
+        else "global out-of-fold LOCO R² for that level and PC count"
+    )
     return [
             Panel(
                 panel_id=f"{row_letter}1_{BAG_SHORT[bag]}_pca_variance",
@@ -174,7 +197,7 @@ def _draw_pca_rows(
                 columns={
                     "model_level": "model level (OLS, d1, d2, d3)",
                     "pc_n": "number of leading PCs entered as predictors",
-                    "global_oof_r2": "global out-of-fold LOCO R² for that level and PC count",
+                    "global_oof_r2": performance_description,
                     "level_baseline_r2": "covariate-only baseline for that level (dashed line)",
                     "original_best_model_r2": "original best model for that level (solid line)",
                 },
@@ -229,6 +252,26 @@ def main() -> None:
     analysis_cfg = analysis_cfg_from_config(cfg)
     local_root = repo_sensitivity_root(cfg) / "whole_exposome_pca"
     local_root.mkdir(parents=True, exist_ok=True)
+
+    if env_bool("WHOLE_PCA_REBUILD_FROM_SUMMARIES"):
+        bag_inputs: dict[str, dict] = {}
+        for bag in selected_bags(cfg, include_combined=include_combined):
+            bag_dir = local_root / bag
+            summary = pd.read_csv(bag_dir / "whole_exposome_pca_global_all.csv")
+            country = pd.read_csv(bag_dir / "whole_exposome_pca_country_all.csv")
+            if os.environ.get("WHOLE_PCA_PERFORMANCE_ESTIMATOR", "").strip() == "country-balanced":
+                summary = country_balanced_summary(summary, country)
+            bag_inputs[bag] = {
+                "variance": pd.read_csv(bag_dir / "whole_exposome_pca_variance.csv"),
+                "summary": summary,
+                "baselines": pd.read_csv(bag_dir / "existing_baselines_by_rung.csv"),
+                "original_best": pd.read_csv(bag_dir / "original_complete_best_by_rung.csv"),
+            }
+        fig_dir = repo_sensitivity_figures_root(cfg, "whole_exposome_pca")
+        fig_dir.mkdir(parents=True, exist_ok=True)
+        _plot_pca(bag_inputs, fig_dir, rungs)
+        copy_tree_contents(fig_dir, bundle_sensitivity_root(cfg) / "whole_exposome_pca")
+        return
 
     raw, _domains, feature_names, _domain_map = load_raw_and_domains()
     original_model = build_original_model_df(raw, feature_names, analysis_cfg)

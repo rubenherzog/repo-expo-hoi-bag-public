@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import os
 import logging
+import hashlib
 from pathlib import Path
 
 import matplotlib as mpl
@@ -75,6 +76,29 @@ C_ORIGINAL = "#6a3d9a"
 def _max_candidates() -> int | None:
     val = os.environ.get("SENSITIVITY_MAX_CANDIDATES", "").strip()
     return int(val) if val else None
+
+
+def _reuse_domain_pc1_oinfo(candidate_df: pd.DataFrame, path: Path) -> pd.DataFrame:
+    """Attach the parent PC1 O-information scores by exact predictor identity."""
+    reference = pd.read_csv(path)
+    required = {"predictors_identity", "score", "thoi_o"}
+    missing = required.difference(reference.columns)
+    if missing:
+        raise ValueError(f"Domain-PC1 O-information reference lacks {sorted(missing)}")
+    if reference["predictors_identity"].astype(str).duplicated().any():
+        raise ValueError("Domain-PC1 O-information reference has duplicate identities")
+    out = candidate_df.copy()
+    score_map = reference.set_index("predictors_identity")["score"]
+    thoi_map = reference.set_index("predictors_identity")["thoi_o"]
+    out["score"] = out["predictors_identity"].astype(str).map(score_map)
+    out["thoi_o"] = out["predictors_identity"].astype(str).map(thoi_map)
+    if out[["score", "thoi_o"]].isna().any().any():
+        absent = out.loc[out["score"].isna(), "predictors_identity"].head(5).tolist()
+        raise ValueError(f"Domain-PC1 O-information identities are missing: {absent}")
+    out["rank_o_min"] = out.groupby("order")["score"].rank(method="first", ascending=True)
+    out["rank_o_max"] = out.groupby("order")["score"].rank(method="first", ascending=False)
+    out["oinfo_reference_sha256"] = hashlib.sha256(path.read_bytes()).hexdigest()
+    return out
 
 
 def _best_single_representatives(
@@ -488,13 +512,23 @@ def main() -> None:
         prefix="domainpc",
     )
     pc_score_cache = local_root / "global_hoi_cache" / "within_domain_pc1_thoi_scores.csv"
-    pc_candidates_template = score_oinfo_with_cache(
-        reference_pc_df,
-        pc_candidates_template,
-        pc_names,
-        cache_path=pc_score_cache,
-        batch_size=batch_size,
-    )
+    pc1_reference = os.environ.get("DOMAIN_PC1_OINFO_REFERENCE", "").strip()
+    if env_bool("MAIN_K10_MODE") and not pc1_reference:
+        raise EnvironmentError(
+            "MAIN_K10_MODE requires DOMAIN_PC1_OINFO_REFERENCE; PC1 O-information is reused"
+        )
+    if pc1_reference:
+        pc_candidates_template = _reuse_domain_pc1_oinfo(
+            pc_candidates_template, Path(pc1_reference).resolve()
+        )
+    else:
+        pc_candidates_template = score_oinfo_with_cache(
+            reference_pc_df,
+            pc_candidates_template,
+            pc_names,
+            cache_path=pc_score_cache,
+            batch_size=batch_size,
+        )
 
     original_score_cache = local_root / "global_hoi_cache" / "original_feature_thoi_scores.csv"
     log_msg("PHASE 1 random one-per-domain candidates skipped by request")

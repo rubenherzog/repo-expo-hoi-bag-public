@@ -1,0 +1,42 @@
+# Canonical population policy. Discovery and BAG evaluation intentionally use
+# independent country filters; do not merge them.
+schema_version: 1
+
+greedy:
+  countries_to_remove: []
+
+bag:
+  variants:
+    a:
+      description: Main analysis — CN + AD + FTD
+      exclude_countries:
+        - Egypt
+        - Greece
+        - Poland
+      exclude_diagnosis:
+        - Other
+        - AFM
+        - MCI
+    historical_a:
+      description: Historical main-analysis population — CN + AD + FTD
+      exclude_countries:
+        - France
+        - Italy
+        - Egypt
+        - Greece
+        - Poland
+      exclude_diagnosis:
+        - Other
+        - AFM
+        - MCI
+    b:
+      description: Robustness — AD + FTD only
+      exclude_countries:
+        - Egypt
+        - Greece
+        - Poland
+      exclude_diagnosis:
+        - Other
+        - AFM
+        - MCI
+        - CN

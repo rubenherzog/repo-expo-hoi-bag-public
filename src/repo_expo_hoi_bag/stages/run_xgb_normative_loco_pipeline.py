@@ -28,10 +28,12 @@ from scripts.sensitivity_common import (
     bundle_root,
     load_fig2_candidate_pool,
     log_msg,
+    route_main_k10_hpo,
 )
 from scripts.sensitivity_common import _predictor_indices
 from loco_fusion_matrix_engine import prepare_bag_context, regression_metrics_extended, target_map
 from oinfo_bag_ladder.rungs import build_xgb_cfg_for_rung, get_rung_specs
+from xgb_nested_loco_tuning import resolve_tuned_fold_configs
 from xgb_loco_engine import _append_predictors, _build_base_fold_mats, _fit_xgb_fold, require_xgboost
 from scripts.sensitivity_common import early_stop_cfg
 
@@ -235,6 +237,7 @@ def _fit_candidate_multi_test(
     exposome_cols: list[str],
     rung_id: str,
     xgb_cfg: dict,
+    fold_xgb_cfgs: dict[str, dict] | None,
     family: XGBNormFamily,
     test_dx: list[str],
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
@@ -262,7 +265,7 @@ def _fit_candidate_multi_test(
         x_tr_inner = _append_predictors(fd["Xb_train_inner"], x_exp, tr_inner, pred_used)
         x_val = _append_predictors(fd["Xb_val"], x_exp, val_idx, pred_used)
         x_test = _append_predictors(fd["Xb_test"], x_exp, test_idx, pred_used)
-        params = dict(xgb_cfg)
+        params = dict((fold_xgb_cfgs or {}).get(country, xgb_cfg))
         params["random_state"] = int(base_seed + fold_i)
         try:
             reg = _fit_xgb_fold(xgb_mod, params, x_tr_inner, y[tr_inner], x_val, y[val_idx])
@@ -369,6 +372,16 @@ def _evaluate_train_family(
         for i, country in enumerate(context["countries"])
     }
     candidate_df = candidate_df.copy().reset_index(drop=True)
+    tuning_path = os.environ.get("XGB_TUNING_ARTIFACT", "").strip()
+    main_k10_mode = bool(os.environ.get("MAIN_K10_MODE", "").strip())
+    if main_k10_mode:
+        if not tuning_path:
+            raise ValueError("MAIN_K10_MODE requires XGB_TUNING_ARTIFACT")
+        candidate_df, hpo_artifacts = route_main_k10_hpo(candidate_df, tuning_path)
+    else:
+        candidate_df["hpo_scope"] = "configured"
+        candidate_df["hpo_artifact_sha256"] = ""
+        hpo_artifacts = {"configured": Path(tuning_path)} if tuning_path else {}
     fit_df = candidate_df.drop_duplicates("predictors_identity", keep="first").reset_index(drop=True)
     fit_map = fit_df[["candidate_id", "predictors_identity"]].rename(columns={"candidate_id": "fit_candidate_id"})
     manifest = (
@@ -378,6 +391,8 @@ def _evaluate_train_family(
             candidate_ids=("candidate_id", lambda x: "|".join(map(str, x))),
             candidate_families=("candidate_family", lambda x: "|".join(sorted(set(map(str, x))))),
             source_labels=("source_label", lambda x: "|".join(sorted(set(map(str, x))))),
+            hpo_scopes=("hpo_scope", lambda x: "|".join(sorted(set(map(str, x))))),
+            hpo_artifact_sha256=("hpo_artifact_sha256", lambda x: "|".join(sorted(set(map(str, x))))),
             order=("order", "first"),
         )
         .merge(fit_map, on="predictors_identity", how="left")
@@ -396,13 +411,41 @@ def _evaluate_train_family(
         if global_path.exists() and country_path.exists():
             existing = pd.read_csv(global_path)
             expected_rows = len(candidate_df) * len(actual_test_dx)
-            if len(existing) == expected_rows:
+            expected_hpo = candidate_df.set_index("candidate_id")[[
+                "hpo_scope", "hpo_artifact_sha256"
+            ]].astype(str).sort_index()
+            has_hpo_identity = {
+                "hpo_scope", "hpo_artifact_sha256"
+            }.issubset(existing.columns)
+            existing_hpo = (
+                existing.drop_duplicates("candidate_id").set_index("candidate_id")[[
+                    "hpo_scope", "hpo_artifact_sha256"
+                ]].astype(str).sort_index()
+                if has_hpo_identity
+                else pd.DataFrame()
+            )
+            if (
+                len(existing) == expected_rows
+                and has_hpo_identity
+                and existing_hpo.equals(expected_hpo)
+            ):
                 summary_parts.append(existing)
                 country_parts.append(pd.read_csv(country_path))
                 log_msg(f"XGB norm resume hit bag={bag} family={family.family_id} train={family.train_label} rung={rung_id}")
                 continue
 
         xgb_cfg = build_xgb_cfg_for_rung(rung_specs[rung_id])
+        fold_cfgs_by_scope = {
+            scope: resolve_tuned_fold_configs(
+                path,
+                bag,
+                rung_id,
+                xgb_cfg,
+                context["countries"],
+                strict=main_k10_mode,
+            )
+            for scope, path in hpo_artifacts.items()
+        }
         fitted = []
         log_msg(
             f"XGB norm start bag={bag} family={family.family_id} train={family.train_label} "
@@ -420,6 +463,7 @@ def _evaluate_train_family(
                         exposome_cols=exposome_cols,
                         rung_id=rung_id,
                         xgb_cfg=xgb_cfg,
+                        fold_xgb_cfgs=fold_cfgs_by_scope.get(str(row["hpo_scope"])),
                         family=family,
                         test_dx=test_dx,
                     )
@@ -434,6 +478,7 @@ def _evaluate_train_family(
                         exposome_cols=exposome_cols,
                         rung_id=rung_id,
                         xgb_cfg=xgb_cfg,
+                        fold_xgb_cfgs=fold_cfgs_by_scope.get(str(row["hpo_scope"])),
                         family=family,
                         test_dx=test_dx,
                     )
@@ -449,6 +494,12 @@ def _evaluate_train_family(
         fit_country = pd.concat([x[1] for x in fitted], ignore_index=True) if fitted else pd.DataFrame()
         fit_summary = fit_summary.rename(columns={"candidate_id": "fit_candidate_id"}).merge(
             fit_map, on="fit_candidate_id", how="left"
+        )
+        fit_country = fit_country.merge(
+            fit_df[["candidate_id", "hpo_scope", "hpo_artifact_sha256"]],
+            on="candidate_id",
+            how="left",
+            validate="many_to_one",
         )
         metadata = candidate_df.drop(columns=["nplet_vars"], errors="ignore").copy()
         metric_cols = [

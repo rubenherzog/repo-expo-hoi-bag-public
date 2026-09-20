@@ -79,7 +79,8 @@ PAPER_FIGS.mkdir(exist_ok=True)
 
 SYN_SHAP_ROOT = ROOT / "shap_oof"
 RED_SHAP_ROOT = ROOT / "shap_oof_red"
-FEATURE_DOMAINS = pathlib.Path(__file__).resolve().parents[1] / "data" / "exposome_feature_domains.csv"
+# Public inputs are versioned at the checkout root, not inside the package.
+FEATURE_DOMAINS = pathlib.Path(__file__).resolve().parents[3] / "data" / "metadata" / "exposome_feature_domains.csv"
 
 # Order cap for the paper figure variants. Fig3 is rendered in its capped,
 # no-SHAP

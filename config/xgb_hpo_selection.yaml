@@ -1,0 +1,9 @@
+# Final HPO selection policy for the paper re-analysis.
+schema_version: 1
+
+cap_or_practical_convergence:
+  max_trials: 500
+  practical_convergence:
+    minimum_completed_trials: 350
+    lookback_trials: 300
+    minimum_incumbent_improvement_mse: 0.10

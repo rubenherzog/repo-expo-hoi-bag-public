@@ -34,7 +34,9 @@ from scripts.sensitivity_common import (
     load_sensitivity_config,
     paper_analysis_config,
     repo_sensitivity_root,
+    route_main_k10_hpo,
     sensitivity_eval_work_root,
+    selected_bags,
 )
 from loco_fusion_matrix_engine import (
     prepare_bag_context,
@@ -48,9 +50,13 @@ from xgb_loco_engine import (
     require_xgboost,
 )
 from oinfo_bag_ladder.rungs import get_rung_specs
+from xgb_nested_loco_tuning import resolve_tuned_fold_configs
 
 
 def _canonical_metrics_path(root: Path, bag: str) -> Path:
+    adapter = os.environ.get("MAIN_K10_CANONICAL_ROOT", "").strip()
+    if adapter:
+        return Path(adapter) / "per_experiment" / f"pooled_oinfo_ladder_{bag}" / "metrics_global_long.parquet"
     return (
         root
         / "runs"
@@ -73,6 +79,9 @@ def _reference_oof_path(
     reference_oof_dir_template: str,
     order_max: int,
 ) -> Path:
+    main_oof = os.environ.get("MAIN_K10_SELECTED_OOF_ROOT", "").strip()
+    if main_oof:
+        return Path(main_oof) / f"level_best_{file_suffix}" / bag / "oof_xgb_tree_d3.parquet"
     reference_dir = reference_oof_dir_template.format(order_max=order_max)
     return (
         root
@@ -116,13 +125,13 @@ def _best_fixed_spec(
     )
     reference = pd.read_parquet(
         reference_path,
-        columns=["candidate_id", "best_rung", "objective"],
+        columns=["candidate_id", "rung_id", "objective"],
     )
     reference_spec = reference.iloc[0]
     expected = (str(best["candidate_id"]), rung_id, objective)
     observed = (
         str(reference_spec["candidate_id"]),
-        str(reference_spec["best_rung"]),
+        str(reference_spec["rung_id"]),
         str(reference_spec["objective"]),
     )
     if observed != expected:
@@ -198,6 +207,37 @@ def _fit_balanced_oof(
         raise ValueError(f"Configured paper rung is undefined: {rung_id}")
     xgb_cfg = {**default_xgb_cfg(), **stage_cfg.get("xgb_cfg", {})}
     xgb_cfg.update(rung_specs[rung_id].get("xgb_overrides", {}))
+    tuning_path = os.environ.get("XGB_TUNING_ARTIFACT", "").strip()
+    main_k10_mode = bool(os.environ.get("MAIN_K10_MODE", "").strip())
+    if main_k10_mode and not tuning_path:
+        raise ValueError("MAIN_K10_MODE requires XGB_TUNING_ARTIFACT")
+    routing = pd.DataFrame(
+        [
+            {"candidate_id": str(spec["candidate_id"]), "objective": str(spec["objective"])},
+            {"candidate_id": "__baseline__", "objective": "baseline"},
+        ]
+    )
+    if main_k10_mode:
+        routing, hpo_artifacts = route_main_k10_hpo(routing, tuning_path)
+    else:
+        routing["hpo_scope"] = "configured"
+        routing["hpo_artifact_sha256"] = ""
+        hpo_artifacts = {"configured": Path(tuning_path)} if tuning_path else {}
+    fold_cfgs_by_scope = {
+        scope: resolve_tuned_fold_configs(
+            path,
+            bag,
+            rung_id,
+            xgb_cfg,
+            context["countries"],
+            strict=main_k10_mode,
+        )
+        for scope, path in hpo_artifacts.items()
+    }
+    full_scope = str(routing.iloc[0]["hpo_scope"])
+    baseline_scope = str(routing.iloc[1]["hpo_scope"])
+    full_hpo_hash = str(routing.iloc[0]["hpo_artifact_sha256"])
+    baseline_hpo_hash = str(routing.iloc[1]["hpo_artifact_sha256"])
     base_seed = int(xgb_cfg["random_state"])
     fold_designs = {
         country: _build_base_fold_mats(
@@ -242,11 +282,18 @@ def _fit_balanced_oof(
         )
         x_val_full = _append_predictors(fold["Xb_val"], x_exp, val_idx, used)
         x_test_full = _append_predictors(fold["Xb_test"], x_exp, test_idx, used)
-        params = {**xgb_cfg, "random_state": base_seed + fold_i}
+        full_params = {
+            **(fold_cfgs_by_scope.get(full_scope) or {}).get(country, xgb_cfg),
+            "random_state": base_seed + fold_i,
+        }
+        baseline_params = {
+            **(fold_cfgs_by_scope.get(baseline_scope) or {}).get(country, xgb_cfg),
+            "random_state": base_seed + fold_i,
+        }
 
         full_model = _fit_xgb_fold(
             xgb,
-            params,
+            full_params,
             x_train_full,
             y[tr_inner],
             x_val_full,
@@ -256,7 +303,7 @@ def _fit_balanced_oof(
         )
         baseline_model = _fit_xgb_fold(
             xgb,
-            params,
+            baseline_params,
             fold["Xb_train_inner"],
             y[tr_inner],
             fold["Xb_val"],
@@ -303,6 +350,10 @@ def _fit_balanced_oof(
             "best_rung": rung_id,
             "objective": spec["objective"],
             "training_scheme": "equal_diagnosis_weight",
+            "full_hpo_scope": full_scope,
+            "full_hpo_artifact_sha256": full_hpo_hash,
+            "baseline_hpo_scope": baseline_scope,
+            "baseline_hpo_artifact_sha256": baseline_hpo_hash,
         }
     )
     oof["bias_full"] = oof["y_pred_full"] - oof["y_true"]
@@ -389,6 +440,15 @@ def _paired_cluster_bootstrap(
     delta_bias = sampled[:, 1] / sampled[:, 0] - sampled[:, 2] / sampled[:, 0]
     delta_mae = sampled[:, 3] / sampled[:, 0] - sampled[:, 4] / sampled[:, 0]
 
+    def two_sided_p(values: np.ndarray) -> float:
+        return min(
+            1.0,
+            max(
+                2 * min(float(np.mean(values <= 0)), float(np.mean(values >= 0))),
+                1 / bootstrap_draws,
+            ),
+        )
+
     error_balanced = subset["error_balanced"].to_numpy()
     error_unweighted = subset["error_unweighted"].to_numpy()
     return {
@@ -403,11 +463,13 @@ def _paired_cluster_bootstrap(
         ),
         "delta_bias_ci_low": float(np.quantile(delta_bias, 0.025)),
         "delta_bias_ci_high": float(np.quantile(delta_bias, 0.975)),
+        "delta_bias_bootstrap_p": two_sided_p(delta_bias),
         "delta_mae_balanced_minus_unweighted": float(
             np.mean(np.abs(error_balanced)) - np.mean(np.abs(error_unweighted))
         ),
         "delta_mae_ci_low": float(np.quantile(delta_mae, 0.025)),
         "delta_mae_ci_high": float(np.quantile(delta_mae, 0.975)),
+        "delta_mae_bootstrap_p": two_sided_p(delta_mae),
         "bootstrap_unit": "country",
         "bootstrap_draws": bootstrap_draws,
     }
@@ -418,6 +480,21 @@ def _load_reference_oof(
 ) -> pd.DataFrame:
     path = Path(str(spec["unweighted_oof_source"]))
     reference = pd.read_parquet(path)
+    expected_bag = str(spec["bag"])
+    if "bag_target" not in reference.columns:
+        if "bag" not in reference.columns:
+            raise KeyError(
+                "Reference OOF must contain either 'bag_target' or 'bag': "
+                f"{path}"
+            )
+        reference["bag_target"] = reference["bag"].astype(str)
+    observed_bags = set(reference["bag_target"].dropna().astype(str))
+    if observed_bags != {expected_bag}:
+        raise ValueError(
+            "Reference OOF BAG does not match the selected model: "
+            f"expected={expected_bag!r}, observed={sorted(observed_bags)!r}, "
+            f"source={path}"
+        )
     reference = reference[reference["diagnosis"].astype(str).isin(diagnoses)].copy()
     reference["training_scheme"] = "unweighted"
     return reference
@@ -449,7 +526,7 @@ def main() -> None:
     metric_rows: list[dict[str, object]] = []
     bootstrap_rows: list[dict[str, object]] = []
 
-    for bag in paper_cfg.primary_bags:
+    for bag in selected_bags(cfg, include_combined=False):
         for objective in paper_cfg.objectives:
             spec = _best_fixed_spec(
                 bundle_root,
@@ -533,6 +610,14 @@ def main() -> None:
                     "held_out_evaluation_weighted": False,
                     "primary_diagnoses": "|".join(paper_cfg.primary_diagnoses),
                     "configuration_source": str(CONFIG_PATH.resolve()),
+                    "full_hpo_scope": str(balanced["full_hpo_scope"].iloc[0]),
+                    "full_hpo_artifact_sha256": str(
+                        balanced["full_hpo_artifact_sha256"].iloc[0]
+                    ),
+                    "baseline_hpo_scope": str(balanced["baseline_hpo_scope"].iloc[0]),
+                    "baseline_hpo_artifact_sha256": str(
+                        balanced["baseline_hpo_artifact_sha256"].iloc[0]
+                    ),
                 }
             )
             weight_parts.append(weights)
@@ -544,10 +629,38 @@ def main() -> None:
     bootstrap = pd.DataFrame(bootstrap_rows)
     weights = pd.concat(weight_parts, ignore_index=True)
 
-    manifest.to_csv(local_root / "diagnosis_balance_model_manifest.csv", index=False)
-    metrics.to_csv(local_root / "diagnosis_balance_metrics.csv", index=False)
-    bootstrap.to_csv(local_root / "diagnosis_balance_country_bootstrap.csv", index=False)
-    weights.to_csv(local_root / "diagnosis_balance_fold_weights.csv", index=False)
+    tables = {
+        "diagnosis_balance_model_manifest.csv": manifest,
+        "diagnosis_balance_metrics.csv": metrics,
+        "diagnosis_balance_country_bootstrap.csv": bootstrap,
+        "diagnosis_balance_fold_weights.csv": weights,
+    }
+    # Cluster jobs run one BAG at a time. Persist each BAG first, then rebuild
+    # the shared paper table in primary-BAG order. Whichever job finishes last
+    # sees both completed BAG directories, avoiding last-writer data loss.
+    completed_bags = [
+        bag
+        for bag in paper_cfg.primary_bags
+        if not manifest.loc[manifest["bag"].astype(str).eq(bag)].empty
+    ]
+    for bag in completed_bags:
+        bag_root = local_root / bag
+        bag_root.mkdir(parents=True, exist_ok=True)
+        for filename, table in tables.items():
+            table.loc[table["bag"].astype(str).eq(bag)].to_csv(
+                bag_root / filename, index=False
+            )
+
+    for filename in tables:
+        parts = []
+        for bag in paper_cfg.primary_bags:
+            path = local_root / bag / filename
+            if path.is_file():
+                parts.append(pd.read_csv(path))
+        if parts:
+            pd.concat(parts, ignore_index=True).to_csv(
+                local_root / filename, index=False
+            )
     copy_tree_contents(local_root, bundle_sensitivity_root(cfg) / "diagnosis_balance")
 
     print(f"Wrote lightweight summaries to {local_root}", flush=True)

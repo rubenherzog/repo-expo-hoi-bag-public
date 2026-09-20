@@ -9,8 +9,14 @@ htmlcov/
 venv/
 .env
 .env.*
+scripts/env.sh
 .mcp.json
 work/
+# Local paper-build intermediates are reproducible and must not be published.
+results/main/*.xlsx
+# Scanner workbooks include record-level metadata and are supplied explicitly
+# at runtime; only the public CSV feature dictionaries are versioned.
+data/metadata/*.xlsx
 # outputs/ is local-only, EXCEPT the delivered figures and source data.
 # Git cannot re-include through an excluded directory, so unwind it level by level.
 outputs/*

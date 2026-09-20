@@ -76,12 +76,12 @@ variants:
   a:
     label: variant_a
     description: Main analysis — CN + AD + FTD
-    exclude_countries: France,Italy,Egypt,Greece,Poland
+    exclude_countries: Egypt,Greece,Poland
     exclude_diagnosis: Other,AFM,MCI
   b:
     label: variant_b
     description: Robustness — AD + FTD only
-    exclude_countries: France,Italy,Egypt,Greece,Poland
+    exclude_countries: Egypt,Greece,Poland
     exclude_diagnosis: Other,AFM,MCI,CN
     skip_steps:
       - transfer

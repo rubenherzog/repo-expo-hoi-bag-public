@@ -18,6 +18,20 @@ class ConfigurationError(ValueError):
 
 
 @dataclass(frozen=True)
+class HistoricalPaperReference:
+    """Read-only external location of the complete previous-paper runtime."""
+
+    root: Path
+    canonical_relative_path: Path
+    sensitivity_relative_path: Path
+    oof_relative_path: Path
+
+    @property
+    def canonical_root(self) -> Path:
+        return self.root / self.canonical_relative_path
+
+
+@dataclass(frozen=True)
 class RuntimePaths:
     """Absolute external paths; runtime outputs are never written to the checkout."""
 
@@ -102,3 +116,49 @@ def load_paper_config(path: Path, *, include_combined: bool = False) -> PaperCon
         )
     except KeyError as exc:
         raise ConfigurationError(f"Missing required configuration key: {exc.args[0]}") from exc
+
+
+def load_historical_paper_reference(
+    path: Path, *, repro_data_root: Path | None = None
+) -> HistoricalPaperReference:
+    """Load the immutable, external previous-paper reference catalog."""
+    with Path(path).open(encoding="utf-8") as handle:
+        raw = _require_mapping(yaml.safe_load(handle), "historical paper reference config")
+    reference = _require_mapping(raw.get("historical_paper_reference"), "historical_paper_reference")
+    try:
+        if reference.get("read_only") is not True:
+            raise ConfigurationError("historical_paper_reference.read_only must be true")
+        variable_name = str(reference["root_environment_variable"])
+        configured_root = os.environ.get(variable_name)
+        if configured_root:
+            root = Path(configured_root).expanduser()
+        else:
+            runtime_root = repro_data_root or (
+                Path(os.environ["REPRO_DATA_ROOT"])
+                if os.environ.get("REPRO_DATA_ROOT")
+                else None
+            )
+            if runtime_root is None:
+                raise ConfigurationError(
+                    f"{variable_name} or REPRO_DATA_ROOT is required to resolve "
+                    "the historical paper reference"
+                )
+            root = Path(runtime_root).expanduser().resolve().parent / str(
+                reference["runtime_directory_name"]
+            )
+        if not root.is_absolute():
+            raise ConfigurationError("historical_paper_reference.root must be an absolute external path")
+        relatives = {
+            name: Path(str(reference[name]))
+            for name in ("canonical_relative_path", "sensitivity_relative_path", "oof_relative_path")
+        }
+        if any(item.is_absolute() or ".." in item.parts for item in relatives.values()):
+            raise ConfigurationError("historical paper reference relative paths must remain below its root")
+        return HistoricalPaperReference(
+            root=root,
+            canonical_relative_path=relatives["canonical_relative_path"],
+            sensitivity_relative_path=relatives["sensitivity_relative_path"],
+            oof_relative_path=relatives["oof_relative_path"],
+        )
+    except KeyError as exc:
+        raise ConfigurationError(f"Missing historical paper reference key: {exc.args[0]}") from exc

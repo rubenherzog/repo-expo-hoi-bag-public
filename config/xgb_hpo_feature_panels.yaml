@@ -1,0 +1,38 @@
+schema_version: 1
+
+# Fixed, outcome-independent predictor panels for global XGBoost HPO.  The
+# ten subsets below were generated with numpy.default_rng(20260911), drawing
+# one shuffled cyclic sequence independently within each feature domain.  This
+# makes the panel random but fully reproducible, covers every domain exactly
+# once per subset, and balances unavoidable repeats within small domains.
+#
+# A no-repeat rule across all subsets is mathematically impossible: Migration
+# has one variable, and Climate disasters, Disease-related mortality, and
+# Green space access have two each.  No full subset is duplicated.
+panels:
+  domain_balanced_k10:
+    subset_size: 10
+    n_subsets: 10
+    sampling_seed: 20260911
+    description: "Ten domain-balanced random k=10 subsets; one exposure from each canonical domain."
+    subsets:
+      - id: domain_balanced_k10_01
+        features: ["Non-methane volatile organic compounds (NMVOC) emissions", climatedisaster_naffected_o, soc_grp_equal_est, deaths_notrans, "Average share of green area in city/ urban area", migration, scpdsi_aw_o, HDI, "Pop_basic_drinking-water(%)", mean_anomalies_areaw_o]
+      - id: domain_balanced_k10_02
+        features: ["Carbon monoxide (CO) emissions", climatedisaster_count_o, rule_law_est, deaths_trans, "Green area per capita (m2/person)", migration, scpdsi_o, GII, agri_emp_o, mean_anomalies_o]
+      - id: domain_balanced_k10_03
+        features: ["Nitrogen oxide (NOx)", climatedisaster_count_o, civic_engage_est, deaths_notrans, "Average share of green area in city/ urban area", migration, mean_prec2_o, unemp, Poisoning_mortality_rate, mean_temp_areaw_o]
+      - id: domain_balanced_k10_04
+        features: ["Ammonia (NH₃) emissions", climatedisaster_naffected_o, abs_corrupt_est, deaths_trans, "Green area per capita (m2/person)", migration, mean_prec2_areaw_o, GINI, Poisoning_mortality_rate, mean_temp_o]
+      - id: domain_balanced_k10_05
+        features: [PM2.5, climatedisaster_count_o, free_relig_est, deaths_trans, "Average share of green area in city/ urban area", migration, mean_prec2_o, GDP, agri_emp_o, sd_lr_o]
+      - id: domain_balanced_k10_06
+        features: ["Black carbon (BC) emissions", climatedisaster_naffected_o, cred_elect_est, deaths_notrans, "Green area per capita (m2/person)", migration, scpdsi_o, "Electricity_demand (kWh)", "Pop_basic_drinking-water(%)", maxgtemp_o]
+      - id: domain_balanced_k10_07
+        features: ["Sulphur dioxide (SO₂) emissions", climatedisaster_count_o, basic_welf_est, deaths_trans, "Average share of green area in city/ urban area", migration, mean_prec2_areaw_o, unemp, Poisoning_mortality_rate, mean_anomalies_areaw_o]
+      - id: domain_balanced_k10_08
+        features: ["Non-methane volatile organic compounds (NMVOC) emissions", climatedisaster_naffected_o, elected_gov_est, deaths_notrans, "Green area per capita (m2/person)", migration, scpdsi_aw_o, HDI, "Pop_basic_drinking-water(%)", mean_temp_areaw_o]
+      - id: domain_balanced_k10_09
+        features: ["Nitrogen oxide (NOx)", climatedisaster_naffected_o, free_parties_est, deaths_trans, "Average share of green area in city/ urban area", migration, scpdsi_o, GII, agri_emp_o, sd_lr_o]
+      - id: domain_balanced_k10_10
+        features: ["Sulphur dioxide (SO₂) emissions", climatedisaster_count_o, direct_dem_est, deaths_notrans, "Green area per capita (m2/person)", migration, mean_prec2_areaw_o, GINI, "Pop_basic_drinking-water(%)", mean_anomalies_o]

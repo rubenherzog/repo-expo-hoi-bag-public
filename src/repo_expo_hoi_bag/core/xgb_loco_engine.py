@@ -98,7 +98,21 @@ def _stack_parts(parts):
     return np.asarray(X, dtype=np.float32)
 
 
-def _build_base_fold_mats(context, fold_country, analysis_cfg, early_stop_cfg, seed):
+def _build_fold_mats_from_indices(
+    context,
+    fold_country,
+    train_idx,
+    test_idx,
+    analysis_cfg,
+    early_stop_cfg,
+    seed,
+):
+    """Build canonical covariate matrices for an explicit train/test split.
+
+    The early-stopping split is drawn only from ``train_idx``.  This is used by
+    both outer LOCO evaluation and nested tuning, where the inner scored country
+    must be absent from the early-stopping pool.
+    """
     age = np.asarray(context['age'], dtype=float)
     year = np.asarray(context['year'], dtype=float)
     sex = context['sex']
@@ -106,8 +120,8 @@ def _build_base_fold_mats(context, fold_country, analysis_cfg, early_stop_cfg, s
     edu = np.asarray(context.get('edu', np.full(len(age), np.nan)), dtype=float)
     scanner = context.get('scanner', np.asarray([''] * len(age)))
 
-    train_idx = np.asarray(context['train_idx_by_country'][fold_country], dtype=int)
-    test_idx = np.asarray(context['test_idx_by_country'][fold_country], dtype=int)
+    train_idx = np.asarray(train_idx, dtype=int)
+    test_idx = np.asarray(test_idx, dtype=int)
 
     tr_inner_idx, val_idx = _split_train_val_by_country(
         context['country'],
@@ -172,6 +186,19 @@ def _build_base_fold_mats(context, fold_country, analysis_cfg, early_stop_cfg, s
     }
 
 
+def _build_base_fold_mats(context, fold_country, analysis_cfg, early_stop_cfg, seed):
+    """Backward-compatible outer-LOCO wrapper around explicit split matrices."""
+    return _build_fold_mats_from_indices(
+        context,
+        fold_country,
+        context['train_idx_by_country'][fold_country],
+        context['test_idx_by_country'][fold_country],
+        analysis_cfg,
+        early_stop_cfg,
+        seed,
+    )
+
+
 def _fit_xgb_fold(
     xgb,
     xgb_params,
@@ -227,7 +254,7 @@ def _append_predictors(Xbase, Xexp, idx, pred_idx):
     return np.hstack([Xbase, Xe]).astype(np.float32)
 
 
-def baseline_cache_signature(context, fold_designs, xgb_cfg) -> str:
+def baseline_cache_signature(context, fold_designs, xgb_cfg, fold_xgb_cfgs=None) -> str:
     """Content-addressed key for the covariate-only XGB baseline.
 
     The baseline OOF depends only on the bag target, the per-fold covariate
@@ -243,6 +270,7 @@ def baseline_cache_signature(context, fold_designs, xgb_cfg) -> str:
     h = hashlib.sha256()
     h.update(repr(context['bag_name']).encode())
     h.update(json.dumps(xgb_cfg, sort_keys=True, default=str).encode())
+    h.update(json.dumps(fold_xgb_cfgs or {}, sort_keys=True, default=str).encode())
     y = np.ascontiguousarray(np.asarray(context['y'], dtype=float))
     h.update(b'y')
     h.update(str(y.shape).encode())
@@ -318,7 +346,7 @@ def save_cached_baseline(cache_dir, signature, bsum, bpred, bcountry, baseline_f
     os.replace(tmp, base)
 
 
-def fit_xgb_baseline_across_folds(context, fold_designs, xgb_cfg):
+def fit_xgb_baseline_across_folds(context, fold_designs, xgb_cfg, fold_xgb_cfgs=None):
     xgb = require_xgboost()
     y = np.asarray(context['y'], dtype=float)
 
@@ -345,8 +373,8 @@ def fit_xgb_baseline_across_folds(context, fold_designs, xgb_cfg):
         status = 'ok'
         error = ''
 
-        xgb_params = dict(xgb_cfg)
-        xgb_params['random_state'] = int(base_seed + fold_i)
+        xgb_params = dict((fold_xgb_cfgs or {}).get(c, xgb_cfg))
+        xgb_params['random_state'] = int(xgb_params.get('random_state', base_seed) + fold_i)
 
         train_r2 = np.nan
         try:
@@ -450,7 +478,9 @@ def fit_xgb_baseline_across_folds(context, fold_designs, xgb_cfg):
     return summary, pred_df, country_df, baseline_fold_cache
 
 
-def fit_xgb_one_rep_across_folds(rep_row, context, fold_designs, baseline_fold_cache, xgb_cfg):
+def fit_xgb_one_rep_across_folds(
+    rep_row, context, fold_designs, baseline_fold_cache, xgb_cfg, fold_xgb_cfgs=None
+):
     xgb = require_xgboost()
     rep_id = str(rep_row['model_id'])
     pred_idx_all = list(rep_row.get('predictor_idx_list', []))
@@ -503,8 +533,8 @@ def fit_xgb_one_rep_across_folds(rep_row, context, fold_designs, baseline_fold_c
             X_tr_full = _append_predictors(fd['Xb_train_full'], X_exp, train_idx, pred_used_idx)
             X_test = _append_predictors(fd['Xb_test'], X_exp, test_idx, pred_used_idx)
 
-            xgb_params = dict(xgb_cfg)
-            xgb_params['random_state'] = int(base_seed + fold_i)
+            xgb_params = dict((fold_xgb_cfgs or {}).get(c, xgb_cfg))
+            xgb_params['random_state'] = int(xgb_params.get('random_state', base_seed) + fold_i)
 
             reg = _fit_xgb_fold(xgb, xgb_params, X_tr_inner, y_tr_inner, X_val, y_val)
             y_pred_test = reg.predict(X_test)
@@ -610,6 +640,7 @@ def evaluate_xgb_representatives_parallel(
     baseline_fold_cache,
     perf_cfg,
     xgb_cfg,
+    fold_xgb_cfgs=None,
     show_progress=True,
     collect_predictions: bool = True,
 ):
@@ -631,14 +662,26 @@ def evaluate_xgb_representatives_parallel(
     for chunk_i, chunk in enumerate(chunks, start=1):
         effective_n_jobs = min(n_jobs, len(chunk))
         if effective_n_jobs <= 1:
-            out = [fit_xgb_one_rep_across_folds(rr, context, fold_designs, baseline_fold_cache, xgb_cfg) for rr in chunk]
+            out = [
+                fit_xgb_one_rep_across_folds(
+                    rr, context, fold_designs, baseline_fold_cache, xgb_cfg, fold_xgb_cfgs
+                )
+                for rr in chunk
+            ]
         else:
             try:
                 out = Parallel(n_jobs=effective_n_jobs, backend=backend, verbose=0)(
-                    delayed(fit_xgb_one_rep_across_folds)(rr, context, fold_designs, baseline_fold_cache, xgb_cfg) for rr in chunk
+                    delayed(fit_xgb_one_rep_across_folds)(
+                        rr, context, fold_designs, baseline_fold_cache, xgb_cfg, fold_xgb_cfgs
+                    ) for rr in chunk
                 )
             except Exception:
-                out = [fit_xgb_one_rep_across_folds(rr, context, fold_designs, baseline_fold_cache, xgb_cfg) for rr in chunk]
+                out = [
+                    fit_xgb_one_rep_across_folds(
+                        rr, context, fold_designs, baseline_fold_cache, xgb_cfg, fold_xgb_cfgs
+                    )
+                    for rr in chunk
+                ]
 
         summary_chunks.append(pd.DataFrame([x[0] for x in out]))
         if collect_predictions:
@@ -680,6 +723,10 @@ def run_xgb_loco_stage(
     perf_cfg: dict,
     xgb_cfg: dict,
     early_stop_cfg: dict,
+    fold_xgb_cfgs: dict | None = None,
+    tuning_artifact_path: str | Path | None = None,
+    tuning_rung_id: str | None = None,
+    tuning_strict: bool = False,
     enable_progress=True,
     storage_cfg: dict | None = None,
     compare_cfg: dict | None = None,
@@ -738,6 +785,16 @@ def run_xgb_loco_stage(
         t0_bag = time.time()
         context = prepare_bag_context(model_df, y_col, bag_name, analysis_cfg, cv_cfg, exposome_cols)
 
+        if tuning_artifact_path:
+            if not tuning_rung_id:
+                raise ValueError('tuning_rung_id is required when tuning_artifact_path is supplied')
+            from xgb_nested_loco_tuning import resolve_tuned_fold_configs
+            resolved = resolve_tuned_fold_configs(
+                tuning_artifact_path, bag_name, tuning_rung_id, xgb_cfg, context['countries'], strict=tuning_strict,
+            )
+            if resolved:
+                fold_xgb_cfgs = {**(fold_xgb_cfgs or {}), bag_name: resolved}
+
         fold_designs = {}
         for i, c in enumerate(context['countries']):
             fold_designs[c] = _build_base_fold_mats(
@@ -748,6 +805,7 @@ def run_xgb_loco_stage(
                 seed=int(xgb_cfg.get('random_state', 20260304)) + i,
             )
 
+        bag_fold_xgb_cfgs = (fold_xgb_cfgs or {}).get(bag_name, fold_xgb_cfgs)
         t_base = time.time()
         if need_baseline:
             # Opt-in baseline reuse: the covariate-only baseline is candidate-
@@ -757,13 +815,15 @@ def run_xgb_loco_stage(
             cached_baseline = None
             baseline_sig = None
             if baseline_cache_dir:
-                baseline_sig = baseline_cache_signature(context, fold_designs, xgb_cfg)
+                baseline_sig = baseline_cache_signature(context, fold_designs, xgb_cfg, bag_fold_xgb_cfgs)
                 cached_baseline = load_cached_baseline(baseline_cache_dir, baseline_sig)
             if cached_baseline is not None:
                 bsum, bpred, bcountry, baseline_fold_cache = cached_baseline
                 print(f'[{bag_name}] xgb baseline cache hit sig={baseline_sig[:12]}')
             else:
-                bsum, bpred, bcountry, baseline_fold_cache = fit_xgb_baseline_across_folds(context, fold_designs, xgb_cfg)
+                bsum, bpred, bcountry, baseline_fold_cache = fit_xgb_baseline_across_folds(
+                    context, fold_designs, xgb_cfg, bag_fold_xgb_cfgs
+                )
                 if baseline_cache_dir:
                     save_cached_baseline(baseline_cache_dir, baseline_sig, bsum, bpred, bcountry, baseline_fold_cache)
             base_summary = pd.DataFrame([bsum])
@@ -785,6 +845,7 @@ def run_xgb_loco_stage(
             baseline_fold_cache,
             perf_cfg,
             xgb_cfg,
+            fold_xgb_cfgs=bag_fold_xgb_cfgs,
             show_progress=enable_progress,
             collect_predictions=collect_model_predictions,
         )

@@ -8,6 +8,7 @@ PyYAML==6.0.2
 pyarrow==19.0.1
 fastparquet==2024.11.0
 joblib==1.4.2
+optuna==4.8.0
 tqdm==4.67.1
 # Published thoi. The greedy (core/oinfo_bag_ladder/custom_greedy.py) targets this
 # version via a collector adapter (_batch_to_tensor_unpacked) for the 0.2.36+ batch

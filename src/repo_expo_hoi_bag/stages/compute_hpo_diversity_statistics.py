@@ -20,13 +20,14 @@ from scipy import stats
 ROOT = Path(__file__).resolve().parents[3]
 BAGS = ("structural", "functional")
 ARMS = (("o_max", "redundancy"), ("o_min", "synergy"))
-RUNG = "xgb_tree_d3"
 MAX_ORDER = 30
 
 
 def _args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repro-data-root", type=Path, required=True)
+    parser.add_argument("--hpo-set", choices=("k10", "k63"), default="k10")
+    parser.add_argument("--model-rung", choices=("xgb_tree_d2", "xgb_tree_d3"), default="xgb_tree_d3")
     return parser.parse_args()
 
 
@@ -45,10 +46,10 @@ def _shannon_h(predictors_identity: str, domain_map: dict[str, str]) -> float:
     return -sum((count / total) * math.log2(count / total) for count in counts.values())
 
 
-def _bag_frame(metrics: pd.DataFrame, bag: str, domain_map: dict[str, str]) -> pd.DataFrame:
+def _bag_frame(metrics: pd.DataFrame, bag: str, domain_map: dict[str, str], model_rung: str) -> pd.DataFrame:
     frame = metrics[
         (metrics["bag"] == bag)
-        & (metrics["rung"] == RUNG)
+        & (metrics["rung"] == model_rung)
         & (pd.to_numeric(metrics["order"], errors="raise") <= MAX_ORDER)
     ].copy()
     frame["full_r2"] = pd.to_numeric(frame["country_balanced_r2"], errors="raise")
@@ -61,16 +62,16 @@ def _bag_frame(metrics: pd.DataFrame, bag: str, domain_map: dict[str, str]) -> p
     return frame
 
 
-def _compute(metrics: pd.DataFrame, domain_map: dict[str, str]) -> tuple[pd.DataFrame, pd.DataFrame]:
+def _compute(metrics: pd.DataFrame, domain_map: dict[str, str], model_rung: str) -> tuple[pd.DataFrame, pd.DataFrame]:
     correlation_rows: list[dict[str, object]] = []
     regression_rows: list[dict[str, object]] = []
     for bag in BAGS:
-        frame = _bag_frame(metrics, bag, domain_map)
+        frame = _bag_frame(metrics, bag, domain_map, model_rung)
         for objective, arm in ARMS:
             subset = frame[frame["objective"] == objective]
             fit = stats.linregress(subset.shannon_h, subset.full_r2)
             correlation_rows.append({
-                "bag": bag, "arm": arm, "objective": objective, "rung_id": RUNG,
+                "bag": bag, "arm": arm, "objective": objective, "rung_id": model_rung,
                 "max_order": MAX_ORDER, "n": len(subset), "pearson_r": round(float(fit.rvalue), 4),
                 "p_two_sided": float(fit.pvalue), "slope_r2_per_bit": round(float(fit.slope), 6),
             })
@@ -109,11 +110,11 @@ def _compute(metrics: pd.DataFrame, domain_map: dict[str, str]) -> tuple[pd.Data
 
 def main() -> None:
     args = _args()
-    stats_dir = args.repro_data_root.resolve() / "results" / "analysis_runs" / "paper_reanalysis_k10" / "main_statistics" / "fig3_diversity"
+    stats_dir = args.repro_data_root.resolve() / "results" / "analysis_runs" / f"paper_reanalysis_{args.hpo_set}" / "main_statistics" / f"fig3_diversity_{args.model_rung.removeprefix('xgb_tree_')}"
     metrics_path = stats_dir / "candidate_country_balanced_metrics.csv"
     if not metrics_path.is_file():
         raise FileNotFoundError(f"Run plot_hpo_fig3_diversity first: {metrics_path}")
-    correlations, regressions = _compute(pd.read_csv(metrics_path), _domain_map())
+    correlations, regressions = _compute(pd.read_csv(metrics_path), _domain_map(), args.model_rung)
     correlations.to_csv(stats_dir / "diversity_correlations_d3.csv", index=False)
     regressions.to_csv(stats_dir / "diversity_regression_d3.csv", index=False)
     print(correlations.to_string(index=False))

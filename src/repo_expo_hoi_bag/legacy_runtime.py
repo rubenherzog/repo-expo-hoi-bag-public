@@ -38,7 +38,11 @@ def prepare_legacy_runtime(repository_root: Path, runtime: RuntimePaths) -> Path
     if not stages_source.is_dir() or not core_source.is_dir():
         raise LegacyStageError("Missing active stages or core source package")
     runtime.ensure_output_directories()
-    root = runtime.work_root / "compatibility_runtime"
+    # A shared cluster may already contain a compatibility tree built from a
+    # different checkout. Namespace this bridge by checkout identity so its
+    # data link and copied modules can never silently resolve to that source.
+    checkout_id = sha256(str(Path(repository_root).resolve()).encode("utf-8")).hexdigest()[:16]
+    root = runtime.work_root / "compatibility_runtime" / f"checkout-{checkout_id}"
     shutil.copytree(stages_source, root / "scripts", dirs_exist_ok=True)
     shutil.copytree(core_source / "oinfo_bag_ladder", root / "oinfo_bag_ladder", dirs_exist_ok=True)
     for source in core_source.glob("*.py"):
@@ -46,6 +50,9 @@ def prepare_legacy_runtime(repository_root: Path, runtime: RuntimePaths) -> Path
     resources = stages_source / "resources"
     if resources.is_dir():
         shutil.copytree(resources, root / "config", dirs_exist_ok=True)
+    country_policy = Path(repository_root) / "config" / "country_exclusions.yaml"
+    if country_policy.is_file():
+        shutil.copy2(country_policy, root / "config" / country_policy.name)
     _link(root / "data", Path(repository_root) / "data")
     _link(root / "outputs", runtime.results_root)
     _link(root / "paper_figures", runtime.figures_root)
@@ -78,13 +85,20 @@ def run_stage(
     bags: Iterable[str],
     *,
     sensitivity: str | None = None,
+    analysis_run_id: str | None = None,
 ) -> None:
     """Launch a preserved numerical stage with all generated paths externalized."""
+    if sensitivity is None and not (analysis_run_id or "").strip():
+        raise LegacyStageError(
+            "Main analysis stages require --analysis-run-id so they cannot write into "
+            "the immutable paper reference or an earlier analysis run"
+        )
     context = RunContext.create(
         repository_root=repository_root,
         runtime=runtime,
         config=_shim_config_for_compatibility(repository_root),
         bags=bags,
+        analysis_run_id=analysis_run_id,
     )
     legacy_root = prepare_legacy_runtime(repository_root, runtime)
     env = _environment_from_context(context, legacy_root)
@@ -105,9 +119,17 @@ def run_stage(
         "residualized-bag": "scripts.run_residualized_bag_sensitivity",
         "diagnosis-balance": "scripts.run_diagnosis_balance_sensitivity",
         "negative-o-arm-comparison": "scripts.compute_negative_o_arm_comparison",
+        "feature-ablation": "scripts.run_feature_ablation_sensitivity",
+        "country-block-null": "scripts.run_country_block_null",
+        "xgb-nested-loco-tuning": "scripts.run_xgb_nested_loco_tuning",
+        "xgb-hpo-cap500-selection": "scripts.run_xgb_hpo_cap500_selection",
+        "xgb-hpo-cross-test": "scripts.run_xgb_hpo_cross_test",
+        "xgb-tuned-top50-comparison": "scripts.run_xgb_tuned_top50_comparison",
+        "xgb-frozen-cap500-top50": "scripts.run_xgb_frozen_cap500_top50",
         "normative-transfer-summary": "scripts.compute_normative_transfer_stats",
         "normative-transfer-ols": "scripts.run_ols_normative_loco_pipeline",
         "normative-transfer-xgb": "scripts.run_xgb_normative_loco_pipeline",
+        "normative-transfer-single-xgb": "scripts.run_single_exposure_normative_pipeline",
     }
     if sensitivity:
         try:
@@ -129,14 +151,21 @@ def run_stage(
             ]
         except KeyError as exc:
             raise LegacyStageError(f"Unknown pipeline stage: {stage}") from exc
-    cache_path, cache_manifest = _stage_cache(context, stage=stage, sensitivity=sensitivity)
-    if cache_is_valid(cache_path, cache_manifest):
-        print(f"Stage cache hit; skipping {stage}{f'/{sensitivity}' if sensitivity else ''}: {cache_path}")
-        return
+    # Nested tuning creates a new immutable local delivery directory on every
+    # invocation.  An external stage-cache hit must not suppress that run.
+    use_stage_cache = sensitivity not in {
+        "xgb-nested-loco-tuning", "xgb-hpo-cap500-selection", "xgb-hpo-cross-test", "xgb-tuned-top50-comparison", "xgb-frozen-cap500-top50",
+    }
+    if use_stage_cache:
+        cache_path, cache_manifest = _stage_cache(context, stage=stage, sensitivity=sensitivity)
+        if cache_is_valid(cache_path, cache_manifest):
+            print(f"Stage cache hit; skipping {stage}{f'/{sensitivity}' if sensitivity else ''}: {cache_path}")
+            return
     result = subprocess.run(command, cwd=legacy_root, env=env, check=False)
     if result.returncode:
         raise LegacyStageError(f"Stage {' '.join(command)} failed with exit code {result.returncode}")
-    write_cache_manifest(cache_path, cache_manifest)
+    if use_stage_cache:
+        write_cache_manifest(cache_path, cache_manifest)
 
 
 def render_target(
@@ -165,6 +194,9 @@ def render_target(
         "education_scanner_baseline": "scripts.run_education_scanner_baseline_sensitivity",
         "residual_confounds": "scripts.compute_residual_confounds",
         "residualized_bag": "scripts.run_residualized_bag_sensitivity",
+        "feature_ablation": "scripts.render_feature_ablation_figure",
+        "feature_ablation_oinfo_scatter": "scripts.render_feature_ablation_oinfo_scatter",
+        "feature_ablation_percentage": "scripts.render_feature_ablation_percentage_figure",
         "normative_diversity": "scripts.plot_normative_diversity_r2",
         "normative_transfer": "scripts.plot_normative_transfer_grid",
     }
@@ -209,9 +241,15 @@ def _stage_cache(
         "order_max": context.config.order_max,
         "top_k": context.config.top_k,
         "seed": context.config.random_seed,
+        "analysis_run_id": context.analysis_run_id or "legacy_or_sensitivity",
     }
+    cache_root = (
+        context.analysis_run_root / "manifests" / "stages"
+        if context.analysis_run_id
+        else context.runtime.results_root / "manifests" / "stages"
+    )
     return (
-        context.runtime.results_root / "manifests" / "stages" / f"{label}.json",
+        cache_root / f"{label}.json",
         CacheManifest(stage=label, inputs=inputs, parameters=parameters),
     )
 

@@ -9,6 +9,7 @@ paper-analysis configuration.
 """
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 import numpy as np
@@ -43,10 +44,10 @@ def _best_pooled(
         if "order" not in pool.columns:
             raise KeyError("Normative-transfer metrics do not contain candidate order")
         pool = pool[pd.to_numeric(pool["order"], errors="coerce") <= order_max]
-    pool = pool[np.isfinite(pd.to_numeric(pool["global_oof_r2"], errors="coerce"))]
+    pool = pool[np.isfinite(pd.to_numeric(pool["country_balanced_r2"], errors="coerce"))]
     if pool.empty:
         return None
-    return pool.loc[pd.to_numeric(pool["global_oof_r2"]).idxmax()]
+    return pool.loc[pd.to_numeric(pool["country_balanced_r2"]).idxmax()]
 
 
 def _country_vector(
@@ -111,7 +112,8 @@ def main() -> None:
     transfer_cfg = paper_cfg.normative_transfer
     source_root = bundle_root().resolve()
     required_marker = source_root / str(transfer_cfg["required_bundle_marker"])
-    if not required_marker.is_file():
+    configured_source = os.environ.get("NORMATIVE_TRANSFER_SOURCE_DIR", "").strip()
+    if not configured_source and not required_marker.is_file():
         raise FileNotFoundError(
             "The configured dedup-bundle marker is absent; refusing to summarize "
             f"normative transfer from {source_root}. Missing: {required_marker}"
@@ -127,21 +129,62 @@ def main() -> None:
         (str(values[0]), str(values[1])) for values in configured_transfers
     ]
 
-    source_dir = source_root / f"{family}_normative_loco"
-    output_dir = CHECKOUT_ROOT / "outputs" / "dedup" / "model_comparison"
+    source_dir = (
+        Path(configured_source)
+        if configured_source
+        else source_root / f"{family}_normative_loco"
+    )
+    configured_output = os.environ.get("NORMATIVE_TRANSFER_OUTPUT_DIR", "").strip()
+    output_dir = (
+        Path(configured_output)
+        if configured_output
+        else CHECKOUT_ROOT / "outputs" / "dedup" / "model_comparison"
+    )
     output_dir.mkdir(parents=True, exist_ok=True)
     rows: list[dict[str, object]] = []
 
     for bag in paper_cfg.primary_bags:
+        active_marker = (
+            source_dir / bag / f"{family}_norm_run_manifest.csv"
+            if configured_source
+            else required_marker
+        )
         global_path = source_dir / bag / f"{family}_norm_global_all.csv"
         country_path = source_dir / bag / f"{family}_norm_country_all.csv"
-        missing = [path for path in (global_path, country_path) if not path.is_file()]
+        missing = [
+            path
+            for path in (active_marker, global_path, country_path)
+            if not path.is_file()
+        ]
         if missing:
             raise FileNotFoundError(
                 f"Missing normative-transfer inputs for {bag}: {missing}"
             )
         global_metrics = pd.read_csv(global_path)
         country_metrics = pd.read_csv(country_path)
+        country_metrics["r2"] = pd.to_numeric(country_metrics["r2"], errors="coerce")
+        if "n_test" in country_metrics.columns:
+            country_metrics = country_metrics[
+                pd.to_numeric(country_metrics["n_test"], errors="coerce").gt(0)
+            ].copy()
+        country_metrics = country_metrics[np.isfinite(country_metrics["r2"])].copy()
+        balanced = (
+            country_metrics.groupby(
+                ["candidate_id", "rung_id", "family_id", "train_dx", "test_dx"],
+                observed=True,
+            )["r2"]
+            .mean()
+            .rename("country_balanced_r2")
+            .reset_index()
+        )
+        global_metrics = global_metrics.merge(
+            balanced,
+            on=["candidate_id", "rung_id", "family_id", "train_dx", "test_dx"],
+            how="left",
+            validate="one_to_one",
+        )
+        if global_metrics["country_balanced_r2"].isna().any():
+            raise ValueError(f"Missing country-balanced scores in {country_path}")
 
         for train_diagnosis, test_diagnosis in transfers:
             selected = {
@@ -162,10 +205,10 @@ def main() -> None:
             baseline = selected["baseline"]
             assert synergy is not None and redundancy is not None
 
-            r2_synergy = float(synergy["global_oof_r2"])
-            r2_redundancy = float(redundancy["global_oof_r2"])
+            r2_synergy = float(synergy["country_balanced_r2"])
+            r2_redundancy = float(redundancy["country_balanced_r2"])
             r2_baseline = (
-                float(baseline["global_oof_r2"])
+                float(baseline["country_balanced_r2"])
                 if baseline is not None
                 else np.nan
             )
@@ -224,10 +267,11 @@ def main() -> None:
                     ),
                     "syn_id": str(synergy["candidate_id"]),
                     "red_id": str(redundancy["candidate_id"]),
-                    "source_bundle": str(source_root),
-                    "source_bundle_marker": str(required_marker),
+                    "source_bundle": str(source_dir.resolve()),
+                    "source_bundle_marker": str(active_marker.resolve()),
                     "rung_id": paper_cfg.deployed_rung,
                     "order_max": paper_cfg.order_max,
+                    "r2_estimand": "unweighted_mean_country_r2",
                     "configuration_source": str(CONFIG_PATH.resolve()),
                     "synVred_n_countries": synergy_vs_redundancy["n_countries"],
                     "synVred_median_dR2": synergy_vs_redundancy["median_delta"],

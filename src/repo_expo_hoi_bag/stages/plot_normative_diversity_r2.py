@@ -46,10 +46,21 @@ from scripts.plot_normative_transfer_grid import (
 from repo_expo_hoi_bag.figures.source_data import Panel, write_source_data
 
 
-LOCAL_STATS_DIR = REPO_ROOT / "outputs" / "variant_a" / "stats" / "normative_diversity_r2"
+LOCAL_STATS_DIR = Path(
+    os.environ.get(
+        "NORM_DIVERSITY_STATS_DIR",
+        str(REPO_ROOT / "outputs" / "variant_a" / "stats" / "normative_diversity_r2"),
+    )
+)
 FIG_SUFFIX = os.environ.get("NORM_FIG_SUFFIX", "").strip()
 FIG_SUFFIX_PART = f"_{FIG_SUFFIX}" if FIG_SUFFIX else ""
-DOMAIN_LABELS_CSV = REPO_ROOT / "data" / "exposome_feature_domains.csv"
+FIG_STEM = os.environ.get("NORM_DIVERSITY_FIG_STEM", "").strip() or "fig_normative_diversity_r2"
+DOMAIN_LABELS_CSV = Path(
+    os.environ.get(
+        "NORM_DOMAIN_LABELS_CSV",
+        str(Path(__file__).resolve().parents[3] / "data" / "metadata" / "exposome_feature_domains.csv"),
+    )
+)
 DOMAIN_MAP = load_domain_map(DOMAIN_LABELS_CSV)
 
 OBJ_COLOR = {"o_min": SYN_COLOR, "o_max": RED_COLOR}
@@ -66,7 +77,7 @@ CONDITION_DISPLAY = {
     "AD+FTD->AD": "AD+FTLD→AD",
     "AD+FTD->FTD": "AD+FTLD→FTLD",
 }
-R2_PLOT_MIN = 0.1
+DIVERSITY_RUNG = os.environ.get("NORM_DIVERSITY_RUNG", "").strip()
 # Optional negative-O-info synergy criterion (SYN_OINFO_NEGATIVE=1): an o_min
 # candidate counts as synergistic only if its evaluated O-info (oinfo) < 0.
 _SYN_OINFO_NEGATIVE = os.environ.get("SYN_OINFO_NEGATIVE", "").strip().lower() in (
@@ -107,6 +118,7 @@ def add_domain_diversity(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def select_best_rung_by_objective(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
+    pooled_rung = os.environ.get("NORM_POOLED_RUNG", "").strip()
     rows = []
     selected = []
     for bag in BAGS:
@@ -125,7 +137,15 @@ def select_best_rung_by_objective(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.Da
                 )
                 if by_rung.empty:
                     continue
-                best_rung = str(by_rung.idxmax())
+                best_rung = DIVERSITY_RUNG or (
+                    pooled_rung
+                    if condition == "Pooled" and pooled_rung
+                    else str(by_rung.idxmax())
+                )
+                if best_rung not in by_rung.index.astype(str):
+                    raise ValueError(
+                        f"Configured pooled rung {best_rung!r} is unavailable for {bag}/{objective}"
+                    )
                 best_r2 = float(by_rung.loc[best_rung])
                 keep = obj_df[obj_df["rung_id"].astype(str).eq(best_rung)].copy()
                 rows.append(
@@ -377,8 +397,8 @@ def _build_diversity_panels(scatter_df: pd.DataFrame, correlation_df: pd.DataFra
                 "n_domains": "unique exposome domains in the set",
                 "dominant_domain": "most frequent domain in the set",
             },
-            notes=(f"Only candidates of the best model level per arm are plotted, and only those with "
-                   f"R² >= {R2_PLOT_MIN}; the fitted line and its 95% band are drawn on this subset. "
+            notes=("Only candidates of the configured common model level are plotted; all finite "
+                   "country-balanced R² values, including negative values, enter the fit. "
                    "The selected model level per cell is in the companion stats sheet."),
         ))
         panels.append(Panel(
@@ -413,7 +433,8 @@ def _build_diversity_panels(scatter_df: pd.DataFrame, correlation_df: pd.DataFra
             "best_r2": "highest held-out LOCO R² at that level",
             "n_models": "candidates carried into the scatter from that level",
         },
-        notes="Selection is by highest R² across model levels, before the R² plotting filter.",
+        notes=("The main-k10 contextual comparison fixes the deployed d3 level in every cell so "
+               "pooled and diagnosis-specific associations compare the same model class."),
     ))
     return panels
 
@@ -433,14 +454,17 @@ def main() -> None:
         o = pd.to_numeric(df["oinfo"], errors="coerce")
         df = df[(df["objective"] != "o_min") | (o < 0)].copy()
     scatter_all_df, best_df = select_best_rung_by_objective(df)
-    scatter_df = scatter_all_df[pd.to_numeric(scatter_all_df["r2"], errors="coerce") >= R2_PLOT_MIN].copy()
+    r2 = pd.to_numeric(scatter_all_df["r2"], errors="coerce")
+    scatter_df = scatter_all_df[np.isfinite(r2)].copy()
     model_df = build_panel_models(scatter_df)
     correlation_df = build_panel_correlations(scatter_df)
     save_tables(scatter_df, best_df, model_df)
 
     xlim = _shared_limits(scatter_df["shannon_h"], pad_frac=0.04)
     ylim_by_bag = {
-        bag: (R2_PLOT_MIN, _shared_limits(scatter_df[scatter_df["bag"].eq(bag)]["r2"], pad_frac=0.05)[1])
+        bag: _shared_limits(
+            scatter_df[scatter_df["bag"].eq(bag)]["r2"], pad_frac=0.05
+        )
         for bag in BAG_ROW_ORDER
     }
 
@@ -464,13 +488,13 @@ def main() -> None:
 
     PAPER_FIGURES_DIR.mkdir(parents=True, exist_ok=True)
     for ext in ("pdf", "svg", "png"):
-        out = PAPER_FIGURES_DIR / f"fig_normative_diversity_r2{FIG_SUFFIX_PART}.{ext}"
+        out = PAPER_FIGURES_DIR / f"{FIG_STEM}{FIG_SUFFIX_PART}.{ext}"
         fig.savefig(out, dpi=300, bbox_inches="tight")
         print(f"Saved: {out}")
     plt.close(fig)
 
     for path in write_source_data(
-        f"fig_normative_diversity_r2{FIG_SUFFIX_PART}",
+        f"{FIG_STEM}{FIG_SUFFIX_PART}",
         _build_diversity_panels(scatter_df, correlation_df, best_df),
         PAPER_FIGURES_DIR,
         source_paths=[str(LOCAL_STATS_DIR), str(DOMAIN_LABELS_CSV)],
@@ -486,7 +510,7 @@ def main() -> None:
     print(f"Saved tables to {stats_dir}")
     print(f"Shared xlim: {xlim}")
     print(f"Shared ylims by row: {ylim_by_bag}")
-    print(f"R2 plotting/model filter: r2 >= {R2_PLOT_MIN}")
+    print("R2 plotting/model filter: all finite country-balanced R2 values")
 
 
 if __name__ == "__main__":

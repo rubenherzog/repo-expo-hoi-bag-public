@@ -1,0 +1,13 @@
+# Immutable previous-paper runtime. Its machine-specific root is supplied by
+# PAPER_REFERENCE_ROOT; this catalog never embeds a workstation or cluster path.
+schema_version: 1
+
+historical_paper_reference:
+  read_only: true
+  root_environment_variable: PAPER_REFERENCE_ROOT
+  runtime_directory_name: expo_hoi_bag_repro_data_dedup
+  canonical_relative_path: results/variant_a/families/pooled_oinfo_ladder/canonical
+  sensitivity_relative_path: sensitivity
+  oof_relative_path: results/variant_a/subject_level_oof_max_30
+  delivered_lightweight_root: outputs
+  backup_copy_relative_path: results/variant_a/paper_dedup_max30/canonical

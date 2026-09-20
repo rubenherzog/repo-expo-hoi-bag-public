@@ -20,6 +20,10 @@ def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="repo-expo-hoi-bag")
     parser.add_argument("--config", type=Path, default=Path("config/paper.yaml"))
     parser.add_argument("--repro-data-root", help="External runtime root; defaults to REPRO_DATA_ROOT")
+    parser.add_argument(
+        "--analysis-run-id",
+        help="Required for main run stages; creates an isolated results/analysis_runs/<id> namespace",
+    )
     subparsers = parser.add_subparsers(dest="command", required=True)
     subparsers.add_parser("validate-data")
     run = subparsers.add_parser("run")
@@ -41,9 +45,17 @@ def _parser() -> argparse.ArgumentParser:
             "residualized-bag",
             "diagnosis-balance",
             "negative-o-arm-comparison",
+            "feature-ablation",
+            "country-block-null",
+            "xgb-nested-loco-tuning",
+            "xgb-hpo-cap500-selection",
+            "xgb-hpo-cross-test",
+            "xgb-tuned-top50-comparison",
+            "xgb-frozen-cap500-top50",
             "normative-transfer-summary",
             "normative-transfer-ols",
             "normative-transfer-xgb",
+            "normative-transfer-single-xgb",
         ),
     )
     render = subparsers.add_parser("render")
@@ -75,7 +87,14 @@ def main(argv: list[str] | None = None) -> int:
             print(f"Validated public inputs; wrote {destination}")
             return 0
         if args.command == "run":
-            run_stage(root, runtime, args.stage, config.selected_bags(), sensitivity=getattr(args, "name", None))
+            run_stage(
+                root,
+                runtime,
+                args.stage,
+                config.selected_bags(),
+                sensitivity=getattr(args, "name", None),
+                analysis_run_id=args.analysis_run_id,
+            )
             return 0
         manifest_path = args.manifest if args.manifest.is_absolute() else root / args.manifest
         targets = active_targets(load_manifest(manifest_path))

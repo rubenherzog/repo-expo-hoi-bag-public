@@ -1,10 +1,8 @@
 # Shared defaults for every `run sensitivity <name>` stage (scripts.sensitivity_common).
 # Exclusions mirror the main analysis (CLAUDE.md Sec.6 / plan "Reglas transversales"):
-# countries France/Italy/Egypt/Greece/Poland, diagnoses Other/AFM/MCI.
+# countries Egypt/Greece/Poland, diagnoses Other/AFM/MCI.
 defaults:
   exclude_countries:
-    - France
-    - Italy
     - Egypt
     - Greece
     - Poland
@@ -97,6 +95,29 @@ paper_analysis:
     random_effect_bootstrap_seed: 20260731
     random_effect_bootstrap_batch_size: 100
     random_effect_tau_max: 10.0
+
+# Leave-one-exposure-out sensitivity of the published top-20 models. Values
+# are deliberately separate from residual_bias because this analysis has its
+# own selection, resampling, and visual contracts.
+feature_ablation:
+  top_k: 20
+  order_max: 30
+  bootstrap_draws: 10000
+  permutation_draws: 10000
+  random_seed: 20260731
+  jitter_width: 0.11
+  arm_offset: 0.18
+
+# Paired re-evaluation of the paper's top-50 candidate sets. The source table
+# is resolved below the external, immutable historical-paper reference catalog
+# in config/paper_reference.yaml. It determines candidate identity only; both
+# fixed and tuned arms are refit under the country policy recorded by the tuning
+# artifact.
+xgb_tuned_top50_comparison:
+  bag: functional
+  rung_id: xgb_tree_d3
+  top_n: 50
+  historical_metrics_relative_path_template: per_experiment/pooled_oinfo_ladder_{bag}/metrics_global_long.parquet
 
 # Claim-level comparison summaries. These values define comparisons rather than
 # model fits and keep the aggregation stage free of embedded rung,

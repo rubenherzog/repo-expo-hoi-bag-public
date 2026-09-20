@@ -22,6 +22,7 @@ import numpy as np
 import pandas as pd
 import statsmodels.formula.api as smf
 import matplotlib.pyplot as plt
+from repo_expo_hoi_bag.figures.source_data import Panel, write_source_data
 from scripts.sensitivity_common import (
     load_sensitivity_config,
     paper_analysis_config,
@@ -38,8 +39,13 @@ RAW_PATH = pathlib.Path(os.environ.get(
     "data/"
     "all_exposome_bag_clean_expo63_countryyear_only_complete_cases.csv",
 ))
-CANONICAL = ROOT / "families" / "pooled_oinfo_ladder" / "canonical" / "per_experiment"
-if not CANONICAL.exists():
+_canonical_override = os.environ.get("V3_CANONICAL_ROOT", "").strip()
+CANONICAL = (
+    pathlib.Path(_canonical_override)
+    if _canonical_override
+    else ROOT / "families" / "pooled_oinfo_ladder" / "canonical" / "per_experiment"
+)
+if not _canonical_override and not CANONICAL.exists():
     CANONICAL = ROOT / "canonical" / "per_experiment"
 FIG_DIR = pathlib.Path(os.environ.get("V3_FIG_OUTPUT_DIR", str(ROOT / "figures")))
 STATS_DIR = pathlib.Path(os.environ.get("V3_FIG_STATS_DIR", str(ROOT / "stats")))
@@ -96,6 +102,7 @@ for bag in BAGS:
 fig, axes = plt.subplots(1, len(BAGS), figsize=(6.7 * len(BAGS), 6), squeeze=False)
 axes = axes.ravel()
 all_reg_rows = []
+source_panels = []
 
 for i, bag in enumerate(BAGS):
     canon_path = CANONICAL / f"pooled_oinfo_ladder_{bag}" / "metrics_country_long.parquet"
@@ -129,6 +136,31 @@ for i, bag in enumerate(BAGS):
     best = best.merge(sd_df, on="fold_country", how="left")
     best["log_n_test"] = np.log(best["n_test"])
     best = best.dropna(subset=["bag_sd"])
+    source_best = best.copy()
+    source_best["candidate_id"] = best_id
+    source_best["rung_id"] = RUNG_ID
+    source_best["objective"] = OBJECTIVE
+    source_panels.append(
+        Panel(
+            panel_id=f"{chr(ord('a') + i)}1_{bag[:6]}_country_perf",
+            frame=source_best.reset_index(drop=True),
+            description=(
+                f"Country-level held-out performance and predictors for the selected "
+                f"{BAG_LABELS[bag].lower()} model."
+            ),
+            columns={
+                "fold_country": "held-out country",
+                "r2": "country-level out-of-fold R²",
+                "n_test": "held-out participants scored",
+                "bag_sd": "within-country BAG standard deviation",
+                "bag_n_total": "participants contributing to BAG variability",
+                "log_n_test": "natural logarithm of n_test",
+                "candidate_id": "selected exposure-set identifier",
+                "rung_id": "deployed model level",
+                "objective": "candidate discovery arm",
+            },
+        )
+    )
 
     print(f"\n{'='*60}")
     print(f"  {bag.upper()} BAG — best synergistic model: {best_id}")
@@ -185,7 +217,7 @@ fig.suptitle(
 )
 fig.tight_layout()
 
-for ext in ("png", "pdf"):
+for ext in ("png", "pdf", "svg"):
     fig.savefig(FIG_DIR / f"fig_country_meta_regression.{ext}", dpi=300, bbox_inches="tight")
     print(f"Saved {FIG_DIR / f'fig_country_meta_regression.{ext}'}")
 plt.close(fig)
@@ -193,4 +225,32 @@ plt.close(fig)
 out = pd.concat(all_reg_rows, ignore_index=False)
 out.to_csv(STATS_DIR / "country_meta_regression.csv")
 print(f"Saved {STATS_DIR / 'country_meta_regression.csv'}")
+source_panels.append(
+    Panel(
+        panel_id="regression_coefficients",
+        frame=out.reset_index().rename(columns={"index": "term"}),
+        description="OLS coefficients for country R² ~ log(n_test) + within-country BAG SD.",
+        columns={
+            "term": "regression term",
+            "Coef.": "coefficient estimate",
+            "Std.Err.": "standard error",
+            "t": "t statistic",
+            "P>|t|": "two-sided coefficient p-value",
+            "[0.025": "95% confidence-interval lower bound",
+            "0.975]": "95% confidence-interval upper bound",
+            "bag": "brain-age-gap modality",
+            "model_r2": "regression model R²",
+            "n_obs": "countries entering the regression",
+            "candidate_id": "selected exposure-set identifier",
+            "rung_id": "deployed model level",
+            "order_max": "maximum candidate set size",
+            "objective": "candidate discovery arm",
+            "outcome": "regression outcome",
+        },
+    )
+)
+for path in write_source_data(
+    "fig_country_meta_regression", source_panels, FIG_DIR
+):
+    print(f"Saved {path}")
 print("\nDone.")

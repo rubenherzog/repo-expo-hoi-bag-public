@@ -95,7 +95,6 @@ from scripts.plot_normative_transfer_grid import (  # noqa: E402
 )
 from scripts.plot_normative_diversity_r2 import (  # noqa: E402
     add_domain_diversity,
-    R2_PLOT_MIN,
 )
 
 # Route to the parallel dedup/ subtree when the dedup re-analysis drives this stage
@@ -460,7 +459,8 @@ def diversity_betas_by_cap(frames: dict[str, pd.DataFrame]) -> pd.DataFrame:
         ignore_index=True,
     )
     enriched = add_domain_diversity(base)
-    enriched = enriched[pd.to_numeric(enriched["r2"], errors="coerce") >= R2_PLOT_MIN].copy()
+    r2 = pd.to_numeric(enriched["r2"], errors="coerce")
+    enriched = enriched[np.isfinite(r2)].copy()
 
     # Enumerate (cap, bag, condition, rung) slices, then fit in parallel: each slice
     # runs an independent within-order label permutation (the heavy part), so the
@@ -823,11 +823,13 @@ def plot_s10_set_size_sensitivity(recon: pd.DataFrame, betas: pd.DataFrame) -> N
                     "bag": "brain-age-gap measure and figure row",
                     "order_cap": "maximum candidate set size",
                     "rung_id": "model level (xgb_tree_d3 = d3)",
-                    "best_syn_r2": "best R² in the minimum-O-information (synergy) arm",
-                    "best_red_r2": "best R² in the maximum-O-information (redundancy) arm",
-                    "baseline_r2": "covariate-only baseline R²",
+                    "best_syn_r2": "best unweighted mean held-out-country R² in the minimum-O-information (synergy) arm",
+                    "best_red_r2": "best unweighted mean held-out-country R² in the maximum-O-information (redundancy) arm",
+                    "baseline_r2": "covariate-only unweighted mean held-out-country R²",
                 },
-                notes="The dashed vertical line marks cap 21, the last cap before evaluated O-information changes sign at set size 22.",
+                notes=("All performance values use the country-balanced estimand from main Fig. 2. "
+                       "The dashed vertical line marks cap 21, the last cap before evaluated "
+                       "O-information changes sign at set size 22."),
             ),
             Panel(
                 panel_id="b_selected_set_size",
@@ -851,8 +853,8 @@ def plot_s10_set_size_sensitivity(recon: pd.DataFrame, betas: pd.DataFrame) -> N
                     "bag": "brain-age-gap measure and figure row",
                     "order_cap": "maximum candidate set size",
                     "rung_id": "model level (xgb_tree_d3 = d3)",
-                    "beta_h_syn": "diversity slope in the minimum-O-information arm (R² per bit)",
-                    "beta_h_red": "diversity slope in the maximum-O-information arm (R² per bit)",
+                    "beta_h_syn": "diversity slope in the minimum-O-information arm (country-balanced R² per bit)",
+                    "beta_h_red": "diversity slope in the maximum-O-information arm (country-balanced R² per bit)",
                     "beta_interaction": "minimum-minus-maximum arm slope interaction",
                     "p_h_syn_interaction_cluster_order": "set-size-clustered two-sided interaction p value",
                     "p_h_syn_interaction_perm": "within-order label-permutation p value",

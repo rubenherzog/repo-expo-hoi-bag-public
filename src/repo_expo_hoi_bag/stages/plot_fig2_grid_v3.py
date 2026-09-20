@@ -9,6 +9,8 @@ The first panel of each row carries the row label.
 Rectangles and scatter dots have no edges (Illustrator-friendly).
 """
 
+from __future__ import annotations
+
 import asyncio
 import os
 import sys
@@ -236,12 +238,11 @@ def _build_domain_diversity(df_greedy_raw: pd.DataFrame) -> pd.DataFrame:
     Returns DataFrame with columns: objective, order, n_domains, shannon_h.
     Uses all candidates (all ranks) per order × objective.
     """
-    feat_names = pd.read_csv(
-        Path(__file__).resolve().parents[1] / "data" / "exposome_feature_names.csv"
-    )["feature_name"].tolist()
-    feat_domains = pd.read_csv(
-        Path(__file__).resolve().parents[1] / "data" / "exposome_feature_domains.csv"
-    ).set_index("feature_name")["domain"]
+    # This stage lives under ``src/repo_expo_hoi_bag/stages``; public inputs
+    # remain at the checkout root rather than beside the package.
+    repo_root = Path(__file__).resolve().parents[3]
+    feat_names = pd.read_csv(repo_root / "data" / "metadata" / "exposome_feature_names.csv")["feature_name"].tolist()
+    feat_domains = pd.read_csv(repo_root / "data" / "metadata" / "exposome_feature_domains.csv").set_index("feature_name")["domain"]
     idx_to_domain = {i: feat_domains.get(name, "Unknown") for i, name in enumerate(feat_names)}
 
     rows = []

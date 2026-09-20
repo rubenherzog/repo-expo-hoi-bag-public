@@ -548,6 +548,23 @@ def main() -> None:
     local_root = repo_sensitivity_root(cfg) / "country_region"
     local_root.mkdir(parents=True, exist_ok=True)
 
+    # Aggregation-only path for independently scheduled BAG jobs. Each job
+    # writes a complete per-BAG table; render the shared figures only after both
+    # are available so the last finishing job cannot leave a one-BAG figure.
+    if env_bool("COUNTRY_REGION_REBUILD_FROM_SUMMARIES"):
+        bags = selected_bags(cfg, include_combined=include_combined)
+        perf_by_bag = {}
+        for bag in bags:
+            path = local_root / bag / "country_region_per_fold.csv"
+            if not path.is_file():
+                raise FileNotFoundError(f"Missing country/region summary for {bag}: {path}")
+            perf_by_bag[bag] = pd.read_csv(path)
+        fig_dir = repo_sensitivity_figures_root(cfg, "country_region")
+        fig_dir.mkdir(parents=True, exist_ok=True)
+        _plot_country_region(perf_by_bag, rungs, fig_dir)
+        _plot_country_region_rotated(perf_by_bag, rungs, fig_dir)
+        return
+
     raw, _domains, feature_names, _domain_map = load_raw_and_domains()
     # Region split: merge subregion_name (kept out of build_model_df) by N_MEGA, then
     # pre-exclude main-analysis countries (prepare_analysis_table ties country

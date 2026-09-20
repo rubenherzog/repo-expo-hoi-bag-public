@@ -35,6 +35,7 @@ from oinfo_bag_ladder.config import (
     figures_root,
     per_experiment_canonical_dir,
     rung_dir,
+    XGB_TUNING_CFG,
 )
 from oinfo_bag_ladder.experiments import build_experiment_registry
 from oinfo_bag_ladder.io_utils import read_parquet, write_parquet
@@ -483,6 +484,10 @@ def main() -> None:
                     perf_cfg=perf_cfg_xgb,
                     xgb_cfg=build_xgb_cfg_for_rung(rung_spec),
                     early_stop_cfg=EARLY_STOP_CFG,
+                    tuning_artifact_path=(
+                        XGB_TUNING_CFG.get("artifact_path") if XGB_TUNING_CFG.get("enabled") else None
+                    ),
+                    tuning_strict=bool(XGB_TUNING_CFG.get("strict_artifact", False)),
                     force_recompute=args.force,
                 )
 

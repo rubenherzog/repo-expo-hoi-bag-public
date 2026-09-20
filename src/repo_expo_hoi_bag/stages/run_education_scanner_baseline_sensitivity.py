@@ -232,6 +232,8 @@ def _plot_comparison(
     bag_inputs: dict[str, dict],
     rungs: list[str],
     outdir: Path,
+    *,
+    r2_estimand: str = "global out-of-fold LOCO R²",
 ) -> None:
     """One figure with a row per BAG, structural first. No suptitle.
 
@@ -295,13 +297,14 @@ def _plot_comparison(
                         "model_level": "model level (OLS, d1, d2, d3)",
                         "objective": "o_min = synergistic arm, o_max = redundant arm",
                         "candidate_id": "candidate identifier",
-                        "full_r2": "global out-of-fold LOCO R² for that candidate (plotted point)",
+                        "full_r2": f"{r2_estimand} for that candidate (plotted point)",
                         "base_r2": "covariate baseline R² for that level (black line)",
                         "delta_r2_vs_base": "full_r2 minus base_r2",
                     },
                     notes=(
                         "Complete-case sample carrying both education and scanner identity. "
-                        "Box is the IQR, centre bar the median, whiskers 1.5x IQR."
+                        f"R² estimand: {r2_estimand}. Box is the IQR, centre bar the median, "
+                        "whiskers 1.5x IQR."
                     ),
                 )
             )
@@ -327,6 +330,60 @@ def _plot_comparison(
     write_source_data(stem, panels, outdir)
 
 
+def _rebuild_from_cached_summaries(
+    *,
+    eval_root: Path,
+    local_root: Path,
+    fig_dir: Path,
+    bags: list[str],
+    rungs: list[str],
+    variants: dict[str, dict[str, bool]],
+) -> None:
+    """Rebuild lightweight combined outputs after per-BAG cluster jobs.
+
+    The model summaries are already complete in the run-scoped external cache;
+    this path performs no fitting and prevents concurrently launched BAG jobs
+    from leaving a last-writer-wins combined figure or CSV.
+    """
+    labels = [BASELINE_LABEL, *variants]
+    all_rows: list[pd.DataFrame] = []
+    bag_inputs: dict[str, dict] = {}
+    for bag in bags:
+        dist_by_covset: dict[str, pd.DataFrame] = {}
+        bag_rows: list[pd.DataFrame] = []
+        for label in labels:
+            path = eval_root / bag / label / f"{bag}_global_all_rungs.csv"
+            if not path.is_file():
+                raise FileNotFoundError(f"Missing cached education/scanner summary: {path}")
+            summary = pd.read_csv(path)
+            summary["bag"] = bag
+            summary["covariate_set"] = label
+            dist_by_covset[label] = summary
+            summary_syn = pd.concat(
+                [
+                    filter_syn_pool(summary[summary["objective"] == "o_min"], "o_min", "score"),
+                    summary[summary["objective"] != "o_min"],
+                ],
+                ignore_index=True,
+            )
+            best_syn = select_best_per_rung(summary_syn, objective="o_min", score_column="global_oof_r2")
+            best_red = select_best_per_rung(summary, objective="o_max", score_column="global_oof_r2")
+            baseline = select_baseline_per_rung(summary, baseline_label="baseline", score_column="global_oof_r2")
+            best_syn["candidate_role"] = "best_synergy"
+            best_red["candidate_role"] = "best_redundancy"
+            baseline["candidate_role"] = "baseline"
+            bag_rows.append(pd.concat([best_syn, best_red, baseline], ignore_index=True))
+        bag_combined = pd.concat(bag_rows, ignore_index=True)
+        bag_combined.to_csv(local_root / f"{bag}_global_all_rungs.csv", index=False)
+        all_rows.append(bag_combined)
+        bag_inputs[bag] = {
+            "baseline_summary": dist_by_covset[BASELINE_LABEL],
+            "dist_by_variant": {key: value for key, value in dist_by_covset.items() if key != BASELINE_LABEL},
+        }
+    _plot_comparison(bag_inputs, rungs, fig_dir)
+    pd.concat(all_rows, ignore_index=True).to_csv(local_root / "global_all_rungs.csv", index=False)
+
+
 def main() -> None:
     cfg = load_sensitivity_config()
     smoke = _env_bool("SMOKE_TEST") or _env_bool("SENSITIVITY_SMOKE")
@@ -349,6 +406,20 @@ def main() -> None:
     # Heavy per-fold LOCO eval artifacts stay on the cluster; only summary
     # tables + figures go to local_root (the checkout).
     eval_root = sensitivity_eval_work_root(cfg, "education_scanner_baseline")
+
+    fig_dir = repo_sensitivity_figures_root(cfg, "education_scanner_baseline")
+    fig_dir.mkdir(parents=True, exist_ok=True)
+    bags = selected_bags(cfg, include_combined=include_combined)
+    if _env_bool("EDU_SCANNER_REBUILD_FROM_CACHE"):
+        _rebuild_from_cached_summaries(
+            eval_root=eval_root,
+            local_root=local_root,
+            fig_dir=fig_dir,
+            bags=bags,
+            rungs=rungs,
+            variants=variants,
+        )
+        return
 
     raw, _domains, feature_names, _domain_map = load_raw_and_domains()
     full_model = build_original_model_df(raw, feature_names, base_cfg)
@@ -378,11 +449,9 @@ def main() -> None:
 
     all_rows = []
     # Both BAGs share one figure folder and one merged figure.
-    fig_dir = repo_sensitivity_figures_root(cfg, "education_scanner_baseline")
-    fig_dir.mkdir(parents=True, exist_ok=True)
     bag_inputs: dict[str, dict] = {}
 
-    for bag in selected_bags(cfg, include_combined=include_combined):
+    for bag in bags:
         print(f"\n=== education-scanner-baseline sensitivity | bag={bag} | smoke={smoke} | n={n_complete} ===")
         bag_dir = local_root / bag
         bag_dir.mkdir(parents=True, exist_ok=True)

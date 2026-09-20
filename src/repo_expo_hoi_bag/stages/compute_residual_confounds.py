@@ -70,7 +70,8 @@ OBJ_SUFFIX = {
     objective: values["file_suffix"]
     for objective, values in _PAPER_CFG.objective_metadata.items()
 }
-BAGS = list(_PAPER_CFG.primary_bags)
+_REQUESTED_BAGS = [item.strip() for item in os.environ.get("SENSITIVITY_BAGS", "").split(",") if item.strip()]
+BAGS = [bag for bag in _PAPER_CFG.primary_bags if not _REQUESTED_BAGS or bag in _REQUESTED_BAGS]
 OBJECTIVES = list(_PAPER_CFG.objectives)
 PRIMARY_DIAGNOSES = tuple(_PAPER_CFG.primary_diagnoses)
 CONTROL_DIAGNOSIS = _PAPER_CFG.control_diagnosis
@@ -745,7 +746,52 @@ def _plot_residual_confounds(
     write_source_data("residual_confounds", panels, output_directory)
 
 
+def render_completed_parts(parts_root: Path, output_directory: Path) -> None:
+    """Render both BAG rows from already completed per-BAG source-data parts."""
+    source_root = parts_root / "source_data"
+    designs: dict[tuple[str, str], pd.DataFrame] = {}
+    estimates = []
+    fixed_effects: list[str] | None = None
+    for bag in BAGS:
+        short = BAG_SHORT[bag]
+        residual_paths = sorted(source_root.glob(f"*_{short}_residuals.csv"))
+        confound_paths = sorted(source_root.glob(f"*_{short}_confounds.csv"))
+        if len(residual_paths) != 1 or len(confound_paths) != 1:
+            raise FileNotFoundError(
+                f"Expected one completed residual/confound source pair for {bag} in {source_root}"
+            )
+        residual = pd.read_csv(residual_paths[0])
+        confounds = pd.read_csv(confound_paths[0])
+        confounds["bag"] = bag
+        estimates.append(confounds)
+        terms = confounds["term"].drop_duplicates().astype(str).tolist()
+        if fixed_effects is None:
+            fixed_effects = terms
+        elif terms != fixed_effects:
+            raise ValueError(f"Completed residual-confound terms differ for {bag}")
+        for objective in OBJECTIVES:
+            designs[(bag, objective)] = residual[residual["objective"].eq(objective)].copy()
+    if fixed_effects is None:
+        raise RuntimeError("No completed residual-confound source data found")
+    _plot_residual_confounds(
+        designs,
+        pd.concat(estimates, ignore_index=True),
+        fixed_effects,
+        output_directory,
+    )
+
+
 def main() -> None:
+    completed_parts = os.environ.get("RESIDUAL_CONFOUNDS_COMPLETED_PARTS", "").strip()
+    completed_output = os.environ.get("RESIDUAL_CONFOUNDS_COMPLETED_OUTPUT", "").strip()
+    if completed_parts or completed_output:
+        if not completed_parts or not completed_output:
+            raise ValueError(
+                "RESIDUAL_CONFOUNDS_COMPLETED_PARTS and "
+                "RESIDUAL_CONFOUNDS_COMPLETED_OUTPUT must be set together"
+            )
+        render_completed_parts(Path(completed_parts), Path(completed_output))
+        return
     cfg = _SENSITIVITY_CFG
     local_root = repo_sensitivity_root(cfg) / "residual_confounds"
     local_root.mkdir(parents=True, exist_ok=True)

@@ -1,0 +1,16 @@
+{
+  "purpose": "Local immutable extraction of the parent OLS normative best-single lines; pooled rows are intentionally excluded and recomputed from the main run.",
+  "destination_sha256": "216d106025f0634c96153271b51aa9697688ad389570be05f660db015a59c320",
+  "sources": [
+    {
+      "path": "golden/tables/normative_transfer_grid/structural_single_lines.csv",
+      "sha256": "7b68d7e6036601aacf83c7c81291b1ac63aa4f161b414c82e0946d44aad031ee"
+    },
+    {
+      "path": "golden/tables/normative_transfer_grid/functional_single_lines.csv",
+      "sha256": "4755920fa3f54adbb625a599c5e940eebf6f866dba24536d6d22de6c483a13cb"
+    }
+  ],
+  "filter": "rung_id == 'ols' and condition != 'Pooled'",
+  "runtime_dependency_on_parent": false
+}
