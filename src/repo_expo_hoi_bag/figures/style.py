@@ -51,6 +51,10 @@ SYN_COLOR = "#1B6B2E"
 RED_COLOR = "#4B0082"
 SINGLE_COLOR = "#E07B00"
 NULL_COLOR = "#AAAAAA"
+# Publication-facing labels for the two O-information selection arms.  Keep
+# these distinct from internal identifiers (``o_min``/``o_max``) and from the
+# separate scientific measure “% synergistic triplets”.
+OBJECTIVE_ARM_LABELS = {"o_min": "Min O-info", "o_max": "Max O-info"}
 RUNG_ORDER = ("ols", "xgb_tree_d1", "xgb_tree_d2", "xgb_tree_d3")
 RUNG_LABELS = ("OLS", "d1", "d2", "d3")
 # The only user-visible spelling of a model level. The analysis names these

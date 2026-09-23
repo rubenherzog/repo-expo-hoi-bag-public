@@ -21,6 +21,12 @@ be copied into `outputs/main/paper/complete/` in this checkout.  The exact
 inventory and verification procedure are in
 [MAIN_PAPER_DELIVERY_CONTRACT.md](MAIN_PAPER_DELIVERY_CONTRACT.md).
 
+The same paper is also delivered under the global pooled out-of-fold R²
+estimand in `outputs/main/paper/complete_global_oof/`, selected with
+`R2_MODE=global_oof`.  It shares every scientific contract with the
+country-balanced delivery and never modifies it; see
+[GLOBAL_OOF_DELIVERY_CONTRACT.md](GLOBAL_OOF_DELIVERY_CONTRACT.md).
+
 ### Selecting `REPRO_DATA_ROOT`
 
 `REPRO_DATA_ROOT` is an explicit external runtime selected by the operator. It

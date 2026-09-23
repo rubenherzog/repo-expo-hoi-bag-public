@@ -61,6 +61,7 @@ from scripts.plot_fig3_diversity import (
     draw_recipe,
     draw_scatter,
 )
+from repo_expo_hoi_bag.figures.style import OBJECTIVE_ARM_LABELS
 from exposome_labels import display_label
 
 from repo_expo_hoi_bag.figures.source_data import Panel, write_source_data
@@ -353,8 +354,8 @@ def _build_cap_tables(bags: list[str], feature_domains: dict[str, str]) -> tuple
 CAP_COL_TITLES = (
     "a. BAG prediction vs domain diversity",
     "b. Domain composition",
-    "c. Redundancy domain network",
-    "d. Synergy domain network",
+    f"c. {OBJECTIVE_ARM_LABELS['o_max']} domain network",
+    f"d. {OBJECTIVE_ARM_LABELS['o_min']} domain network",
 )
 FONT_BUMP = 2   # applied to every font in cols 0-1 (scatter, recipe); networks untouched
 TITLE_BUMP = 6  # applied on top of the base column-title fontsize

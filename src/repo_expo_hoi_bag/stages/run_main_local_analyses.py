@@ -11,6 +11,7 @@ import argparse
 from collections import Counter
 from itertools import combinations
 import json
+import os
 from pathlib import Path
 
 import numpy as np
@@ -93,7 +94,14 @@ def _triplets(top: pd.DataFrame, index: Path, bag: str, objective: str) -> pd.Da
 
 def main() -> None:
     args = _args(); runtime = args.repro_data_root.resolve()
-    source = runtime / "results" / "analysis_runs" / args.source_run_id / "main_statistics" / "fig3_diversity_d3"
+    # Each estimand has its own Figure 3 statistics directory; the scatter's
+    # ``country_balanced_r2`` column is the carrier for whichever estimand was
+    # selected there, so only the source directory changes.
+    global_oof = os.environ.get("R2_MODE", "").strip() == "global_oof"
+    source = (
+        runtime / "results" / "analysis_runs" / args.source_run_id / "main_statistics"
+        / ("fig3_diversity_d3_global" if global_oof else "fig3_diversity_d3")
+    )
     scatter_path, recipe_path = source / "per_candidate_diversity_scatter.csv", source / "per_candidate_recipe_top20.csv"
     if not scatter_path.is_file() or not recipe_path.is_file() or not args.triplet_oinfo_index.exists():
         raise FileNotFoundError("Required k10 scatter/recipe or permitted O-information triplet index is missing")
@@ -133,7 +141,7 @@ def main() -> None:
     diversity.to_csv(out / "diversity_permutation_d3.csv", index=False)
     recipe.to_csv(out / "domain_composition_top20_d3.csv", index=False)
     pd.concat(triplet_parts, ignore_index=True).to_csv(out / "recurrent_triplets_top20_d3.csv", index=False)
-    (out / "manifest.json").write_text(json.dumps({"analysis_label": "main", "source_k10": str(source), "performance_estimator": "country_balanced_r2", "allowed_oinfo_triplet_index": str(args.triplet_oinfo_index), "forbidden_previous_output_inputs": True, "draws": args.draws}, indent=2) + "\n", encoding="utf-8")
+    (out / "manifest.json").write_text(json.dumps({"analysis_label": "main", "source_k10": str(source), "r2_mode": "global_oof" if global_oof else "country_balanced", "performance_estimator": "global_oof_r2" if global_oof else "country_balanced_r2", "allowed_oinfo_triplet_index": str(args.triplet_oinfo_index), "forbidden_previous_output_inputs": True, "draws": args.draws}, indent=2) + "\n", encoding="utf-8")
     print(f"Saved local main analyses: {out}")
 
 

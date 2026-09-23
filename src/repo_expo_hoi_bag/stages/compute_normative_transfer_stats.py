@@ -25,6 +25,11 @@ from scripts.sensitivity_common import (
 )
 
 
+def _global_oof_mode() -> bool:
+    """Whether the global pooled OOF estimand is active."""
+    return os.environ.get("R2_MODE", "").strip() == "global_oof"
+
+
 def _best_pooled(
     global_metrics: pd.DataFrame,
     *,
@@ -168,23 +173,27 @@ def main() -> None:
                 pd.to_numeric(country_metrics["n_test"], errors="coerce").gt(0)
             ].copy()
         country_metrics = country_metrics[np.isfinite(country_metrics["r2"])].copy()
-        balanced = (
-            country_metrics.groupby(
-                ["candidate_id", "rung_id", "family_id", "train_dx", "test_dx"],
-                observed=True,
-            )["r2"]
-            .mean()
-            .rename("country_balanced_r2")
-            .reset_index()
-        )
-        global_metrics = global_metrics.merge(
-            balanced,
-            on=["candidate_id", "rung_id", "family_id", "train_dx", "test_dx"],
-            how="left",
-            validate="one_to_one",
-        )
+        transfer_keys = ["candidate_id", "rung_id", "family_id", "train_dx", "test_dx"]
+        if _global_oof_mode():
+            # The normative evaluation already stores the pooled global OOF R2
+            # for each transfer cell; per-country values are not averaged.
+            if "global_oof_r2" not in global_metrics.columns:
+                raise ValueError(f"{global_path} lacks global_oof_r2")
+            global_metrics["country_balanced_r2"] = pd.to_numeric(
+                global_metrics["global_oof_r2"], errors="coerce"
+            )
+        else:
+            balanced = (
+                country_metrics.groupby(transfer_keys, observed=True)["r2"]
+                .mean()
+                .rename("country_balanced_r2")
+                .reset_index()
+            )
+            global_metrics = global_metrics.merge(
+                balanced, on=transfer_keys, how="left", validate="one_to_one"
+            )
         if global_metrics["country_balanced_r2"].isna().any():
-            raise ValueError(f"Missing country-balanced scores in {country_path}")
+            raise ValueError(f"Missing normative scores in {country_path}")
 
         for train_diagnosis, test_diagnosis in transfers:
             selected = {
@@ -271,7 +280,7 @@ def main() -> None:
                     "source_bundle_marker": str(active_marker.resolve()),
                     "rung_id": paper_cfg.deployed_rung,
                     "order_max": paper_cfg.order_max,
-                    "r2_estimand": "unweighted_mean_country_r2",
+                    "r2_estimand": "global_oof_r2" if _global_oof_mode() else "unweighted_mean_country_r2",
                     "configuration_source": str(CONFIG_PATH.resolve()),
                     "synVred_n_countries": synergy_vs_redundancy["n_countries"],
                     "synVred_median_dR2": synergy_vs_redundancy["median_delta"],

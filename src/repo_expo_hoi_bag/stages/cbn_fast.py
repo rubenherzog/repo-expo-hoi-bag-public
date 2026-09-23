@@ -75,9 +75,11 @@ from scripts.run_country_block_null import (  # noqa: E402
     _bags,
     _env_bool,
     country_balanced_r2,
+    global_oof_r2_by_set,
     select_winners,
     winners_to_candidate_df,
 )
+from scripts.sensitivity_common import global_oof_mode, r2_mode  # noqa: E402
 from scripts.sensitivity_common import canonical_root, load_fig2_candidate_pool  # noqa: E402
 
 BASE_SEED = 20260304  # identical to evaluate_candidates_by_rung
@@ -144,7 +146,7 @@ def permute_exposome_fast(reps_matrix: np.ndarray, work_block_idx: np.ndarray, n
 def eval_winners_fast(context: dict, fold_designs: dict, candidate_df: pd.DataFrame,
                       exposome_cols: list[str], rung: str, xgb_cfg: dict | None,
                       x_exp: np.ndarray | None = None) -> pd.Series:
-    """Country-balanced LOCO R² per predictors_identity on one design.
+    """Active-estimand LOCO R² per predictors_identity on one design.
 
     ``x_exp`` overrides ``context["X_exp"]`` (the permuted exposome); ``None`` uses the
     original exposome (observed). Dedupes candidates on ``predictors_identity`` and
@@ -167,7 +169,12 @@ def eval_winners_fast(context: dict, fold_designs: dict, candidate_df: pd.DataFr
         )
         country = country.copy()
         country["predictors_identity"] = str(row["predictors_identity"])
-        out[str(row["predictors_identity"])] = country_balanced_r2(country).iloc[0]
+        if global_oof_mode():
+            _summary = _summary.copy()
+            _summary["predictors_identity"] = str(row["predictors_identity"])
+            out[str(row["predictors_identity"])] = global_oof_r2_by_set(_summary).iloc[0]
+        else:
+            out[str(row["predictors_identity"])] = country_balanced_r2(country).iloc[0]
     return pd.Series(out, dtype=float)
 
 
@@ -190,7 +197,7 @@ def _perm_chunk_fast(perm_indices: list[int], context: dict, fold_designs: dict,
             for pid, val in r2.items():
                 draws.append({"perm_idx": perm_idx, "rung_id": rung,
                               "predictors_identity": pid, "null_r2": float(val),
-                              "r2_estimand": "country_balanced"})
+                              "r2_estimand": r2_mode()})
     return draws
 
 
@@ -329,7 +336,7 @@ def run_fast() -> None:
             rows.append({**{k: w[k] for k in ["bag", "label", "rung_id", "objective", "order",
                                               "predictors_identity", "observed_r2_parquet"]},
                          "observed_r2": obs,
-                         "r2_estimand": "country_balanced",
+                         "r2_estimand": r2_mode(),
                          "null_mean": float(np.mean(nd)) if len(nd) else np.nan,
                          "null_p95": float(np.quantile(nd, 0.95)) if len(nd) else np.nan,
                          "null_std": null_std,
@@ -416,7 +423,7 @@ def run_fast_maxnull() -> None:
         null_df = (
             raw_draws.groupby(["perm_idx", "rung_id"], as_index=False)["null_r2"].max()
         )
-        null_df["r2_estimand"] = "country_balanced"
+        null_df["r2_estimand"] = r2_mode()
         null_path = bundle_root / f"{bag}_maxnull_null_draws.parquet"
         null_df.to_parquet(null_path, index=False)
         print(f"  null draws -> {null_path} ({len(null_df)} rows)")
@@ -428,7 +435,7 @@ def run_fast_maxnull() -> None:
             p = (1 + int(np.sum(nd >= obs))) / (len(nd) + 1) if len(nd) else np.nan
             null_std = float(np.std(nd, ddof=1)) if len(nd) > 1 else np.nan
             rows.append({"bag": bag, "rung_id": r, "observed_max_r2": obs,
-                         "r2_estimand": "country_balanced",
+                         "r2_estimand": r2_mode(),
                          "null_mean": float(np.mean(nd)) if len(nd) else np.nan,
                          "null_p95": float(np.quantile(nd, 0.95)) if len(nd) else np.nan,
                          "null_std": null_std,

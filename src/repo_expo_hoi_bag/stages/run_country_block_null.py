@@ -85,6 +85,9 @@ from repo_expo_hoi_bag.stages.sensitivity_common import (  # noqa: E402
     repo_sensitivity_root,
     selected_bags,
     evaluate_candidates_by_rung,
+    global_oof_mode,
+    global_oof_r2,
+    r2_mode,
 )
 
 KEY_COUNTRY = "country_clean"
@@ -120,7 +123,15 @@ def select_winners(bag: str, rungs: list[str], order_max: int, include_single: b
         & df["objective"].astype(str).isin(["o_min", "o_max"])
         & (pd.to_numeric(df["order"], errors="coerce") <= order_max)
     ].copy()
-    df["full_r2"] = pd.to_numeric(df["full_r2"], errors="coerce")
+    # ``full_r2`` is the parent selection column.  Under the global estimand the
+    # winner must be picked on the pooled global OOF R2 of the same candidates.
+    selection_column = "global_oof_r2" if global_oof_mode() else "full_r2"
+    if selection_column not in df.columns:
+        raise ValueError(
+            f"Candidate metrics lack the active R2_MODE={r2_mode()!r} selection column "
+            f"{selection_column!r}; available: {sorted(map(str, df.columns))}"
+        )
+    df["full_r2"] = pd.to_numeric(df[selection_column], errors="coerce")
 
     rows = []
     for rung in rungs:
@@ -218,11 +229,27 @@ def country_balanced_r2(country: pd.DataFrame) -> pd.Series:
     return scored.groupby("predictors_identity", observed=True)["r2"].mean()
 
 
+def global_oof_r2_by_set(summary: pd.DataFrame) -> pd.Series:
+    """Return the pooled global OOF R2 per predictor set.
+
+    The evaluator already computes this statistic on the concatenated valid OOF
+    predictions of each candidate, so it is read from the global metrics frame
+    rather than re-derived.  Per-country R2 values are deliberately not
+    averaged: that would be the country-balanced estimand."""
+    required = {"predictors_identity", "global_oof_r2"}
+    missing = required.difference(summary.columns)
+    if missing:
+        raise ValueError(f"Global metrics missing required columns: {sorted(missing)}")
+    scored = summary.copy()
+    scored["global_oof_r2"] = pd.to_numeric(scored["global_oof_r2"], errors="coerce")
+    return scored.groupby("predictors_identity", observed=True)["global_oof_r2"].max()
+
+
 def _eval_once(model_df: pd.DataFrame, candidate_df: pd.DataFrame, feature_names: list[str],
                bag: str, rung: str, analysis_cfg: dict) -> pd.Series:
     """Return country-balanced LOCO R² per predictor set for one design."""
     with tempfile.TemporaryDirectory(prefix="cbn_") as tmp:
-        _summary, country = evaluate_candidates_by_rung(
+        summary, country = evaluate_candidates_by_rung(
             model_df=model_df,
             candidate_df=candidate_df,
             exposome_cols=feature_names,
@@ -232,6 +259,8 @@ def _eval_once(model_df: pd.DataFrame, candidate_df: pd.DataFrame, feature_names
             outdir=Path(tmp),
             n_jobs=1,
         )
+    if global_oof_mode():
+        return global_oof_r2_by_set(summary)
     return country_balanced_r2(country)
 
 
@@ -244,12 +273,12 @@ def _perm_draw(perm_idx: int, model_df: pd.DataFrame, feature_names: list[str], 
         r2 = _eval_once(perm_df, cand, feature_names, bag, rung, analysis_cfg)
         if full_maxnull:
             draws.append({"perm_idx": perm_idx, "rung_id": rung,
-                          "null_r2": float(r2.max()), "r2_estimand": "country_balanced"})
+                          "null_r2": float(r2.max()), "r2_estimand": r2_mode()})
         else:
             for pid, val in r2.items():
                 draws.append({"perm_idx": perm_idx, "rung_id": rung,
                               "predictors_identity": pid, "null_r2": float(val),
-                              "r2_estimand": "country_balanced"})
+                              "r2_estimand": r2_mode()})
     return draws
 
 
@@ -329,7 +358,7 @@ def main() -> None:
                 p = (1 + int(np.sum(nd >= obs))) / (len(nd) + 1)
                 null_std = float(np.std(nd, ddof=1)) if len(nd) > 1 else np.nan
                 rows.append({"bag": bag, "rung_id": r, "observed_max_r2": obs,
-                             "r2_estimand": "country_balanced",
+                             "r2_estimand": r2_mode(),
                              "null_mean": float(np.mean(nd)) if len(nd) else np.nan,
                              "null_p95": float(np.quantile(nd, 0.95)) if len(nd) else np.nan,
                              "null_std": null_std,
@@ -348,7 +377,7 @@ def main() -> None:
                 rows.append({**{k: w[k] for k in ["bag", "label", "rung_id", "objective", "order",
                                                   "predictors_identity", "observed_r2_parquet"]},
                              "observed_r2": obs,
-                             "r2_estimand": "country_balanced",
+                             "r2_estimand": r2_mode(),
                              "null_mean": float(np.mean(nd)) if len(nd) else np.nan,
                              "null_p95": float(np.quantile(nd, 0.95)) if len(nd) else np.nan,
                              "null_std": null_std,

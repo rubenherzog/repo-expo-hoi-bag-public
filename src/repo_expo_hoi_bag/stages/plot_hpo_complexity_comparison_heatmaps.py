@@ -11,10 +11,12 @@ matplotlib.use("Agg")
 from matplotlib import pyplot as plt
 from matplotlib.cm import ScalarMappable
 from matplotlib.colors import Normalize
+from matplotlib.patches import Polygon
 import numpy as np
 import pandas as pd
 
 from repo_expo_hoi_bag.figures.source_data import Panel, write_source_data
+from repo_expo_hoi_bag.figures.style import RED_COLOR, SYN_COLOR
 from repo_expo_hoi_bag.stages import plot_complexity_comparison_heatmaps as parent_figure
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -38,6 +40,54 @@ def _stars(value: float) -> str:
 def _p(row: pd.Series, arm: bool = False) -> float:
     column = "holm_p_across_four_levels" if arm else "holm_p_within_bag_trajectory"
     return float(row[column])
+
+
+def _outline_arm_triangles(axis: plt.Axes, frame: pd.DataFrame) -> None:
+    """Outline the two off-diagonal O-information arms without covering cells."""
+    if not {"synergy", "redundancy"}.issubset(set(frame["triangle"])):
+        return
+    axis.add_patch(
+        Polygon(
+            [
+                (0.5, -0.5),
+                (3.5, -0.5),
+                (3.5, 2.5),
+                (2.5, 2.5),
+                (2.5, 1.5),
+                (1.5, 1.5),
+                (1.5, 0.5),
+                (0.5, 0.5),
+            ],
+            closed=True,
+            fill=False,
+            edgecolor=SYN_COLOR,
+            linewidth=3.4,
+            joinstyle="round",
+            clip_on=False,
+            zorder=10,
+        )
+    )
+    axis.add_patch(
+        Polygon(
+            [
+                (-0.5, 0.5),
+                (-0.5, 3.5),
+                (2.5, 3.5),
+                (2.5, 2.5),
+                (1.5, 2.5),
+                (1.5, 1.5),
+                (0.5, 1.5),
+                (0.5, 0.5),
+            ],
+            closed=True,
+            fill=False,
+            edgecolor=RED_COLOR,
+            linewidth=3.4,
+            joinstyle="round",
+            clip_on=False,
+            zorder=10,
+        )
+    )
 
 
 def _rows(stats: pd.DataFrame, bag: str, key: str, comparison_type: str, arm_type: str | None) -> pd.DataFrame:
@@ -67,6 +117,7 @@ def main() -> None:
     parser.add_argument("--repro-data-root", type=Path, required=True)
     parser.add_argument("--hpo-set", choices=("k10", "k63"), default="k10")
     parser.add_argument("--output-dir", type=Path)
+    parser.add_argument("--skip-source-data", action="store_true")
     args = parser.parse_args()
     output_dir = args.output_dir or ROOT / "outputs/figures/HPO" / args.hpo_set / "supplementary"
     source = args.repro_data_root.resolve() / "results/analysis_runs" / f"paper_reanalysis_{args.hpo_set}" / "main_statistics/model_comparison/complexity_and_arm_comparisons.csv"
@@ -76,17 +127,21 @@ def main() -> None:
         for column, (key, title, kind, arm) in enumerate(SPECS):
             ax = axes[row_index, column]; frame = _rows(stats, bag, key, kind, arm)
             parent_figure._draw_heatmap(ax, frame)
+            _outline_arm_triangles(ax, frame)
             if row_index == 0:
                 ax.set_xlabel("")
             if column > 0:
                 ax.set_ylabel("")
             if row_index == 0:
-                ax.set_title(title + ("\nSynergy upper · redundancy lower" if arm else "\nUpper triangle"), fontsize=10, pad=7)
+                ax.set_title(title + ("\nMin O-info ↑ · Max O-info ↓" if arm else "\nUpper triangle"), fontsize=10, pad=7)
             panels.append(Panel(panel_id=f"{'ab'[row_index]}{column+1}_{bag}_{key}", frame=frame, description=f"Matched model-complexity comparisons for {bag}, {title.lower()}.", test="Two-sided country-cluster bootstrap, 10,000 draws; Holm correction within adjustment_family."))
     fig.subplots_adjust(left=.065, right=.90, top=.85, bottom=.08); cax = fig.add_axes([.92,.20,.014,.58]); fig.colorbar(ScalarMappable(norm=Normalize(-LIMIT,LIMIT,clip=True), cmap="seismic"), cax=cax).set_label("ΔR²")
     output_dir.mkdir(parents=True, exist_ok=True); stem=f"fig_s13_model_complexity_comparisons_hpo_{args.hpo_set}"
     for extension in ("pdf", "svg", "png", "tiff"): fig.savefig(output_dir / f"{stem}.{extension}", bbox_inches="tight", dpi=600 if extension in {"png","tiff"} else None)
-    plt.close(fig); write_source_data(stem, panels, output_dir, source_paths=[str(source)]); print(f"Saved: {output_dir / (stem + '.png')}")
+    plt.close(fig)
+    if not args.skip_source_data:
+        write_source_data(stem, panels, output_dir, source_paths=[str(source)])
+    print(f"Saved: {output_dir / (stem + '.png')}")
 
 
 if __name__ == "__main__": main()

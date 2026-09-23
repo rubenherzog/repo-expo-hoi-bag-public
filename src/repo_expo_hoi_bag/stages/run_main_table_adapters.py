@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 from pathlib import Path
 
 import numpy as np
@@ -21,15 +22,30 @@ def _args() -> argparse.Namespace:
 
 
 def _metrics(root: Path, historical: Path, bag: str, rung: str) -> pd.DataFrame:
+    """Per-candidate score under the active estimand.
+
+    The carrier column keeps its historical name ``country_balanced_r2`` so the
+    downstream selection code is unchanged; under R2_MODE=global_oof it holds
+    the pooled global OOF R2 instead, and the emitted manifest records which."""
+    global_oof = _global_oof_mode()
     if rung == "ols":
-        path = historical / "results/variant_a/families/pooled_oinfo_ladder/canonical/per_experiment" / f"pooled_oinfo_ladder_{bag}" / "metrics_country_long.parquet"
+        path = historical / "results/variant_a/families/pooled_oinfo_ladder/canonical/per_experiment" / f"pooled_oinfo_ladder_{bag}" / ("metrics_global_long.parquet" if global_oof else "metrics_country_long.parquet")
         x = pd.read_parquet(path, filters=[("rung_id", "=", "ols")])
-        score = x.groupby("candidate_id", observed=True).country_full_r2.mean().rename("country_balanced_r2").reset_index()
+        if global_oof:
+            # In the immutable historical reference the global metrics frame
+            # stores the pooled global OOF R2 under its own name ``full_r2``.
+            score = x.groupby("candidate_id", observed=True).full_r2.max().rename("country_balanced_r2").reset_index()
+        else:
+            score = x.groupby("candidate_id", observed=True).country_full_r2.mean().rename("country_balanced_r2").reset_index()
         score["bag"], score["rung"] = bag, rung
         return score
     directory = root / ("ols" if rung == "ols" else "xgb") / bag / ("ols" if rung == "ols" else rung) / ("ols" if rung == "ols" else "k10")
-    country = pd.read_csv(directory / "metrics_country.csv")
-    score = country[country.n_test > 0].groupby("candidate_id", observed=True).r2.mean().rename("country_balanced_r2").reset_index()
+    if global_oof:
+        frame = pd.read_csv(directory / "metrics_global.csv")
+        score = frame.groupby("candidate_id", observed=True).global_oof_r2.max().rename("country_balanced_r2").reset_index()
+    else:
+        country = pd.read_csv(directory / "metrics_country.csv")
+        score = country[country.n_test > 0].groupby("candidate_id", observed=True).r2.mean().rename("country_balanced_r2").reset_index()
     score["bag"], score["rung"] = bag, rung
     return score
 
@@ -48,6 +64,18 @@ def _country_r2(group: pd.DataFrame, prediction: str) -> float:
     if denominator <= 0:
         return np.nan
     return float(1 - np.square(y - group[prediction].to_numpy(float)).sum() / denominator)
+
+
+def _global_oof_mode() -> bool:
+    """Whether the global pooled OOF estimand is active."""
+    return os.environ.get("R2_MODE", "").strip() == "global_oof"
+
+
+def _pooled_r2(y: np.ndarray, prediction: np.ndarray) -> float:
+    denominator = np.square(y - y.mean()).sum()
+    if denominator <= 0:
+        return float("nan")
+    return float(1 - np.square(y - prediction).sum() / denominator)
 
 
 def _country_balanced_vs_single(
@@ -86,9 +114,33 @@ def _country_balanced_vs_single(
     ).dropna()
     country["delta_r2"] = country["r2_a"] - country["r2_b"]
     rng = np.random.default_rng(seed)
-    values = country["delta_r2"].to_numpy(float)
-    sampled = values[rng.integers(0, len(values), size=(draws, len(values)))].mean(axis=1)
-    observed = float(values.mean())
+    if _global_oof_mode():
+        # Same country-cluster resampling; the statistic recomputed on each
+        # resample is the pooled global OOF R2 difference rather than a mean of
+        # per-country R2 differences.
+        groups = [group for _, group in paired.groupby("country", sort=True)]
+        truth = [group["y_true"].to_numpy(float) for group in groups]
+        pred_a = [group["prediction_a"].to_numpy(float) for group in groups]
+        pred_b = [group["prediction_b"].to_numpy(float) for group in groups]
+        observed = _pooled_r2(np.concatenate(truth), np.concatenate(pred_a)) - _pooled_r2(
+            np.concatenate(truth), np.concatenate(pred_b)
+        )
+        n_groups = len(groups)
+        sampled = np.empty(draws, dtype=float)
+        for draw in range(draws):
+            picks = rng.integers(0, n_groups, size=n_groups)
+            y = np.concatenate([truth[i] for i in picks])
+            sampled[draw] = _pooled_r2(y, np.concatenate([pred_a[i] for i in picks])) - _pooled_r2(
+                y, np.concatenate([pred_b[i] for i in picks])
+            )
+        reported_a = _pooled_r2(np.concatenate(truth), np.concatenate(pred_a))
+        reported_b = _pooled_r2(np.concatenate(truth), np.concatenate(pred_b))
+    else:
+        values = country["delta_r2"].to_numpy(float)
+        sampled = values[rng.integers(0, len(values), size=(draws, len(values)))].mean(axis=1)
+        observed = float(values.mean())
+        reported_a = float(country["r2_a"].mean())
+        reported_b = float(country["r2_b"].mean())
     p_value = min(1.0, max(2 * min(float(np.mean(sampled <= 0)), float(np.mean(sampled >= 0))), 1 / draws))
     return {
         "comparison_type": "vs_single",
@@ -100,13 +152,13 @@ def _country_balanced_vs_single(
         "candidate_b": str(paired["candidate_id_b"].iloc[0]),
         "n_subjects": len(paired),
         "n_countries": len(country),
-        "r2_a": float(country["r2_a"].mean()),
-        "r2_b": float(country["r2_b"].mean()),
+        "r2_a": reported_a,
+        "r2_b": reported_b,
         "delta_r2": observed,
         "ci_lo": float(np.percentile(sampled, 2.5)),
         "ci_hi": float(np.percentile(sampled, 97.5)),
         "p_raw": p_value,
-        "r2_estimand": "unweighted_mean_country_r2",
+        "r2_estimand": "global_oof_r2" if _global_oof_mode() else "unweighted_mean_country_r2",
         "bootstrap_unit": "country",
         "bootstrap_draws": draws,
     }
@@ -135,7 +187,7 @@ def main() -> None:
     st01["source_file"] = str(greedy_path)
     st01.to_csv(out / "ST01_greedy_oinfo_by_order.csv", index=False)
     # ST03: compare the same country-balanced d3 values displayed in Figure 2.
-    oof_root = source / "main_statistics/model_comparison/oof"
+    oof_root = source / "main_statistics/model_comparison" / ("oof_global_oof" if _global_oof_mode() else "oof")
     st03 = pd.DataFrame(
         [
             _country_balanced_vs_single(oof_root, bag, objective, a.draws, 20261200 + 2 * BAGS.index(bag) + OBJECTIVES.index(objective))
@@ -164,6 +216,23 @@ def main() -> None:
             pool = chosen[chosen.objective.eq(obj)].candidate_id.nunique(); part = detail[detail.objective.eq(obj)].copy(); part["triplet"] = part.nplet_cols.map(lambda x: " | ".join(sorted(str(x).split("|"))))
             counts = part.groupby("triplet", observed=True).candidate_id.nunique().rename("n_candidates").reset_index(); counts["prevalence_pct"] = 100 * counts.n_candidates / pool; counts["bag"], counts["objective"], counts["n_candidates_in_arm"] = bag, obj, pool; triplet_rows.append(counts)
     st09 = pd.concat(triplet_rows, ignore_index=True).sort_values(["bag", "objective", "prevalence_pct", "triplet"], ascending=[True, True, False, True]); st09.to_csv(out / "ST09_recurrent_triplets_all_levels.csv", index=False)
+    import json as _json
+    (out / "manifest.json").write_text(
+        _json.dumps(
+            {
+                "analysis_label": "main",
+                "r2_mode": "global_oof" if _global_oof_mode() else "country_balanced",
+                "performance_estimator": "global_oof_r2" if _global_oof_mode() else "country_balanced_r2",
+                "source_run_id": a.source_run_id,
+                "xgb_comparison_run_id": a.xgb_comparison_run_id,
+                "draws": a.draws,
+            },
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     print(f"Saved local table adapters: {out}")
 
 

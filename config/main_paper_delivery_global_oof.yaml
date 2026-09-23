@@ -1,0 +1,62 @@
+# Main k10 paper delivery contract -- global pooled OOF R2 estimand.
+#
+# Parallel delivery to config/main_paper_delivery.yaml.  Same cohort, folds,
+# OOF predictions, exclusions, diagnostic definitions, structural->functional
+# order, primary comparisons and multiple-comparison corrections; the sole
+# difference is that every reported R2 is the global pooled out-of-fold R2
+# (r2_mode = global_oof) instead of the unweighted mean held-out-country R2.
+#
+# The country-balanced delivery is never modified by this contract.
+# This is a lightweight local delivery; only participant-level/fold-level
+# runtime artifacts remain external.
+schema_version: 1
+delivery_root: outputs/main/paper/complete_global_oof
+main_figures:
+  - fig2_grid_v3_max_30_hpo_k10
+  - fig3_diversity_v2_max_30_hpo_k10
+  - fig4_residual_bias_main_k10
+supplementary_figures:
+  # Existing frozen-k10 complexity comparison; no refit is required.
+  - fig_s13_model_complexity_comparisons_hpo_k10
+  # These are rendered from the new main-k10 sensitivity jobs.
+  - normative_diversity
+  - normative_transfer_structural
+  - normative_transfer_functional
+  - domain_imbalance_sensitivity
+  - whole_exposome_pca_sensitivity
+  - country_region_sensitivity
+  - country_region_sensitivity_rotated
+  - fig_country_meta_regression
+  - education_scanner_baseline
+  - residual_confounds
+  - residualized_bag
+  - fig_s10_set_size_sensitivity
+supplementary_tables:
+  workbook: Supplementary_Tables_main_k10.xlsx
+  sheets:
+    - ST01_HigherOrder
+    - ST02_ModelComplexity
+    - ST03_BestModels
+    - ST04_CountryBlockNull
+    - ST05_TopComposition
+    - ST06_DomainDiversity
+    - ST07_DomainComposition
+    - ST08_Cooccurrence
+    - ST09_RecurrentTriplets
+    - ST10_ResidualBias
+    - ST11_NormativeTransfer
+    - ST12_MixedModels
+    - ST13_AltRepresentations
+    - ST14_NegativeOmega
+    - ST15_DiagnosticContext
+    - ST16_Geography
+    - ST17_CovariatesTargets
+    - ST18_SetSizeCaps
+excluded:
+  - fig5_generative_account
+  - combined_bag_outputs
+  - shap_outputs
+  - residuals_as_standalone_figure
+
+r2_mode: global_oof
+country_balanced_counterpart: outputs/main/paper/complete

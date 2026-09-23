@@ -43,6 +43,7 @@ def _parser() -> argparse.ArgumentParser:
             "residual-confounds",
             "residualized-bag-target",
             "residualized-bag",
+            "residualized-bag-clean",
             "diagnosis-balance",
             "negative-o-arm-comparison",
             "feature-ablation",

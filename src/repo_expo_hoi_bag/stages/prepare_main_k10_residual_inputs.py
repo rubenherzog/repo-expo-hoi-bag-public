@@ -15,13 +15,21 @@ def _args() -> argparse.Namespace:
     parser.add_argument("--source-run-id", default="paper_reanalysis_k10")
     parser.add_argument("--adapter-run-id", required=True)
     parser.add_argument("--smoke-test", action="store_true")
+    parser.add_argument(
+        "--r2-estimator",
+        choices=("country-balanced", "global-oof"),
+        default="country-balanced",
+        help="Estimand whose level winners supply the residuals; global-oof reads the sibling oof_global_oof/ root.",
+    )
     return parser.parse_args()
 
 
 def main() -> None:
     args = _args()
     runtime = args.repro_data_root.resolve()
-    source = runtime / "results" / "analysis_runs" / args.source_run_id / "main_statistics" / "model_comparison" / "oof"
+    r2_mode = "global_oof" if args.r2_estimator == "global-oof" else "country_balanced"
+    oof_dirname = "oof" if args.r2_estimator == "country-balanced" else "oof_global_oof"
+    source = runtime / "results" / "analysis_runs" / args.source_run_id / "main_statistics" / "model_comparison" / oof_dirname
     destination = runtime / "results" / "analysis_runs" / args.adapter_run_id / "main_statistics"
     paths = [source / f"level_best_{suffix}" / bag / "oof_xgb_tree_d3.parquet" for bag in ("structural", "functional") for suffix in ("syn", "red")]
     if args.smoke_test:
@@ -51,17 +59,22 @@ def main() -> None:
             output = residuals / f"residuals_subject_{bag}_{suffix}.csv"
             frame.to_csv(output, index=False)
             outputs.append(str(output))
+            candidate_ids = sorted(set(frame["candidate_id"].astype(str))) if "candidate_id" in frame.columns else []
+            if len(candidate_ids) > 1:
+                raise ValueError(f"OOF file mixes candidates for {bag}/{suffix}: {candidate_ids}")
             selections.append(
                 {
                     "analysis": "A_top_k_per_rung",
                     "bag": bag,
                     "objective": "o_min" if suffix == "syn" else "o_max",
                     "best_rung": "xgb_tree_d3",
+                    "candidate_id": candidate_ids[0] if candidate_ids else "",
+                    "r2_mode": r2_mode,
                 }
             )
     pd.DataFrame(selections).to_csv(destination / "best_rung_selection.csv", index=False)
     (destination / "main_k10_residual_adapter_manifest.json").write_text(
-        json.dumps({"analysis_label": "main", "source_run_id": args.source_run_id, "rung": "xgb_tree_d3", "outputs": outputs}, indent=2) + "\n",
+        json.dumps({"analysis_label": "main", "source_run_id": args.source_run_id, "rung": "xgb_tree_d3", "r2_mode": r2_mode, "oof_source_root": str(source), "outputs": outputs}, indent=2) + "\n",
         encoding="utf-8",
     )
     print(f"Prepared main-k10 residual inputs: {destination}")

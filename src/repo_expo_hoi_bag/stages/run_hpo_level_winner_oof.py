@@ -33,10 +33,19 @@ def _args() -> argparse.Namespace:
     parser.add_argument("--hpo-set", choices=("k1", "k10", "k63"), default="k10")
     parser.add_argument("--write-manifest-only", action="store_true", help="Record the selected Figure 2 tasks after OOF files exist")
     parser.add_argument("--resume", action="store_true", help="Fit only Figure 2 OOF files that are still missing")
+    parser.add_argument(
+        "--r2-estimator",
+        choices=("country-balanced", "global-oof"),
+        default="country-balanced",
+        help=(
+            "Estimand used to pick each level winner. global-oof writes to a sibling "
+            "oof_global_oof/ root and never overwrites the country-balanced OOF."
+        ),
+    )
     return parser.parse_args()
 
 
-def _winner_table(root: Path, hpo_set: str) -> pd.DataFrame:
+def _winner_table(root: Path, hpo_set: str, estimator: str = "country-balanced") -> pd.DataFrame:
     # k1 is the completed candidate-set evaluation with the frozen
     # single-exposure configuration.  Its input directory retains the
     # descriptive historical name; its OOF results get a short, distinct k1
@@ -44,9 +53,21 @@ def _winner_table(root: Path, hpo_set: str) -> pd.DataFrame:
     analysis_id = "paper_reanalysis_single_set_params_k10" if hpo_set == "k1" else f"paper_reanalysis_{hpo_set}"
     candidate_scope = "k10" if hpo_set == "k1" else hpo_set
     run_root = root / "results/analysis_runs" / analysis_id
-    path = run_root / "main_statistics/fig3_diversity/candidate_country_balanced_metrics.csv"
+    global_oof = estimator == "global-oof"
+    # Each estimand has its own cached candidate metrics; they are never mixed.
+    path = run_root / (
+        "main_statistics/fig3_diversity_d3_global/candidate_global_oof_metrics.csv"
+        if global_oof
+        else "main_statistics/fig3_diversity/candidate_country_balanced_metrics.csv"
+    )
     if path.exists():
         df = pd.read_csv(path)
+        if global_oof and "global_oof_r2" not in df.columns and "country_balanced_r2" in df.columns:
+            # plot_hpo_fig3_diversity carries the selected estimand in a column
+            # named country_balanced_r2 regardless of which estimand it loaded.
+            # In the global cache that column holds global pooled OOF R2; rename
+            # it so no downstream step can read it under the wrong name.
+            df = df.rename(columns={"country_balanced_r2": "global_oof_r2"})
     else:
         reference = load_historical_paper_reference(
             ROOT / "config/paper_reference.yaml", repro_data_root=root
@@ -57,14 +78,23 @@ def _winner_table(root: Path, hpo_set: str) -> pd.DataFrame:
             source_root = root / "results/analysis_runs/paper_reanalysis_k10" if hpo_set == "k63" else run_root
             for rung in RUNGS:
                 folder = source_root / "ols" / bag / "ols" / "ols" if rung == "ols" else run_root / "xgb" / bag / rung / candidate_scope
-                scores = pd.read_csv(folder / "metrics_country.csv"); scores = scores[scores.n_test > 0].groupby("candidate_id", as_index=False).r2.mean().rename(columns={"r2":"country_balanced_r2"})
+                if global_oof:
+                    scores = pd.read_csv(folder / "metrics_global.csv")[["candidate_id", "global_oof_r2"]].copy()
+                else:
+                    scores = pd.read_csv(folder / "metrics_country.csv"); scores = scores[scores.n_test > 0].groupby("candidate_id", as_index=False).r2.mean().rename(columns={"r2":"country_balanced_r2"})
                 part = scores.merge(registry[registry.experiment_id.eq(f"pooled_oinfo_ladder_{bag}")][["candidate_id","objective","order","predictors_identity"]], on="candidate_id", validate="one_to_one")
                 part["bag"], part["rung"] = bag, rung; parts.append(part)
         df = pd.concat(parts, ignore_index=True)
     df = df[pd.to_numeric(df["order"], errors="raise") <= 30].copy()
+    score_column = "global_oof_r2" if global_oof else "country_balanced_r2"
+    if score_column not in df.columns:
+        raise ValueError(
+            f"Candidate metrics lack the {estimator!r} selection column {score_column!r}; "
+            f"available: {sorted(map(str, df.columns))}"
+        )
     rows = []
     for (bag, objective, rung), group in df.groupby(["bag", "objective", "rung"], observed=True):
-        rows.append(group.sort_values(["country_balanced_r2", "candidate_id"], ascending=[False, True], kind="mergesort").iloc[0])
+        rows.append(group.sort_values([score_column, "candidate_id"], ascending=[False, True], kind="mergesort").iloc[0])
     winners = pd.DataFrame(rows).reset_index(drop=True)
     winners["family"] = np.where(winners["objective"].eq("o_min"), "level_best_syn", "level_best_red")
     winners["scope"] = "single" if hpo_set == "k1" else hpo_set
@@ -86,17 +116,32 @@ def _winner_table(root: Path, hpo_set: str) -> pd.DataFrame:
         for rung in RUNGS:
             source_root = root / "results/analysis_runs/paper_reanalysis_k10"
             path = source_root / ("ols" if rung == "ols" else "xgb") / bag / ("ols" if rung == "ols" else rung) / "single" / "metrics_country.csv"
-            scores = pd.read_csv(path); scores = scores[scores.n_test > 0].groupby("candidate_id", as_index=False).r2.mean()
+            if global_oof:
+                scores = pd.read_csv(path.with_name("metrics_global.csv"))[["candidate_id", "global_oof_r2"]].rename(columns={"global_oof_r2": "r2"})
+            else:
+                scores = pd.read_csv(path); scores = scores[scores.n_test > 0].groupby("candidate_id", as_index=False).r2.mean()
             winner = scores.sort_values(["r2", "candidate_id"], ascending=[False, True], kind="mergesort").iloc[0]
             feature = str(winner.candidate_id).removeprefix("__single__")
-            single_rows.append({"bag": bag, "objective": "single", "rung": rung, "candidate_id": str(winner.candidate_id), "predictors_identity": feature, "country_balanced_r2": float(winner.r2), "family": "level_best_single", "scope": "single"})
+            single_rows.append({"bag": bag, "objective": "single", "rung": rung, "candidate_id": str(winner.candidate_id), "predictors_identity": feature, score_column: float(winner.r2), "family": "level_best_single", "scope": "single"})
     winners = pd.concat([winners, pd.DataFrame(fixed_rows), pd.DataFrame(single_rows)], ignore_index=True)
     if len(winners) != 56:
         raise ValueError(f"Expected 56 Figure 2 OOF tasks, got {len(winners)}")
     return winners
 
 
-def _fit_one(row: dict[str, object], repro_root: Path, hpo_rows: dict[str, dict[tuple[str, str, str], dict]]) -> dict[str, object]:
+def _oof_dirname(estimator: str) -> str:
+    """Directory holding the OOF of the winners selected under ``estimator``.
+
+    The global estimand writes to a sibling root so it can never overwrite the
+    delivered country-balanced OOF predictions."""
+    return "oof" if estimator == "country-balanced" else "oof_global_oof"
+
+
+def _score_field(estimator: str) -> str:
+    return "country_balanced_r2" if estimator == "country-balanced" else "global_oof_r2"
+
+
+def _fit_one(row: dict[str, object], repro_root: Path, hpo_rows: dict[str, dict[tuple[str, str, str], dict]], estimator: str = "country-balanced") -> dict[str, object]:
     # These are the exact fold builders and XGB/OLS fit helpers used by the
     # completed evaluation, imported only after the local compatibility bridge.
     from oinfo_bag_ladder.rungs import build_xgb_cfg_for_rung, get_rung_specs
@@ -144,10 +189,10 @@ def _fit_one(row: dict[str, object], repro_root: Path, hpo_rows: dict[str, dict[
     out["candidate_id"], out["objective"], out["rung_id"], out["bag"] = str(row["candidate_id"]), objective, rung, bag
     out["residual"] = out["y_pred_full"] - out["y_true"]
     out["abs_residual"] = out["residual"].abs()
-    target = repro_root / "results/analysis_runs" / f"paper_reanalysis_{str(row['analysis_hpo_set'])}" / "main_statistics/model_comparison/oof" / str(row["family"]) / bag / f"oof_{rung}.parquet"
+    target = repro_root / "results/analysis_runs" / f"paper_reanalysis_{str(row['analysis_hpo_set'])}" / "main_statistics/model_comparison" / _oof_dirname(estimator) / str(row["family"]) / bag / f"oof_{rung}.parquet"
     target.parent.mkdir(parents=True, exist_ok=True)
     out.to_parquet(target, index=False)
-    return {"bag": bag, "objective": objective, "rung": rung, "candidate_id": str(row["candidate_id"]), "predictors_identity": str(row["predictors_identity"]), "family": str(row["family"]), "scope": str(row["scope"]), "selection_source_rung": str(row["selection_source_rung"]), "expected_country_balanced_r2": float(row["country_balanced_r2"]), "oof_path": str(target)}
+    return {"bag": bag, "objective": objective, "rung": rung, "candidate_id": str(row["candidate_id"]), "predictors_identity": str(row["predictors_identity"]), "family": str(row["family"]), "scope": str(row["scope"]), "selection_source_rung": str(row["selection_source_rung"]), "r2_mode": "global_oof" if estimator == "global-oof" else "country_balanced", f"expected_{_score_field(estimator)}": float(row[_score_field(estimator)]), "oof_path": str(target)}
 
 
 def main() -> None:
@@ -159,26 +204,29 @@ def main() -> None:
         "k63": ("historical5_full63_cap500_final", "full_exposome"),
     }[args.hpo_set]
     artifacts = {"single" if args.hpo_set == "k1" else args.hpo_set: load_frozen_hpo(ROOT / f"outputs/xgb_nested_loco_tuning/{candidate_artifact[0]}/selected_xgb_configs.json", feature_scope=candidate_artifact[1], country_policy=policy), "baseline": load_frozen_hpo(ROOT / "outputs/xgb_nested_loco_tuning/historical5_baseline_cap500/selected_xgb_configs.json", feature_scope="baseline", country_policy=policy), "single": load_frozen_hpo(ROOT / "outputs/xgb_nested_loco_tuning/historical5_single_cap500/selected_xgb_configs.json", feature_scope="single_exposure", country_policy=policy)}
-    winners = _winner_table(repro_root, args.hpo_set)
+    oof_dirname = _oof_dirname(args.r2_estimator)
+    score_field = _score_field(args.r2_estimator)
+    winners = _winner_table(repro_root, args.hpo_set, args.r2_estimator)
     winners["analysis_hpo_set"] = args.hpo_set
-    manifest = repro_root / "results/analysis_runs" / f"paper_reanalysis_{args.hpo_set}" / "main_statistics/model_comparison/level_winners.csv"
+    manifest_name = "level_winners.csv" if args.r2_estimator == "country-balanced" else "level_winners_global_oof.csv"
+    manifest = repro_root / "results/analysis_runs" / f"paper_reanalysis_{args.hpo_set}" / "main_statistics/model_comparison" / manifest_name
     if args.write_manifest_only:
         rows = []
         for row in winners.to_dict("records"):
-            target = repro_root / "results/analysis_runs" / f"paper_reanalysis_{args.hpo_set}" / "main_statistics/model_comparison/oof" / str(row["family"]) / str(row["bag"]) / f"oof_{row['rung']}.parquet"
+            target = repro_root / "results/analysis_runs" / f"paper_reanalysis_{args.hpo_set}" / "main_statistics/model_comparison" / oof_dirname / str(row["family"]) / str(row["bag"]) / f"oof_{row['rung']}.parquet"
             if not target.exists():
                 raise FileNotFoundError(f"Cannot record missing OOF file: {target}")
-            rows.append({"bag": row["bag"], "objective": row["objective"], "rung": row["rung"], "candidate_id": row["candidate_id"], "predictors_identity": row["predictors_identity"], "family": row["family"], "scope": row["scope"], "selection_source_rung": row["selection_source_rung"], "analysis_hpo_set": row["analysis_hpo_set"], "expected_country_balanced_r2": row["country_balanced_r2"], "oof_path": str(target)})
+            rows.append({"bag": row["bag"], "objective": row["objective"], "rung": row["rung"], "candidate_id": row["candidate_id"], "predictors_identity": row["predictors_identity"], "family": row["family"], "scope": row["scope"], "selection_source_rung": row["selection_source_rung"], "analysis_hpo_set": row["analysis_hpo_set"], "r2_mode": "global_oof" if args.r2_estimator == "global-oof" else "country_balanced", f"expected_{score_field}": row[score_field], "oof_path": str(target)})
         manifest.parent.mkdir(parents=True, exist_ok=True)
         pd.DataFrame(rows).to_csv(manifest, index=False)
         print(f"Saved: {manifest} ({len(rows)} Figure 2 OOF tasks)")
         return
     records = winners.to_dict("records")
     if args.resume:
-        oof_root = repro_root / "results/analysis_runs" / f"paper_reanalysis_{args.hpo_set}" / "main_statistics/model_comparison/oof"
+        oof_root = repro_root / "results/analysis_runs" / f"paper_reanalysis_{args.hpo_set}" / "main_statistics/model_comparison" / oof_dirname
         records = [row for row in records if not (oof_root / str(row["family"]) / str(row["bag"]) / f"oof_{row['rung']}.parquet").exists()]
         print(f"Resuming {len(records)} missing Figure 2 OOF tasks", flush=True)
-    rows = Parallel(n_jobs=min(args.n_jobs, len(records)), backend="loky")(delayed(_fit_one)(row, repro_root, {key: value["rows"] for key, value in artifacts.items()}) for row in records) if records else []
+    rows = Parallel(n_jobs=min(args.n_jobs, len(records)), backend="loky")(delayed(_fit_one)(row, repro_root, {key: value["rows"] for key, value in artifacts.items()}, args.r2_estimator) for row in records) if records else []
     manifest.parent.mkdir(parents=True, exist_ok=True); pd.DataFrame(rows).to_csv(manifest, index=False)
     print(f"Saved: {manifest} ({len(rows)} Figure 2 OOF tasks)")
 

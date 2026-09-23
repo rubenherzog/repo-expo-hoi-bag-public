@@ -40,6 +40,7 @@ import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from scipy import stats as scipy_stats
 
 from repo_expo_hoi_bag.analysis.selection import select_baseline_per_rung, select_best_per_rung
 from repo_expo_hoi_bag.figures.style import (
@@ -47,15 +48,19 @@ from repo_expo_hoi_bag.figures.style import (
     BAG_ROW_ORDER,
     BAG_SHORT,
     LEVEL_LABELS,
+    OBJECTIVE_ARM_LABELS,
     RED_COLOR,
     ROW_LETTERS,
     RUNG_ORDER,
     SYN_COLOR,
+    SINGLE_COLOR,
     save_figure,
     style_axis,
 )
+from scripts.exposome_domains import unweighted_domain_stats
 from repo_expo_hoi_bag.figures.source_data import Panel, write_source_data
 from scripts.sensitivity_common import (
+    CHECKOUT_ROOT,
     active_rungs,
     analysis_cfg_from_config,
     baseline_candidate_df,
@@ -218,6 +223,195 @@ def _draw_split_boxes(ax, df_global: pd.DataFrame, rungs_present: list[str], top
     return all_vals
 
 
+def _draw_best_single_lines(ax, single_summary: pd.DataFrame, rungs_present: list[str]) -> list[float]:
+    """Draw the best education-adjusted single exposure as an orange line.
+
+    A short line (rather than a star) retains the visual language used for the
+    baseline and makes it readable over the split top-20 distributions.
+    """
+    values: list[float] = []
+    for i, rung in enumerate(rungs_present):
+        rows = single_summary[single_summary["rung_id"].astype(str) == rung].copy()
+        if rows.empty:
+            continue
+        score = pd.to_numeric(rows["global_oof_r2"], errors="coerce")
+        if not score.notna().any():
+            continue
+        value = float(score.max())
+        ax.plot([i - 0.13, i + 0.13], [value, value], color=SINGLE_COLOR, lw=3.0, zorder=7)
+        values.append(value)
+    return values
+
+
+def _entropy_scatter_frame(summary: pd.DataFrame, domain_map: dict[str, str], rung: str) -> pd.DataFrame:
+    """Return the exact d3 greedy-model points used in the entropy scatter."""
+    frame = summary[
+        (summary["rung_id"].astype(str) == rung)
+        & (summary["objective"].astype(str).isin(["o_min", "o_max"]))
+    ].copy()
+    rows: list[dict[str, object]] = []
+    for row in frame.itertuples(index=False):
+        raw_predictors = str(getattr(row, "predictors_identity"))
+        # These sensitivity CSVs serialise predictor sets as a pipe-delimited
+        # identity string (not a Python literal).  Split it directly so the
+        # entropy represents the domains actually used by every model.
+        predictors = [item.strip() for item in raw_predictors.split("|") if item.strip()]
+        stats = unweighted_domain_stats(predictors, domain_map=domain_map)
+        rows.append(
+            {
+                "candidate_id": str(getattr(row, "candidate_id")),
+                "objective": str(getattr(row, "objective")),
+                "rung_id": rung,
+                "order": int(getattr(row, "order")),
+                "global_oof_r2": float(getattr(row, "global_oof_r2")),
+                "shannon_h": float(stats["shannon_h"]),
+                "n_domains": int(stats["n_domains"]),
+                "predictors_identity": "|".join(predictors),
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+def _plot_education_no_scanner(
+    bag_inputs: dict[str, dict[str, pd.DataFrame]],
+    rungs: list[str],
+    outdir: Path,
+    *,
+    source_paths: list[str] | None = None,
+    partial_set_size: bool = False,
+    stem: str = "education_scanner_baseline_no_scanner",
+) -> None:
+    """Render the requested education-only two-column supplementary figure.
+
+    The first column is the established Fig.2-style education comparison.  The
+    second column shows every d3 greedy candidate against Shannon domain
+    entropy; when requested, both variables are residualized by set size.
+    """
+    rungs_present = [r for r in RUNG_ORDER if r in set(rungs)]
+    bags = [b for b in BAG_ROW_ORDER if b in bag_inputs]
+    if not bags or not rungs_present:
+        raise ValueError("Education-only figure requires both BAGs and at least one model level")
+    domain_csv = CHECKOUT_ROOT / "data" / "metadata" / "exposome_feature_domains.csv"
+    domain_map = pd.read_csv(domain_csv).set_index("feature_name")["domain"].astype(str).to_dict()
+    deployed_rung = "xgb_tree_d3" if "xgb_tree_d3" in rungs_present else rungs_present[-1]
+
+    fig, axes = plt.subplots(
+        len(bags), 2, figsize=(10.2, 8.8), squeeze=False,
+        gridspec_kw={"hspace": 0.34, "wspace": 0.32},
+    )
+    panels: list[Panel] = []
+    for row_i, bag in enumerate(bags):
+        education = bag_inputs[bag]["education"]
+        singles = bag_inputs[bag].get("singles", pd.DataFrame())
+        baseline = select_baseline_per_rung(
+            education, baseline_label="baseline", score_column="global_oof_r2"
+        ).set_index("rung_id")["global_oof_r2"]
+        left = _variant_global_frame(education, baseline)
+        ax_left, ax_right = axes[row_i]
+        left_values = _draw_split_boxes(ax_left, left, rungs_present)
+        if not singles.empty:
+            left_values.extend(_draw_best_single_lines(ax_left, singles, rungs_present))
+        if left_values:
+            lo, hi = min(left_values), max(left_values)
+            pad = (hi - lo) * 0.10 if hi > lo else 0.02
+            ax_left.set_ylim(lo - pad, hi + pad)
+        ax_left.set_title(
+            f"{ROW_LETTERS[row_i]}. {BAG_LABELS[bag]} — + Education", fontsize=10, loc="left"
+        )
+        ax_left.set_ylabel("R² LOCO")
+        style_axis(ax_left)
+
+        top_left = []
+        for rung in rungs_present:
+            syn, red = _rung_topk(left[left["rung_id"] == rung], rung, TOP_K)
+            top_left.extend([syn, red])
+        left_source = pd.concat(top_left, ignore_index=True)
+        left_source = left_source[["rung_id", "objective", "candidate_id", "full_r2", "base_r2", "delta_r2_vs_base"]]
+        left_source = left_source.rename(columns={"candidate_id": "candidate_id"})
+        if not singles.empty:
+            best_single = (
+                singles.sort_values("global_oof_r2", ascending=False).groupby("rung_id", as_index=False).head(1)
+                [["rung_id", "candidate_id", "predictors_identity", "global_oof_r2"]]
+                .rename(columns={"candidate_id": "best_single_candidate_id", "global_oof_r2": "best_single_r2"})
+            )
+            left_source = left_source.merge(best_single, on="rung_id", how="left")
+        panels.append(Panel(
+            panel_id=f"{ROW_LETTERS[row_i]}1_{BAG_SHORT[bag]}_edu",
+            frame=left_source,
+            description=f"{BAG_LABELS[bag]} education-adjusted top-{TOP_K} models." if singles.empty else f"{BAG_LABELS[bag]} education-adjusted top-{TOP_K} models and best single exposure.",
+            columns={"rung_id": "model level", "objective": "o_min = Min O-info; o_max = Max O-info",
+                     "full_r2": "country-balanced LOCO R² for plotted top-20 point",
+                     "base_r2": "education-adjusted covariate baseline R² (black line)"},
+            notes="Values are copied from the delivered + Education panel of the original figure.",
+        ))
+
+        scatter = _entropy_scatter_frame(education, domain_map, deployed_rung)
+        x_column, y_column = "shannon_h", "global_oof_r2"
+        if partial_set_size:
+            scatter["entropy_residual"] = np.nan
+            scatter["r2_residual"] = np.nan
+            for objective, points in scatter.groupby("objective", observed=True):
+                valid = points[["shannon_h", "global_oof_r2", "order"]].apply(
+                    pd.to_numeric, errors="coerce"
+                ).replace([np.inf, -np.inf], np.nan).dropna()
+                if len(valid) < 4 or valid["order"].nunique() < 2:
+                    continue
+                design = np.column_stack([np.ones(len(valid)), valid["order"].to_numpy(dtype=float)])
+                entropy = valid["shannon_h"].to_numpy(dtype=float)
+                r2 = valid["global_oof_r2"].to_numpy(dtype=float)
+                scatter.loc[valid.index, "entropy_residual"] = entropy - design @ np.linalg.lstsq(design, entropy, rcond=None)[0]
+                scatter.loc[valid.index, "r2_residual"] = r2 - design @ np.linalg.lstsq(design, r2, rcond=None)[0]
+            x_column, y_column = "entropy_residual", "r2_residual"
+        for objective, color in (("o_min", SYN_COLOR), ("o_max", RED_COLOR)):
+            points = scatter[scatter["objective"] == objective].dropna(subset=[x_column, y_column])
+            ax_right.scatter(points[x_column], points[y_column], s=20, color=color,
+                             alpha=0.20, linewidths=0, zorder=2)
+            if len(points) > 2 and points[x_column].nunique() > 1:
+                fit = scipy_stats.linregress(points[x_column], points[y_column])
+                xs = np.linspace(points[x_column].min(), points[x_column].max(), 100)
+                ax_right.plot(xs, fit.intercept + fit.slope * xs, color=color, lw=2.2, zorder=3)
+        if partial_set_size:
+            ax_right.set_title(f"Partial R² LOCO vs entropy ({LEVEL_LABELS[deployed_rung]})", fontsize=10)
+            ax_right.set_xlabel("Entropy residual (adjusted for set size)")
+            ax_right.set_ylabel("R² LOCO residual\n(adjusted for set size)")
+        else:
+            ax_right.set_title(f"R² LOCO vs domain entropy ({LEVEL_LABELS[deployed_rung]})", fontsize=10)
+            ax_right.set_xlabel("Shannon domain entropy H (bits)")
+            ax_right.set_ylabel("R² LOCO")
+        style_axis(ax_right)
+        panels.append(Panel(
+            panel_id=f"{ROW_LETTERS[row_i]}2_{BAG_SHORT[bag]}_entropy",
+            frame=scatter,
+            description=(
+                f"{BAG_LABELS[bag]} education-adjusted {LEVEL_LABELS[deployed_rung]} candidates: "
+                "partial LOCO R²–entropy scatter after residualizing both variables by set size."
+                if partial_set_size else
+                f"{BAG_LABELS[bag]} education-adjusted {LEVEL_LABELS[deployed_rung]} candidates by domain entropy."
+            ),
+            columns={"shannon_h": "ordinary Shannon entropy of predictor domains (bits)",
+                     "global_oof_r2": "LOCO R²", "objective": "Min O-info or Max O-info",
+                     "order": "set size (number of exposures)",
+                     "n_domains": "number of distinct predictor domains",
+                     **({"entropy_residual": "entropy residual after linear adjustment for set size -- plotted x axis",
+                         "r2_residual": "LOCO R² residual after linear adjustment for set size -- plotted y axis"} if partial_set_size else {})},
+            notes=("Both LOCO R² and entropy are residualized linearly on set size within each BAG and arm. "
+                   "No single-exposure point is plotted in this diversity panel." if partial_set_size else
+                   "No single-exposure point is plotted in this diversity panel."),
+        ))
+
+    legend = [
+        mpatches.Patch(color=SYN_COLOR, alpha=0.55, label=f"Top-{TOP_K} {OBJECTIVE_ARM_LABELS['o_min']}"),
+        mpatches.Patch(color=RED_COLOR, alpha=0.55, label=f"Top-{TOP_K} {OBJECTIVE_ARM_LABELS['o_max']}"),
+        mlines.Line2D([0], [0], color="black", lw=2.5, label="Baseline + Education"),
+    ]
+    if any(not bag_inputs[bag].get("singles", pd.DataFrame()).empty for bag in bags):
+        legend.append(mlines.Line2D([0], [0], color=SINGLE_COLOR, lw=3.0, label="Best single + Education"))
+    axes[0][0].legend(handles=legend, fontsize=7, loc="best")
+    save_figure(fig, stem, outdir)
+    plt.close(fig)
+    write_source_data(stem, panels, outdir, source_paths=source_paths)
+
+
 def _variant_global_frame(variant_summary: pd.DataFrame, baseline_by_rung: pd.Series) -> pd.DataFrame:
     """Build the df_global-equivalent frame _draw_split_boxes expects:
     full_r2 (this variant), base_r2 (baseline arm, same rung), delta_r2_vs_base."""
@@ -234,6 +428,7 @@ def _plot_comparison(
     outdir: Path,
     *,
     r2_estimand: str = "global out-of-fold LOCO R²",
+    write_rendered_source_data: bool = True,
 ) -> None:
     """One figure with a row per BAG, structural first. No suptitle.
 
@@ -319,15 +514,16 @@ def _plot_comparison(
         axes[row_i][0].set_ylabel("R² LOCO")
 
     patches = [
-        mpatches.Patch(color=SYN_COLOR, alpha=0.55, label=f"Top-{TOP_K} synergistic"),
-        mpatches.Patch(color=RED_COLOR, alpha=0.55, label=f"Top-{TOP_K} redundant"),
+        mpatches.Patch(color=SYN_COLOR, alpha=0.55, label=f"Top-{TOP_K} {OBJECTIVE_ARM_LABELS['o_min']}"),
+        mpatches.Patch(color=RED_COLOR, alpha=0.55, label=f"Top-{TOP_K} {OBJECTIVE_ARM_LABELS['o_max']}"),
         mlines.Line2D([0], [0], color="black", lw=2.5, ls="-", label="Baseline covariates"),
     ]
     axes[0][-1].legend(handles=patches, fontsize=7, loc="best")
     stem = "education_scanner_baseline"
     save_figure(fig, stem, outdir)
     plt.close(fig)
-    write_source_data(stem, panels, outdir)
+    if write_rendered_source_data:
+        write_source_data(stem, panels, outdir)
 
 
 def _rebuild_from_cached_summaries(

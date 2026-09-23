@@ -43,10 +43,10 @@ paper_analysis:
   objective_metadata:
     o_min:
       file_suffix: syn
-      arm_label: Synergy arm
+      arm_label: Min O-info
     o_max:
       file_suffix: red
-      arm_label: Redundancy arm
+      arm_label: Max O-info
   deployed_rung: xgb_tree_d3
   order_max: 30
   reference_oof_dir_template: work/fig_dedup/max_{order_max}/subject_level_oof

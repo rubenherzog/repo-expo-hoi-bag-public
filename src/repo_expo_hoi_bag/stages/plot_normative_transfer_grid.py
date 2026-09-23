@@ -161,6 +161,21 @@ def _cohen_f2(r2: pd.Series, baseline_r2: pd.Series) -> pd.Series:
     return out.replace([np.inf, -np.inf], np.nan)
 
 
+def _global_oof_mode() -> bool:
+    """Whether the global pooled OOF estimand is active (R2_MODE=global_oof)."""
+    return os.environ.get("R2_MODE", "").strip() == "global_oof"
+
+
+def _global_oof_r2(path: Path) -> pd.Series:
+    """Return the stored pooled global OOF R2 per candidate."""
+    frame = pd.read_csv(_require(path))
+    if "global_oof_r2" not in frame.columns:
+        raise ValueError(f"{path} lacks global_oof_r2")
+    frame["global_oof_r2"] = pd.to_numeric(frame["global_oof_r2"], errors="coerce")
+    frame = frame[np.isfinite(frame["global_oof_r2"])].copy()
+    return frame.groupby("candidate_id", observed=True)["global_oof_r2"].max()
+
+
 def _country_balanced_r2(path: Path) -> pd.Series:
     """Return the unweighted country mean used by the main Fig. 2."""
     frame = pd.read_csv(_require(path))
@@ -182,10 +197,14 @@ def _apply_main_pooled_scores(df: pd.DataFrame, bag: str) -> pd.DataFrame:
         family = "ols" if rung == "ols" else "xgb"
         leaf = "ols" if rung == "ols" else "k10"
         rung_root = root / family / bag / rung
-        scores = _country_balanced_r2(rung_root / leaf / "metrics_country.csv")
-        baseline = float(
-            _country_balanced_r2(rung_root / "baseline" / "metrics_country.csv").iloc[0]
-        )
+        if _global_oof_mode():
+            scores = _global_oof_r2(rung_root / leaf / "metrics_global.csv")
+            baseline = float(_global_oof_r2(rung_root / "baseline" / "metrics_global.csv").iloc[0])
+        else:
+            scores = _country_balanced_r2(rung_root / leaf / "metrics_country.csv")
+            baseline = float(
+                _country_balanced_r2(rung_root / "baseline" / "metrics_country.csv").iloc[0]
+            )
         part = df[df["rung_id"].astype(str).eq(rung)].copy()
         part["r2"] = part["candidate_id"].map(scores)
         if part["r2"].isna().any():
@@ -193,7 +212,7 @@ def _apply_main_pooled_scores(df: pd.DataFrame, bag: str) -> pd.DataFrame:
             raise ValueError(f"Main pooled scores are missing {bag}/{rung}: {missing[:5]}")
         part["baseline_r2"] = baseline
         part["delta_r2"] = part["r2"] - baseline
-        part["source"] = "main_fig2_country_balanced"
+        part["source"] = "main_fig2_global_oof" if _global_oof_mode() else "main_fig2_country_balanced"
         parts.append(part)
     return pd.concat(parts, ignore_index=True)
 
@@ -278,23 +297,23 @@ def _load_normative_model(bag: str, model_family: str) -> pd.DataFrame:
     if "n_test" in country.columns:
         country = country[pd.to_numeric(country["n_test"], errors="coerce").gt(0)]
     country = country[np.isfinite(country["r2"])].copy()
-    country_balanced = (
-        country.groupby(
-            ["candidate_id", "rung_id", "family_id", "train_dx", "test_dx"],
-            observed=True,
-        )["r2"]
-        .mean()
-        .rename("country_balanced_r2")
-        .reset_index()
-    )
-    df = df.merge(
-        country_balanced,
-        on=["candidate_id", "rung_id", "family_id", "train_dx", "test_dx"],
-        how="left",
-        validate="one_to_one",
-    )
+    keys = ["candidate_id", "rung_id", "family_id", "train_dx", "test_dx"]
+    if _global_oof_mode():
+        # The normative evaluation already stores the pooled global OOF R2 per
+        # transfer cell; per-country R2 values are deliberately not averaged.
+        if "global_oof_r2" not in df.columns:
+            raise ValueError(f"{path} lacks global_oof_r2")
+        df["country_balanced_r2"] = pd.to_numeric(df["global_oof_r2"], errors="coerce")
+    else:
+        country_balanced = (
+            country.groupby(keys, observed=True)["r2"]
+            .mean()
+            .rename("country_balanced_r2")
+            .reset_index()
+        )
+        df = df.merge(country_balanced, on=keys, how="left", validate="one_to_one")
     if df["country_balanced_r2"].isna().any():
-        raise ValueError(f"Missing country-balanced normative scores in {country_path}")
+        raise ValueError(f"Missing normative scores in {country_path}")
     df["condition"] = df.apply(_condition_from_family, axis=1)
     df = df[df["condition"].isin(CONDITION_ORDER)].copy()
 
@@ -332,7 +351,7 @@ def _load_normative_model(bag: str, model_family: str) -> pd.DataFrame:
             "baseline_r2": pd.to_numeric(models["baseline_r2"], errors="coerce"),
             # Evaluated O-information (normative CSVs carry it as `score`).
             "oinfo": pd.to_numeric(models.get("score", np.nan), errors="coerce"),
-            "source": f"{model_family}_normative_country_balanced",
+            "source": f"{model_family}_normative_" + ("global_oof" if _global_oof_mode() else "country_balanced"),
         }
     )
     out["delta_r2"] = out["r2"] - out["baseline_r2"]
@@ -356,7 +375,8 @@ def _load_single_pooled(bag: str) -> pd.DataFrame:
         configured_root = os.environ.get("NORM_POOLED_MAIN_RUN_ROOT", "").strip()
         if configured_root:
             family = "ols" if rung == "ols" else "xgb"
-            path = Path(configured_root) / family / bag / rung / "single" / "metrics_country.csv"
+            leaf = "metrics_global.csv" if _global_oof_mode() else "metrics_country.csv"
+            path = Path(configured_root) / family / bag / rung / "single" / leaf
         else:
             legacy_root = os.environ.get("NORM_POOLED_SINGLE_RUN_ROOT", "").strip()
             path = (
@@ -373,9 +393,14 @@ def _load_single_pooled(bag: str) -> pd.DataFrame:
         if df.empty:
             continue
         if configured_root:
-            scores = df.assign(r2=pd.to_numeric(df["r2"], errors="coerce")).groupby(
-                "candidate_id", observed=True
-            )["r2"].mean()
+            if _global_oof_mode():
+                scores = df.assign(
+                    _r2=pd.to_numeric(df["global_oof_r2"], errors="coerce")
+                ).groupby("candidate_id", observed=True)["_r2"].max()
+            else:
+                scores = df.assign(r2=pd.to_numeric(df["r2"], errors="coerce")).groupby(
+                    "candidate_id", observed=True
+                )["r2"].mean()
             best_id = str(scores.idxmax())
             best_r2 = float(scores.loc[best_id])
             best = df[df["candidate_id"].astype(str).eq(best_id)].iloc[0]
@@ -434,23 +459,21 @@ def _load_single_normative(bag: str) -> pd.DataFrame:
     if "n_test" in country.columns:
         country = country[pd.to_numeric(country["n_test"], errors="coerce").gt(0)]
     country = country[np.isfinite(country["r2"])].copy()
-    balanced = (
-        country.groupby(
-            ["bag", "candidate_id", "rung_id", "family_id", "train_dx", "test_dx"],
-            observed=True,
-        )["r2"]
-        .mean()
-        .rename("country_balanced_r2")
-        .reset_index()
-    )
-    df = df.merge(
-        balanced,
-        on=["bag", "candidate_id", "rung_id", "family_id", "train_dx", "test_dx"],
-        how="left",
-        validate="one_to_one",
-    )
+    single_keys = ["bag", "candidate_id", "rung_id", "family_id", "train_dx", "test_dx"]
+    if _global_oof_mode():
+        if "global_oof_r2" not in df.columns:
+            raise ValueError(f"{path} lacks global_oof_r2")
+        df["country_balanced_r2"] = pd.to_numeric(df["global_oof_r2"], errors="coerce")
+    else:
+        balanced = (
+            country.groupby(single_keys, observed=True)["r2"]
+            .mean()
+            .rename("country_balanced_r2")
+            .reset_index()
+        )
+        df = df.merge(balanced, on=single_keys, how="left", validate="one_to_one")
     if df["country_balanced_r2"].isna().any():
-        raise ValueError(f"Missing country-balanced single-exposure scores in {country_path}")
+        raise ValueError(f"Missing single-exposure scores in {country_path}")
     reference_path = os.environ.get("NORM_OLS_SINGLE_REFERENCE_CSV", "").strip()
     if reference_path and "ols" in RUNG_ORDER:
         reference = pd.read_csv(_require(Path(reference_path)))

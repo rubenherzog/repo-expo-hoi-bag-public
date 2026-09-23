@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 from pathlib import Path
 
 import numpy as np
@@ -21,7 +22,7 @@ def _r2(group: pd.DataFrame) -> float:
 
 
 def main() -> None:
-    a = _args(); runtime = a.repro_data_root.resolve(); base = runtime / "results/analysis_runs" / a.source_run_id / "main_statistics/model_comparison/oof"
+    a = _args(); runtime = a.repro_data_root.resolve(); base = runtime / "results/analysis_runs" / a.source_run_id / "main_statistics/model_comparison" / ("oof_global_oof" if os.environ.get("R2_MODE", "").strip() == "global_oof" else "oof")
     frames = []
     for bag in ("structural", "functional"):
         for suffix, objective in (("syn", "o_min"), ("red", "o_max")):

@@ -60,6 +60,7 @@ from repo_expo_hoi_bag.figures.style import (
     BAG_LABELS,
     BAG_ROW_ORDER,
     LEVEL_LABELS,
+    OBJECTIVE_ARM_LABELS,
     RED_COLOR,
     ROW_LETTERS,
     SINGLE_COLOR,
@@ -180,9 +181,9 @@ def _draw_residualized_row(
     if has_single:
         ax.plot(x, summary["best_single_r2"], color=SINGLE_COLOR, lw=1.9, marker="o", ms=5, label="Best single exposure")
     if has_syn:
-        ax.plot(x, summary["best_synergy_r2"], color=SYN_COLOR, lw=1.9, marker="o", ms=5, label="Best synergy (o_min)")
+        ax.plot(x, summary["best_synergy_r2"], color=SYN_COLOR, lw=1.9, marker="o", ms=5, label=f"Best {OBJECTIVE_ARM_LABELS['o_min']}")
     if has_red:
-        ax.plot(x, summary["best_redundancy_r2"], color=RED_COLOR, lw=1.9, marker="o", ms=5, label="Best redundancy (o_max)")
+        ax.plot(x, summary["best_redundancy_r2"], color=RED_COLOR, lw=1.9, marker="o", ms=5, label=f"Best {OBJECTIVE_ARM_LABELS['o_max']}")
 
     ax.set_xticks(x)
     # "xgb_tree_d1" -> "d1": strip the prefix only (replacing it WITH "d" yielded "dd1").
@@ -199,9 +200,9 @@ def _draw_residualized_row(
     if has_single:
         handles.append(mpatches.Patch(color=SINGLE_COLOR, label="Best single exposure"))
     if has_syn:
-        handles.append(mpatches.Patch(color=SYN_COLOR, label="Best synergy (o_min)"))
+        handles.append(mpatches.Patch(color=SYN_COLOR, label=f"Best {OBJECTIVE_ARM_LABELS['o_min']}"))
     if has_red:
-        handles.append(mpatches.Patch(color=RED_COLOR, label="Best redundancy (o_max)"))
+        handles.append(mpatches.Patch(color=RED_COLOR, label=f"Best {OBJECTIVE_ARM_LABELS['o_max']}"))
     ax.legend(handles=handles, fontsize=8, frameon=False, loc="best")
 
     frame = summary[

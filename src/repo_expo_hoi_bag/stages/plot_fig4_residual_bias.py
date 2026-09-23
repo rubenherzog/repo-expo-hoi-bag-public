@@ -219,28 +219,23 @@ def _draw_distribution_panel(
     x_hi: float,
     y_hi: float,
     objective: str,
-    show_objective_legend: bool = False,
 ) -> None:
     xs = np.linspace(x_lo, x_hi, 240)
     for dx in DX_ORDER:
-        for obj in _PAPER_CFG.objectives:
-            sub = subj[(subj["diagnosis"] == dx) & (subj["objective"] == obj)]["residual"].dropna().values
-            if len(sub) < 2:
-                continue
-            kde = gaussian_kde(sub, bw_method=0.30)
-            linestyle, alpha = DX_LINESTYLES[dx]
-            ax.plot(
-                xs,
-                kde(xs),
-                color=OBJ_COLORS[obj],
-                linewidth=3.9,
-                linestyle=linestyle,
-                alpha=alpha,
-                label=(
-                    f"{DX_LABELS[dx]} "
-                    f"{_OBJECTIVE_PRESENTATION[obj]['arm_label']}"
-                ),
-            )
+        sub = subj[(subj["diagnosis"] == dx) & (subj["objective"] == objective)]["residual"].dropna().values
+        if len(sub) < 2:
+            continue
+        kde = gaussian_kde(sub, bw_method=0.30)
+        linestyle, alpha = DX_LINESTYLES[dx]
+        ax.plot(
+            xs,
+            kde(xs),
+            color=OBJ_COLORS[objective],
+            linewidth=3.9,
+            linestyle=linestyle,
+            alpha=alpha,
+            label=DX_LABELS[dx],
+        )
     ax.axvline(0, color="black", linewidth=0.9, linestyle="-", alpha=0.55)
     ax.set_xlim(x_lo, x_hi)
     ax.set_ylim(0, y_hi)
@@ -250,24 +245,11 @@ def _draw_distribution_panel(
     ax.spines[["top", "right"]].set_visible(False)
     if show_legend:
         from matplotlib.lines import Line2D
-        from matplotlib.patches import Patch
-
-        obj_handles = [
-            Patch(
-                facecolor=OBJ_COLORS[objective],
-                edgecolor="none",
-                alpha=0.75,
-                label=_OBJECTIVE_PRESENTATION[objective]["arm_label"],
-            )
-            for objective in _PAPER_CFG.objectives
-        ]
         dx_handles = [
             Line2D([], [], color="black", linestyle=DX_LINESTYLES["CN"][0], linewidth=1.8, label="HC"),
             Line2D([], [], color="black", linestyle=DX_LINESTYLES["AD"][0], linewidth=1.8, label="AD"),
             Line2D([], [], color="black", linestyle=DX_LINESTYLES["FTD"][0], linewidth=1.8, label="FTLD"),
         ]
-        leg1 = ax.legend(handles=obj_handles, fontsize=FS_TK - 1, framealpha=0.85, loc="upper right")
-        ax.add_artist(leg1)
         ax.legend(handles=dx_handles, fontsize=FS_TK - 1, framealpha=0.85, loc="upper left")
 
 
@@ -460,7 +442,7 @@ def main() -> None:
     max_ctry = max(row_heights)
     fig_h = max(12.7, 0.48 * max_ctry + 4.5) * 0.9
 
-    fig = plt.figure(figsize=(18.8, fig_h))
+    fig = plt.figure(figsize=(23.5, fig_h))
     gs = gridspec.GridSpec(
         len(BAGS),
         2,
@@ -469,27 +451,31 @@ def main() -> None:
         right=0.99,
         top=0.92,
         bottom=0.07,
-        wspace=0.28,
+        wspace=0.21,
         hspace=0.11,
-        width_ratios=[1.15, 1.0],
+        width_ratios=[1.15, 1.12],
     )
 
     heat_axes = []
-    hist_axes = []
+    distribution_axes = []
     for ri, bag in enumerate(BAGS):
         heat_spec = gs[ri, 0].subgridspec(1, 2, wspace=0.03, width_ratios=[1.0, 1.0])
+        distribution_spec = gs[ri, 1].subgridspec(1, 2, wspace=0.12)
         ax_h1 = fig.add_subplot(heat_spec[0, 0])
         ax_h2 = fig.add_subplot(heat_spec[0, 1])
-        ax_d = fig.add_subplot(gs[ri, 1])
+        ax_d_max = fig.add_subplot(distribution_spec[0, 0])
+        ax_d_min = fig.add_subplot(distribution_spec[0, 1])
         heat_axes.extend([ax_h1, ax_h2])
-        hist_axes.append(ax_d)
+        distribution_axes.extend([ax_d_max, ax_d_min])
 
         ax_h1.set_ylabel(BAG_LABELS[bag], fontsize=FS)
         if ri == 0:
             ax_h1.set_title("a. Stratified BAG bias", fontsize=FS + 5, pad=28, loc="left", x=-0.55)
-            ax_d.set_title("b. BAG bias pooled by diagnosis", fontsize=FS + 5, pad=28, loc="left")
+            ax_d_max.set_title("b. BAG bias pooled by diagnosis", fontsize=FS + 5, pad=52, loc="left")
             ax_h1.text(0.5, 1.02, _OBJECTIVE_PRESENTATION[SYNERGY_OBJECTIVE]["arm_label"], transform=ax_h1.transAxes, ha="center", va="bottom", fontsize=FS)
             ax_h2.text(0.5, 1.02, _OBJECTIVE_PRESENTATION[REDUNDANCY_OBJECTIVE]["arm_label"], transform=ax_h2.transAxes, ha="center", va="bottom", fontsize=FS)
+            ax_d_max.text(0.5, 1.02, "Max O-info", transform=ax_d_max.transAxes, ha="center", va="bottom", fontsize=FS)
+            ax_d_min.text(0.5, 1.02, "Min O-info", transform=ax_d_min.transAxes, ha="center", va="bottom", fontsize=FS)
 
         bag_syn = country_df[(country_df["bag"] == bag) & (country_df["objective"] == SYNERGY_OBJECTIVE)].copy()
         bag_red = country_df[(country_df["bag"] == bag) & (country_df["objective"] == REDUNDANCY_OBJECTIVE)].copy()
@@ -544,32 +530,48 @@ def main() -> None:
 
         subj_syn = subject_df[(subject_df["bag"] == bag) & (subject_df["objective"] == SYNERGY_OBJECTIVE)].copy()
         subj_red = subject_df[(subject_df["bag"] == bag) & (subject_df["objective"] == REDUNDANCY_OBJECTIVE)].copy()
-        combined = pd.concat(
-            [
-                subj_syn.assign(objective=SYNERGY_OBJECTIVE),
-                subj_red.assign(objective=REDUNDANCY_OBJECTIVE),
-            ],
-            ignore_index=True,
+        _draw_distribution_panel(
+            ax_d_max,
+            subj_red,
+            show_legend=(ri == 0),
+            x_lo=x_lo,
+            x_hi=x_hi,
+            y_hi=y_hi,
+            objective=REDUNDANCY_OBJECTIVE,
         )
         _draw_distribution_panel(
-            ax_d,
-            combined,
-            show_legend=(ri == 0),
+            ax_d_min,
+            subj_syn,
+            show_legend=False,
             x_lo=x_lo,
             x_hi=x_hi,
             y_hi=y_hi,
             objective=SYNERGY_OBJECTIVE,
         )
         if ri < len(BAGS) - 1:
-            ax_d.set_xticklabels([])
+            ax_d_max.set_xticklabels([])
+            ax_d_min.set_xticklabels([])
         else:
-            ax_d.set_xlabel("BAG bias (predicted − observed, years)", fontsize=FS)
-        ax_d.tick_params(axis="x", labelsize=FS_TK + 2)
-        ax_d.tick_params(axis="y", labelsize=FS_TK + 2)
-        ax_d.grid(alpha=0.18, linewidth=0.6)
+            ax_d_max.set_xlabel("")
+            ax_d_min.set_xlabel("")
+        for ax_d in (ax_d_max, ax_d_min):
+            ax_d.tick_params(axis="x", labelsize=FS_TK + 2)
+            ax_d.tick_params(axis="y", labelsize=FS_TK + 2)
+            ax_d.grid(alpha=0.18, linewidth=0.6)
+        ax_d_min.set_ylabel("")
+        ax_d_min.tick_params(axis="y", labelleft=False)
 
     heat_right = max(ax.get_position().x1 for ax in heat_axes)
-    hist_left = min(ax.get_position().x0 for ax in hist_axes)
+    hist_left = min(ax.get_position().x0 for ax in distribution_axes)
+    hist_right = max(ax.get_position().x1 for ax in distribution_axes)
+    fig.text(
+        (hist_left + hist_right) / 2,
+        0.025,
+        "BAG bias (predicted − observed, years)",
+        ha="center",
+        va="bottom",
+        fontsize=FS,
+    )
     gap = max(hist_left - heat_right, 0.01)
     cbar_width = min(0.009, gap * 0.225)
     cbar_x = heat_right + gap * 0.06
@@ -588,7 +590,18 @@ def main() -> None:
         ]
     )
     cbar.ax.tick_params(labelsize=FS_TK - 1)
-    cbar.set_label("Median BAG bias (years)", fontsize=FS)
+    cbar.ax.text(
+        0.5,
+        0.5,
+        "Median BAG bias (years)",
+        transform=cbar.ax.transAxes,
+        rotation=90,
+        ha="center",
+        va="center",
+        color="black",
+        fontsize=FS,
+        zorder=5,
+    )
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     fig.savefig(OUT_DIR / f"fig4_residual_bias{SUFFIX}.pdf", bbox_inches="tight")
@@ -596,13 +609,14 @@ def main() -> None:
     fig.savefig(OUT_DIR / f"fig4_residual_bias{SUFFIX}.png", dpi=220, bbox_inches="tight")
     plt.close(fig)
 
-    for path in write_source_data(
-        f"fig4_residual_bias{SUFFIX}",
-        _build_fig4_panels(subject_df, country_df, selection_df, ctry_order, abs_max),
-        OUT_DIR,
-        source_paths=[str(RES_DIR), str(STATS_BASE / "best_rung_selection.csv")],
-    ):
-        print(f"Saved: {path}")
+    if os.environ.get("PAPER_FIG_WRITE_SOURCE_DATA", "1") != "0":
+        for path in write_source_data(
+            f"fig4_residual_bias{SUFFIX}",
+            _build_fig4_panels(subject_df, country_df, selection_df, ctry_order, abs_max),
+            OUT_DIR,
+            source_paths=[str(RES_DIR), str(STATS_BASE / "best_rung_selection.csv")],
+        ):
+            print(f"Saved: {path}")
 
 
 if __name__ == "__main__":

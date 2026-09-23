@@ -19,6 +19,8 @@ matplotlib.use("Agg")
 matplotlib.set_loglevel("error")
 
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
+from matplotlib.ticker import FuncFormatter, MaxNLocator
 import numpy as np
 import pandas as pd
 from scipy import stats as scipy_stats
@@ -300,18 +302,20 @@ def draw_panel(
                 f"r={float(row['pearson_r'].iloc[0]):.2f}, "
                 f"{_fmt_p(float(row['p_value'].iloc[0]))}"
             )
-        ax.text(
+        annotation = ax.text(
             0.03,
             0.090 - 0.055 * line_index,
-            f"{OBJ_DISPLAY[objective]} ({stats})",
+            stats,
             transform=ax.transAxes,
             color=OBJ_COLOR[objective],
-            fontsize=max(GRID_FS_TK - 3, 5),
+            fontsize=max(GRID_FS_TK - 1, 5),
             va="bottom",
             ha="left",
             bbox=dict(boxstyle="square,pad=0.05", fc="white", ec="none", alpha=0.72),
             zorder=5,
         )
+        # These in-panel annotations must not force extra inter-column space.
+        annotation.set_in_layout(False)
 
     if show_title:
         ax.set_title(CONDITION_DISPLAY.get(condition, condition), fontsize=GRID_FS, pad=7)
@@ -324,9 +328,11 @@ def draw_panel(
         ax.set_xticklabels([])
     if show_ylabel:
         ax.set_ylabel(f"{BAG_LABEL[bag]} BAG\nLOCO R²", fontsize=GRID_FS)
-    else:
-        ax.set_yticklabels([])
     ax.tick_params(labelsize=GRID_FS_TK)
+    ax.yaxis.set_major_locator(MaxNLocator(nbins=3, min_n_ticks=2))
+    ax.yaxis.set_major_formatter(
+        FuncFormatter(lambda value, _position: f"{value:.2f}".rstrip("0").rstrip("."))
+    )
     ax.spines[["top", "right"]].set_visible(False)
 
 
@@ -461,15 +467,22 @@ def main() -> None:
     save_tables(scatter_df, best_df, model_df)
 
     xlim = _shared_limits(scatter_df["shannon_h"], pad_frac=0.04)
-    ylim_by_bag = {
-        bag: _shared_limits(
-            scatter_df[scatter_df["bag"].eq(bag)]["r2"], pad_frac=0.05
+    # Each transfer setting has its own performance range; panel-specific
+    # limits preserve variation that row-wise shared limits would flatten.
+    ylim_by_panel = {
+        (bag, condition): _shared_limits(
+            scatter_df[
+                scatter_df["bag"].eq(bag)
+                & scatter_df["condition"].astype(str).eq(condition)
+            ]["r2"],
+            pad_frac=0.05,
         )
         for bag in BAG_ROW_ORDER
+        for condition in CONDITION_ORDER
     }
 
-    fig, axes = plt.subplots(2, len(CONDITION_ORDER), figsize=(18, 6.6), constrained_layout=True)
-    fig.set_constrained_layout_pads(w_pad=0.005, h_pad=0.02, wspace=0.005, hspace=0.02)
+    fig, axes = plt.subplots(2, len(CONDITION_ORDER), figsize=(18, 6.2), constrained_layout=True)
+    fig.set_constrained_layout_pads(w_pad=0.005, h_pad=0.01, wspace=0.012, hspace=0.01)
     for row, bag in enumerate(BAG_ROW_ORDER):
         for col, condition in enumerate(CONDITION_ORDER):
             draw_panel(
@@ -482,9 +495,22 @@ def main() -> None:
                 show_xlabel=(row == len(BAGS) - 1),
                 show_title=(row == 0),
                 xlim=xlim,
-                ylim=ylim_by_bag[bag],
+                ylim=ylim_by_panel[(bag, condition)],
             )
-    fig.supxlabel("Shannon domain entropy H (bits)", fontsize=GRID_FS)
+    fig.supxlabel("Shannon domain entropy H (bits)", x=0.48, fontsize=GRID_FS)
+    fig.legend(
+        handles=[
+            Line2D([0], [0], color=OBJ_COLOR["o_min"], lw=2.3, label=OBJ_DISPLAY["o_min"]),
+            Line2D([0], [0], color=OBJ_COLOR["o_max"], lw=2.3, label=OBJ_DISPLAY["o_max"]),
+        ],
+        loc="center right",
+        bbox_to_anchor=(0.995, 0.012),
+        ncol=2,
+        frameon=False,
+        fontsize=GRID_FS_TK,
+        handlelength=1.6,
+        columnspacing=0.9,
+    )
 
     PAPER_FIGURES_DIR.mkdir(parents=True, exist_ok=True)
     for ext in ("pdf", "svg", "png"):
@@ -509,7 +535,7 @@ def main() -> None:
     stats_dir = LOCAL_STATS_DIR / FIG_SUFFIX if FIG_SUFFIX else LOCAL_STATS_DIR
     print(f"Saved tables to {stats_dir}")
     print(f"Shared xlim: {xlim}")
-    print(f"Shared ylims by row: {ylim_by_bag}")
+    print(f"Panel-specific ylims: {ylim_by_panel}")
     print("R2 plotting/model filter: all finite country-balanced R2 values")
 
 

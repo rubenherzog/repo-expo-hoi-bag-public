@@ -16,7 +16,11 @@ from repo_expo_hoi_bag.figures.style import (  # noqa: E402
     BAG_ROW_ORDER,
     BAG_SHORT,
     LEVEL_LABELS,
+    OBJECTIVE_ARM_LABELS,
+    RED_COLOR,
     ROW_LETTERS,
+    SINGLE_COLOR,
+    SYN_COLOR,
     save_figure,
     style_axis,
 )
@@ -28,7 +32,6 @@ import pandas as pd  # noqa: E402
 
 from scripts.sensitivity_common import (
     ACTIVE_RUNGS,
-    RUNG_COLORS,
     RUNG_LABELS,
     active_rungs,
     analysis_cfg_from_config,
@@ -66,11 +69,11 @@ FAMILY_SHORT = {
     "best_single_per_domain": "bestsingle",
     "within_domain_pc1": "pc1",
 }
-C_SYN = "#2166ac"
-C_RED = "#b2182b"
-C_BEST = "#238b45"
-C_SINGLE = "#111111"
-C_ORIGINAL = "#6a3d9a"
+C_SYN = SYN_COLOR
+C_RED = RED_COLOR
+C_BEST = "#B8860B"
+C_SINGLE = SINGLE_COLOR
+C_ORIGINAL = "#666666"
 
 
 def _max_candidates() -> int | None:
@@ -298,12 +301,12 @@ def _draw_domain_imbalance_row(
         line_styles = ["-", "--", ":", "-."]
         for group_i, payload in enumerate(curve_groups.values()):
             by_order = payload["by_order"]
-            source_text = "/".join(payload["labels"])
+            source_text = "/".join(label.replace("xgb_tree_", "") for label in payload["labels"])
             alpha = 0.80 if family == "best_single_per_domain" else 0.90
             ls = line_styles[group_i % len(line_styles)]
             label_suffix = f" ({source_text})" if family == "best_single_per_domain" else ""
-            ax_o.plot(by_order["order"], by_order["min"], color=C_SYN, alpha=alpha, ls=ls, lw=1.6, label=f"min O{label_suffix}")
-            ax_o.plot(by_order["order"], by_order["max"], color=C_RED, alpha=alpha, ls=ls, lw=1.6, label=f"max O{label_suffix}")
+            ax_o.plot(by_order["order"], by_order["min"], color=C_SYN, alpha=alpha, ls=ls, lw=1.6, label=f"{OBJECTIVE_ARM_LABELS['o_min']}{label_suffix}")
+            ax_o.plot(by_order["order"], by_order["max"], color=C_RED, alpha=alpha, ls=ls, lw=1.6, label=f"{OBJECTIVE_ARM_LABELS['o_max']}{label_suffix}")
         ax_o.axhline(0, color="#808080", lw=0.8, ls=":")
         style_axis(ax_o)
         panels.append(
@@ -338,25 +341,39 @@ def _draw_domain_imbalance_row(
             # Row label on the first column of the row (fig2 convention).
             ax_o.set_title(
                 f"{row_letter}. {BAG_LABELS[bag]} — {ROW_LABELS[family]}: min/max O-information",
-                loc="left", fontsize=10,
+                loc="left", fontsize=12,
             )
         else:
-            ax_o.set_title(f"{ROW_LABELS[family]}: min/max O-information", loc="left", fontsize=10)
-        ax_o.set_xlabel("Set size")
+            ax_o.set_title(
+                f"{ROW_LABELS[family]}: min/max O-information",
+                loc="left",
+                fontsize=12,
+                pad=0,
+            )
+        ax_o.set_xlabel("Set size", labelpad=-2)
         ax_o.set_ylabel("O-information (nats)")
         if show_legend and row_i == 0:
-            ax_o.legend(fontsize=6, ncol=2)
+            ax_o.legend(fontsize=12, ncol=2, loc="lower center", bbox_to_anchor=(0.5, 0.03))
+        elif show_legend and row_i == 1:
+            ax_o.legend(
+                handles=[
+                    mpl.lines.Line2D([], [], color=C_SYN, lw=1.6, label=OBJECTIVE_ARM_LABELS["o_min"]),
+                    mpl.lines.Line2D([], [], color=C_RED, lw=1.6, label=OBJECTIVE_ARM_LABELS["o_max"]),
+                ],
+                fontsize=12,
+                loc="best",
+            )
 
         perf = _family_performance(summary, family, rungs, top_k)
         for rung_i, rung in enumerate(rungs):
             if rung in base_map:
-                ax_p.scatter(rung_i, base_map[rung], color=RUNG_COLORS[rung], marker="_", s=180, linewidths=2.0)
+                ax_p.scatter(rung_i, base_map[rung], color="black", marker="_", s=180, linewidths=2.0)
             if rung in single_map:
-                ax_p.scatter(rung_i, single_map[rung], color=C_SINGLE, marker="*", s=58)
+                ax_p.scatter(rung_i, single_map[rung], color=C_SINGLE, marker="_", s=180, linewidths=2.0)
 
         for series, color, marker, label in [
-            ("top20_syn", C_SYN, "o", "Top-20 synergistic"),
-            ("top20_red", C_RED, "s", "Top-20 redundant"),
+            ("top20_syn", C_SYN, "o", f"Top-20 {OBJECTIVE_ARM_LABELS['o_min']}"),
+            ("top20_red", C_RED, "s", f"Top-20 {OBJECTIVE_ARM_LABELS['o_max']}"),
             ("best_exhaustive", C_BEST, "^", "Best exhaustive"),
         ]:
             pp = perf[perf["series"] == series].set_index("rung_id").reindex(rungs)
@@ -380,17 +397,17 @@ def _draw_domain_imbalance_row(
         ax_p.set_xticks(x)
         ax_p.set_xticklabels([LEVEL_LABELS[r] for r in rungs], rotation=0)
         ax_p.set_ylabel("R² LOCO")
-        ax_p.set_title(f"{ROW_LABELS[family]}: performance by model level", loc="left", fontsize=10)
+        ax_p.set_title(f"{ROW_LABELS[family]}: performance by model level", loc="left", fontsize=12)
         if show_legend and row_i == 0:
             handles, labels = ax_p.get_legend_handles_labels()
             handles.extend(
                 [
-                    mpl.lines.Line2D([0], [0], color="#666666", marker="_", linestyle="None", markersize=12, markeredgewidth=2),
-                    mpl.lines.Line2D([0], [0], color=C_SINGLE, marker="*", linestyle="None", markersize=8),
+                    mpl.lines.Line2D([0], [0], color="black", marker="_", linestyle="None", markersize=12, markeredgewidth=2),
+                    mpl.lines.Line2D([0], [0], color=C_SINGLE, marker="_", linestyle="None", markersize=12, markeredgewidth=2),
                 ]
             )
             labels.extend(["Baseline", "Best single exposure"])
-            ax_p.legend(handles, labels, fontsize=7)
+            ax_p.legend(handles, labels, fontsize=12)
         style_axis(ax_p)
 
         perf_frame = perf[perf["rung_id"].isin(rungs)][
@@ -427,7 +444,14 @@ def _draw_domain_imbalance_row(
     return panels
 
 
-def _plot_domain_imbalance(bag_inputs: dict[str, dict], outdir: Path, rungs: list[str], top_k: int) -> None:
+def _plot_domain_imbalance(
+    bag_inputs: dict[str, dict],
+    outdir: Path,
+    rungs: list[str],
+    top_k: int,
+    *,
+    write_rendered_source_data: bool = True,
+) -> None:
     """One figure for both BAGs: structural row first, then functional.
 
     Each BAG is a single row of 4 columns (2 candidate families x O-info +
@@ -440,7 +464,7 @@ def _plot_domain_imbalance(bag_inputs: dict[str, dict], outdir: Path, rungs: lis
     fig, axes = plt.subplots(
         len(bags), ncols,
         figsize=(6.75 * ncols, 4.0 * len(bags)),
-        gridspec_kw={"wspace": 0.30, "hspace": 0.42},
+        gridspec_kw={"wspace": 0.30, "hspace": 0.21},
         squeeze=False,
     )
     panels: list[Panel] = []
@@ -453,10 +477,17 @@ def _plot_domain_imbalance(bag_inputs: dict[str, dict], outdir: Path, rungs: lis
                 axes[i], ROW_LETTERS[i], show_legend=(i == 0),
             )
         )
+    for axis in axes.flat:
+        axis.xaxis.label.set_fontsize(axis.xaxis.label.get_fontsize() + 2)
+        axis.yaxis.label.set_fontsize(axis.yaxis.label.get_fontsize() + 2)
+        for tick in axis.get_xticklabels() + axis.get_yticklabels():
+            tick.set_fontsize(tick.get_fontsize() + 2)
+
     stem = "domain_imbalance_sensitivity"
     save_figure(fig, stem, outdir)
     plt.close(fig)
-    write_source_data(stem, panels, outdir)
+    if write_rendered_source_data:
+        write_source_data(stem, panels, outdir)
 
 
 def main() -> None:

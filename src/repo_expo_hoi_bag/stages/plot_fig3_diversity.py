@@ -512,6 +512,7 @@ def _draw_domain_panel_scaled(
     edge_color_max: float,
     node_size_scale: float = 8.0,
     label_fontsize: float = 9.0,
+    show_node_labels: bool = True,
 ):
     """Custom domain-network drawing that honours pre-scaled node_size_used.
 
@@ -593,21 +594,22 @@ def _draw_domain_panel_scaled(
             ax.scatter(top1_x, top1_y, s=top1_sizes, c=top1_fills,
                        edgecolors="#111111", linewidths=2.4, alpha=0.96, zorder=3)
 
-        for _, row in node_df.iterrows():
-            domain = str(row["domain"])
-            if domain not in pos_subset:
-                continue
-            x, y, _ = pos_subset[domain]
-            label = textwrap.fill(
-                DOMAIN_LABELS.get(domain, domain),
-                width=10,
-                break_long_words=False,
-                break_on_hyphens=True,
-            )
-            fill = DOMAIN_COLORS.get(domain, "#cccccc")
-            txt_color = _text_color_for_fill(fill)
-            ax.text(x, y, label, ha="center", va="center",
-                    fontsize=label_fontsize, color=txt_color, zorder=4)
+        if show_node_labels:
+            for _, row in node_df.iterrows():
+                domain = str(row["domain"])
+                if domain not in pos_subset:
+                    continue
+                x, y, _ = pos_subset[domain]
+                label = textwrap.fill(
+                    DOMAIN_LABELS.get(domain, domain),
+                    width=10,
+                    break_long_words=False,
+                    break_on_hyphens=True,
+                )
+                fill = DOMAIN_COLORS.get(domain, "#cccccc")
+                txt_color = _text_color_for_fill(fill)
+                ax.text(x, y, label, ha="center", va="center",
+                        fontsize=label_fontsize, color=txt_color, zorder=4)
 
     # Limits sized to contain nodes + labels without dead space.
     ax.set_xlim(-1.45, 1.45)

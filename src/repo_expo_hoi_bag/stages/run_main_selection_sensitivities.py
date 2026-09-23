@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 from pathlib import Path
 
 import pandas as pd
@@ -20,10 +21,19 @@ def _args() -> argparse.Namespace:
 def main() -> None:
     a = _args(); runtime = a.repro_data_root.resolve(); source = runtime / "results/analysis_runs" / a.source_run_id
     registry = pd.read_parquet(a.candidate_registry).copy(); registry["bag"] = registry.experiment_id.astype(str).str.removeprefix("pooled_oinfo_ladder_")
+    # ``country_balanced_r2`` is the carrier column for the active estimand;
+    # under R2_MODE=global_oof it holds the pooled global OOF R2 instead.
+    global_oof = os.environ.get("R2_MODE", "").strip() == "global_oof"
     parts = []
     for bag in BAGS:
-        x = pd.read_csv(source / "xgb" / bag / "xgb_tree_d3" / "k10" / "metrics_country.csv")
-        x = x[x.n_test > 0].groupby("candidate_id", observed=True).r2.mean().rename("country_balanced_r2").reset_index(); x["bag"] = bag; parts.append(x)
+        leaf = source / "xgb" / bag / "xgb_tree_d3" / "k10"
+        if global_oof:
+            x = pd.read_csv(leaf / "metrics_global.csv")
+            x = x.groupby("candidate_id", observed=True).global_oof_r2.max().rename("country_balanced_r2").reset_index()
+        else:
+            x = pd.read_csv(leaf / "metrics_country.csv")
+            x = x[x.n_test > 0].groupby("candidate_id", observed=True).r2.mean().rename("country_balanced_r2").reset_index()
+        x["bag"] = bag; parts.append(x)
     score = pd.concat(parts, ignore_index=True).merge(registry[["candidate_id", "bag", "objective", "order", "thoi_o", "predictors_identity"]], on=["candidate_id", "bag"], validate="one_to_one")
     if a.smoke_test:
         print(f"Smoke test passed: {len(score)} new k10 d3 scores")

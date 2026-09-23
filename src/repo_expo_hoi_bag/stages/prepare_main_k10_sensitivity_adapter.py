@@ -42,6 +42,16 @@ def _args() -> argparse.Namespace:
         help="Add the effective exposome input to an existing assigned adapter.",
     )
     parser.add_argument("--smoke-test", action="store_true")
+    parser.add_argument(
+        "--r2-estimator",
+        choices=("country-balanced", "global-oof"),
+        default="country-balanced",
+        help=(
+            "Estimand written into the parent selection columns full_r2/base_r2. "
+            "Both estimands are always materialized as country_balanced_r2 and "
+            "global_oof_r2; this only chooses which one downstream stages select on."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -133,8 +143,9 @@ def _metrics_root(runtime: Path, source_run_id: str, bag: str, rung: str, arm: s
     return runtime / "results" / "analysis_runs" / source_run_id / "xgb" / bag / rung / arm
 
 
-def _build_bag(runtime: Path, source_run_id: str, registry: Path, destination: Path, bag: str) -> dict[str, object]:
+def _build_bag(runtime: Path, source_run_id: str, registry: Path, destination: Path, bag: str, estimator: str = "country-balanced") -> dict[str, object]:
     identity = _registry_by_bag(registry, bag)
+    global_oof = estimator == "global-oof"
     global_parts: list[pd.DataFrame] = []
     country_parts: list[pd.DataFrame] = []
     source_files: list[Path] = []
@@ -156,13 +167,18 @@ def _build_bag(runtime: Path, source_run_id: str, registry: Path, destination: P
         if set(country_metrics["candidate_id"].astype(str)) != set(identity["candidate_id"].astype(str)):
             raise ValueError(f"k10 country candidate membership mismatch for {bag}/{rung}")
         baseline = baseline_country[["fold_country", "r2"]].rename(columns={"r2": "country_base_r2"})
-        baseline_r2 = float(
-            pd.to_numeric(baseline_country.loc[
-                pd.to_numeric(baseline_country["n_test"], errors="coerce").gt(0), "r2"
-            ], errors="coerce").mean()
-        )
+        if global_oof:
+            baseline_global = pd.read_csv(baseline_country_path.with_name("metrics_global.csv"))
+            baseline_r2 = float(pd.to_numeric(baseline_global["global_oof_r2"], errors="coerce").iloc[0])
+            source_files.append(baseline_country_path.with_name("metrics_global.csv"))
+        else:
+            baseline_r2 = float(
+                pd.to_numeric(baseline_country.loc[
+                    pd.to_numeric(baseline_country["n_test"], errors="coerce").gt(0), "r2"
+                ], errors="coerce").mean()
+            )
         if not pd.notna(baseline_r2):
-            raise ValueError(f"Missing country-balanced baseline R² for {bag}/{rung}")
+            raise ValueError(f"Missing {estimator} baseline R² for {bag}/{rung}")
         global_frame = identity.merge(global_metrics, on="candidate_id", how="inner", validate="one_to_one")
         country_balanced = (
             country_metrics[pd.to_numeric(country_metrics["n_test"], errors="coerce").gt(0)]
@@ -171,13 +187,16 @@ def _build_bag(runtime: Path, source_run_id: str, registry: Path, destination: P
             .rename(columns={"r2": "country_balanced_r2"})
         )
         global_frame = global_frame.merge(country_balanced, on="candidate_id", how="inner", validate="one_to_one")
-        # The main analysis selects with country-balanced R².  The historical
-        # column name ``full_r2`` is retained solely as the parent-stage contract.
-        global_frame["full_r2"] = pd.to_numeric(global_frame["country_balanced_r2"], errors="coerce")
+        # ``full_r2`` is the historical parent-stage selection column.  Both
+        # estimands are materialized above; this only chooses which one the
+        # parent stages select and plot on.  They are never mixed within a run.
+        selection_column = "global_oof_r2" if global_oof else "country_balanced_r2"
+        global_frame["full_r2"] = pd.to_numeric(global_frame[selection_column], errors="coerce")
         # ``base_r2`` is the unchanged column name required by the parent PCA
-        # sensitivity.  Its value is the main-analysis country-balanced k10
-        # baseline, matching the selection estimand used for ``full_r2``.
+        # sensitivity.  Its value is the k10 baseline under the same estimand
+        # that is used for ``full_r2``.
         global_frame["base_r2"] = baseline_r2
+        global_frame["r2_mode"] = "global_oof" if global_oof else "country_balanced"
         global_frame["bag_target"] = bag
         country_frame = country_metrics.merge(identity, on="candidate_id", how="inner", validate="many_to_one")
         country_frame = country_frame.merge(baseline, on="fold_country", how="left", validate="many_to_one")
@@ -252,7 +271,9 @@ def main() -> None:
         "country_exclusions": ["France", "Italy", "Egypt", "Greece", "Poland"],
         "rungs": list(RUNGS),
         "bags": list(BAGS),
-        "bags_detail": [_build_bag(runtime, args.source_run_id, registry, destination, bag) for bag in BAGS],
+        "r2_mode": "global_oof" if args.r2_estimator == "global-oof" else "country_balanced",
+        "selection_column": "global_oof_r2" if args.r2_estimator == "global-oof" else "country_balanced_r2",
+        "bags_detail": [_build_bag(runtime, args.source_run_id, registry, destination, bag, args.r2_estimator) for bag in BAGS],
         "effective_exposome": _materialize_effective_exposome(
             effective_source,
             feature_domains,

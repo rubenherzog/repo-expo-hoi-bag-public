@@ -15,7 +15,7 @@ PREFLIGHT="${4:-}"
 [[ -z "$PREFLIGHT" || "$PREFLIGHT" == "--preflight" ]] || { echo "Unknown option: $PREFLIGHT" >&2; exit 2; }
 case "$BAG" in structural|functional) ;; *) echo "Unsupported BAG: $BAG" >&2; exit 2;; esac
 case "$STAGE" in
-  country-block-null|normative-transfer-xgb|normative-transfer-single-xgb|domain-imbalance|whole-exposome-pca|country-region|education-scanner-baseline|residualized-bag|residual-confounds|diagnosis-balance)
+  country-block-null|normative-transfer-xgb|normative-transfer-single-xgb|domain-imbalance|whole-exposome-pca|country-region|education-scanner-baseline|residualized-bag|residualized-bag-clean|residual-confounds|diagnosis-balance)
     ;;
   *) echo "Unsupported main-k10 stage: $STAGE" >&2; exit 2;;
 esac
@@ -92,6 +92,7 @@ if [[ "$PREFLIGHT" == "--preflight" ]]; then
     country-region) module="scripts.run_country_region_sensitivity" ;;
     education-scanner-baseline) module="scripts.run_education_scanner_baseline_sensitivity" ;;
     residualized-bag) module="scripts.run_residualized_bag_sensitivity" ;;
+    residualized-bag-clean) module="scripts.run_residualized_bag_clean_sensitivity" ;;
     residual-confounds) module="scripts.compute_residual_confounds" ;;
     diagnosis-balance) module="scripts.run_diagnosis_balance_sensitivity" ;;
   esac

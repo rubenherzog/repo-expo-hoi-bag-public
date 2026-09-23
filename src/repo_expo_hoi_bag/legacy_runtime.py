@@ -117,6 +117,7 @@ def run_stage(
         "residual-confounds": "scripts.compute_residual_confounds",
         "residualized-bag-target": "scripts.compute_residualized_bag_target",
         "residualized-bag": "scripts.run_residualized_bag_sensitivity",
+        "residualized-bag-clean": "scripts.run_residualized_bag_clean_sensitivity",
         "diagnosis-balance": "scripts.run_diagnosis_balance_sensitivity",
         "negative-o-arm-comparison": "scripts.compute_negative_o_arm_comparison",
         "feature-ablation": "scripts.run_feature_ablation_sensitivity",

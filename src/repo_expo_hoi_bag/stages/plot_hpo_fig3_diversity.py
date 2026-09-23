@@ -21,9 +21,11 @@ import matplotlib
 
 matplotlib.use("Agg")
 matplotlib.set_loglevel("warning")
+import matplotlib.lines as mlines
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from scipy import stats as scipy_stats
 from repo_expo_hoi_bag.config.models import load_historical_paper_reference
 from repo_expo_hoi_bag.figures.source_data import write_source_data
 
@@ -33,6 +35,7 @@ OBJECTIVES = ("o_min", "o_max")
 RUNGS = ("ols", "xgb_tree_d1", "xgb_tree_d2", "xgb_tree_d3")
 ORDER_MAX = 30
 TOP_K = 20
+PARTIAL_OBJ_COLOR = {"o_min": "#1B6B2E", "o_max": "#4B0082"}
 
 
 def _args() -> argparse.Namespace:
@@ -55,6 +58,17 @@ def _args() -> argparse.Namespace:
     parser.add_argument("--r2-estimator", choices=("country-balanced", "global-oof"), default="country-balanced")
     parser.add_argument("--output-directory", type=Path, help="Exact delivery directory; defaults to <output-root>/<label>/paper/complete.")
     parser.add_argument("--model-rung", choices=("xgb_tree_d2", "xgb_tree_d3"), default="xgb_tree_d3")
+    parser.add_argument(
+        "--partial-set-size",
+        action="store_true",
+        help="Plot the partial R²–entropy association after linear residualization of both variables by set size.",
+    )
+    parser.add_argument("--output-stem", help="Exact filename stem for an alternate delivered figure.")
+    parser.add_argument(
+        "--delta-r2-over-baseline",
+        action="store_true",
+        help="Plot candidate ΔR² relative to the covariate-only baseline at the same BAG and model rung.",
+    )
     parser.add_argument(
         "--output-root", type=Path, default=ROOT / "outputs" / "figures" / "HPO"
     )
@@ -116,6 +130,17 @@ def _r2_metrics(path: Path, estimator: str) -> pd.DataFrame:
 def _country_balanced(path: Path) -> pd.DataFrame:
     """Backward-compatible name for the main country-balanced estimator."""
     return _r2_metrics(path, "country-balanced")
+
+
+def _baseline_r2(
+    repro_root: Path, analysis_run_id: str, bag: str, rung: str, estimator: str
+) -> tuple[float, Path]:
+    path = repro_root / "results" / "analysis_runs" / analysis_run_id / "xgb" / bag / rung / "baseline" / "metrics_country.csv"
+    baseline = _r2_metrics(path, estimator)
+    if len(baseline) != 1:
+        raise ValueError(f"Expected exactly one baseline R² in {path}")
+    source = path.with_name("metrics_global.csv") if estimator == "global-oof" else path
+    return float(baseline["country_balanced_r2"].iloc[0]), source
 
 
 def _registry_for_bag(registry: pd.DataFrame, bag: str) -> pd.DataFrame:
@@ -263,8 +288,142 @@ def _regression_table(scatter: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def _render(scatter: pd.DataFrame, recipe: pd.DataFrame, output_dir: Path, sources: list[str], hpo_set: str, model_rung: str, estimator: str) -> None:
+def _partialize_by_set_size(scatter: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Residualize both plotted variables on set size within BAG and arm.
+
+    Correlating these residuals is the standard one-covariate partial Pearson
+    correlation.  Its two-sided test uses n - 3 degrees of freedom (one
+    conditioned variable), not the n - 2 degrees of freedom of a bivariate
+    correlation.
+    """
+    result = scatter.copy()
+    result["entropy_residual"] = np.nan
+    result["r2_residual"] = np.nan
+    rows: list[dict[str, object]] = []
+    for (bag, objective), group in result.groupby(["bag", "objective"], observed=True):
+        valid = group[["shannon_h", "country_balanced_r2", "order"]].apply(
+            pd.to_numeric, errors="coerce"
+        ).replace([np.inf, -np.inf], np.nan).dropna()
+        if len(valid) < 4 or valid["order"].nunique() < 2:
+            continue
+        design = np.column_stack([np.ones(len(valid)), valid["order"].to_numpy(dtype=float)])
+        entropy = valid["shannon_h"].to_numpy(dtype=float)
+        r2 = valid["country_balanced_r2"].to_numpy(dtype=float)
+        entropy_residual = entropy - design @ np.linalg.lstsq(design, entropy, rcond=None)[0]
+        r2_residual = r2 - design @ np.linalg.lstsq(design, r2, rcond=None)[0]
+        result.loc[valid.index, "entropy_residual"] = entropy_residual
+        result.loc[valid.index, "r2_residual"] = r2_residual
+        if np.std(entropy_residual) <= 0 or np.std(r2_residual) <= 0:
+            continue
+        fit = scipy_stats.linregress(entropy_residual, r2_residual)
+        partial_r = float(fit.rvalue)
+        degrees_of_freedom = len(valid) - 3
+        statistic = partial_r * np.sqrt(degrees_of_freedom / max(1.0 - partial_r**2, np.finfo(float).eps))
+        partial_p = float(2.0 * scipy_stats.t.sf(abs(statistic), df=degrees_of_freedom))
+        rows.append({
+            "bag": bag,
+            "objective": objective,
+            "arm_label": "Min O-info" if objective == "o_min" else "Max O-info",
+            "n_candidates": int(len(valid)),
+            "slope_residual": float(fit.slope),
+            "intercept_residual": float(fit.intercept),
+            "partial_pearson_r": partial_r,
+            "partial_p_value": partial_p,
+            "degrees_of_freedom": int(degrees_of_freedom),
+            "stderr": float(fit.stderr),
+        })
+    return result, pd.DataFrame(rows)
+
+
+def _delta_r2_over_baseline(
+    scatter: pd.DataFrame,
+    repro_root: Path,
+    analysis_run_id: str,
+    model_rung: str,
+    estimator: str,
+) -> tuple[pd.DataFrame, list[str]]:
+    """Replace candidate R² with its matched-rung covariate-baseline ΔR²."""
+    result = scatter.copy()
+    sources: list[str] = []
+    for bag in BAGS:
+        baseline, source = _baseline_r2(repro_root, analysis_run_id, bag, model_rung, estimator)
+        mask = result["bag"].eq(bag)
+        result.loc[mask, "baseline_r2"] = baseline
+        result.loc[mask, "country_balanced_r2"] = (
+            pd.to_numeric(result.loc[mask, "country_balanced_r2"], errors="coerce") - baseline
+        )
+        result.loc[mask, "global_oof_r2"] = result.loc[mask, "country_balanced_r2"]
+        sources.append(str(source))
+    result["delta_r2_vs_baseline"] = result["country_balanced_r2"]
+    return result, sources
+
+
+def _draw_partial_scatter(
+    axis: plt.Axes,
+    scatter: pd.DataFrame,
+    partial_stats: pd.DataFrame,
+    bag: str,
+    figure: Any,
+) -> dict[str, str]:
+    """Draw the set-size-adjusted partial-association scatter for one BAG."""
+    labels: dict[str, str] = {}
+    sub = scatter[scatter["bag"].eq(bag)]
+    for objective, short_label in (("o_max", "red"), ("o_min", "syn")):
+        group = sub[sub["objective"].eq(objective)].dropna(
+            subset=["entropy_residual", "r2_residual"]
+        )
+        axis.scatter(
+            group["entropy_residual"], group["r2_residual"],
+            c=PARTIAL_OBJ_COLOR[objective], alpha=0.20, s=22, linewidths=0,
+            rasterized=True, zorder=2,
+        )
+        row = partial_stats[
+            partial_stats["bag"].eq(bag) & partial_stats["objective"].eq(objective)
+        ]
+        if row.empty:
+            continue
+        fit = scipy_stats.linregress(group["entropy_residual"], group["r2_residual"])
+        xs = np.linspace(float(group["entropy_residual"].min()), float(group["entropy_residual"].max()), 100)
+        axis.plot(xs, fit.slope * xs + fit.intercept, color=PARTIAL_OBJ_COLOR[objective],
+                  linewidth=3.6, alpha=0.95, zorder=3)
+        value = row.iloc[0]
+        labels[short_label] = (
+            f"(partial r={value.partial_pearson_r:.2f}, "
+            f"p={value.partial_p_value:.2e})"
+        )
+    axis.legend(
+        handles=[
+            mlines.Line2D([], [], color=PARTIAL_OBJ_COLOR["o_min"], marker="o", linestyle="None", markersize=7, label="Synergistic"),
+            mlines.Line2D([], [], color=PARTIAL_OBJ_COLOR["o_max"], marker="o", linestyle="None", markersize=7, label="Redundant"),
+        ],
+        loc="upper left", frameon=False, fontsize=figure.FS_TK - 1,
+        handletextpad=0.4, borderaxespad=0.2, labelspacing=0.2,
+    )
+    axis.set_xlabel("Entropy residual (adjusted for set size)", fontsize=figure.FS)
+    axis.set_ylabel("LOCO R² residual (adjusted for set size)", fontsize=figure.FS)
+    axis.tick_params(labelsize=figure.FS_TK)
+    axis.spines[["top", "right"]].set_visible(False)
+    return labels
+
+
+def _render(
+    scatter: pd.DataFrame,
+    recipe: pd.DataFrame,
+    output_dir: Path,
+    sources: list[str],
+    hpo_set: str,
+    model_rung: str,
+    estimator: str,
+    *,
+    write_rendered_source_data: bool = True,
+    output_stem: str | None = None,
+    partial_set_size: bool = False,
+    delta_r2_over_baseline: bool = False,
+) -> None:
     figure = _legacy_figure_module()
+    partial_stats = pd.DataFrame()
+    if partial_set_size:
+        scatter, partial_stats = _partialize_by_set_size(scatter)
     networks: dict[tuple[str, str], Any] = {}
     edge_frames: list[pd.DataFrame] = []
     for bag in BAGS:
@@ -284,17 +443,20 @@ def _render(scatter: pd.DataFrame, recipe: pd.DataFrame, output_dir: Path, sourc
         axes[row_index][3].set_position([new_x0, position_3.y0, position_3.x1 - new_x0, position_3.height])
 
     for row_index, bag in enumerate(BAGS):
-        figure.draw_scatter(axes[row_index][0], scatter, pd.DataFrame(), bag)
-        # The historical capped panel places its exact regressions in the legend.
         labels: dict[str, str] = {}
-        for text in list(axes[row_index][0].texts):
-            if "β_H" not in text.get_text():
-                continue
-            for line in text.get_text().split("\n"):
-                match = figure.re.match(r"^β_H\s+(\S+)=\S+\s+(\(r=.*\))$", line)
-                if match:
-                    labels[match.group(1)] = match.group(2)
-            text.remove()
+        if partial_set_size:
+            labels = _draw_partial_scatter(axes[row_index][0], scatter, partial_stats, bag, figure)
+        else:
+            figure.draw_scatter(axes[row_index][0], scatter, pd.DataFrame(), bag)
+            # The historical capped panel places its exact regressions in the legend.
+            for text in list(axes[row_index][0].texts):
+                if "β_H" not in text.get_text():
+                    continue
+                for line in text.get_text().split("\n"):
+                    match = figure.re.match(r"^β_H\s+(\S+)=\S+\s+(\(r=.*\))$", line)
+                    if match:
+                        labels[match.group(1)] = match.group(2)
+                text.remove()
         legend = axes[row_index][0].get_legend()
         if legend is not None:
             handles = legend.legend_handles
@@ -305,11 +467,17 @@ def _render(scatter: pd.DataFrame, recipe: pd.DataFrame, output_dir: Path, sourc
             ]
             legend.remove()
             axes[row_index][0].legend(handles=handles, labels=new_labels, loc="lower center", frameon=False,
-                                      fontsize=figure.FS_TK - 1 + figure.FONT_BUMP, handletextpad=0.4,
+                                      fontsize=figure.FS_TK - 3 + figure.FONT_BUMP, handletextpad=0.4,
                                       borderaxespad=0.2, labelspacing=0.2)
         low, high = axes[row_index][0].get_ylim()
         axes[row_index][0].set_ylim(low - 0.12 * (high - low), high)
-        axes[row_index][0].set_ylabel(f"{figure.BAG_LABEL[bag]}\nLOCO R²", fontsize=figure.FS + figure.FONT_BUMP)
+        if partial_set_size:
+            quantity = "ΔR² residual" if delta_r2_over_baseline else "LOCO R² residual"
+            y_label = f"{figure.BAG_LABEL[bag]}\n{quantity}\n(adjusted for set size)"
+        else:
+            quantity = "ΔR² over baseline" if delta_r2_over_baseline else "LOCO R²"
+            y_label = f"{figure.BAG_LABEL[bag]}\n{quantity}"
+        axes[row_index][0].set_ylabel(y_label, fontsize=figure.FS + figure.FONT_BUMP)
         figure.draw_recipe(axes[row_index][1], recipe, bag)
         for text in axes[row_index][1].texts:
             if text.get_text() == "Syn":
@@ -317,9 +485,11 @@ def _render(scatter: pd.DataFrame, recipe: pd.DataFrame, output_dir: Path, sourc
             elif text.get_text() == "Red":
                 text.set_text("Max O-info")
         figure._draw_domain_panel_scaled(axes[row_index][2], networks[(bag, "redundancy")], edge_width_bins=width_bins,
-                                         edge_color_max=color_max, node_size_scale=4.8, label_fontsize=17.0)
+                                         edge_color_max=color_max, node_size_scale=4.8, label_fontsize=17.0,
+                                         show_node_labels=False)
         figure._draw_domain_panel_scaled(axes[row_index][3], networks[(bag, "synergy")], edge_width_bins=width_bins,
-                                         edge_color_max=color_max, node_size_scale=4.8, label_fontsize=17.0)
+                                         edge_color_max=color_max, node_size_scale=4.8, label_fontsize=17.0,
+                                         show_node_labels=False)
         for axis in (axes[row_index][0], axes[row_index][1]):
             for label in (axis.xaxis.label, axis.yaxis.label):
                 label.set_fontsize(label.get_fontsize() + figure.FONT_BUMP)
@@ -332,23 +502,117 @@ def _render(scatter: pd.DataFrame, recipe: pd.DataFrame, output_dir: Path, sourc
                     text.set_fontsize(text.get_fontsize() + figure.FONT_BUMP)
         if row_index == 0:
             for column, title in enumerate(figure.CAP_COL_TITLES):
+                if column == 0 and partial_set_size and delta_r2_over_baseline:
+                    title = "a. Partial ΔR² vs domain diversity"
+                elif column == 0 and partial_set_size:
+                    title = "a. Partial association with domain diversity"
+                elif column == 0 and delta_r2_over_baseline:
+                    title = "a. ΔR² over baseline vs domain diversity"
                 title_x = -0.34 if column == 0 else 0.12 if column == 3 else 0.0
                 axes[row_index][column].set_title(title, fontsize=18 + figure.TITLE_BUMP, loc="left", x=title_x)
 
     output_dir.mkdir(parents=True, exist_ok=True)
-    stem = f"fig3_diversity_v2_max_30_hpo_{hpo_set}_{model_rung.removeprefix('xgb_tree_')}"
+    stem = output_stem or f"fig3_diversity_v2_max_30_hpo_{hpo_set}_{model_rung.removeprefix('xgb_tree_')}"
+    if partial_set_size and output_stem is None:
+        stem = f"{stem}_partial"
     for extension in ("pdf", "svg", "png"):
         fig.savefig(output_dir / f"{stem}.{extension}", dpi=200, bbox_inches="tight")
     plt.close(fig)
+    if not write_rendered_source_data:
+        return
     panels = figure._build_fig3_panels(scatter, recipe, networks, list(BAGS))
+    if delta_r2_over_baseline and not partial_set_size:
+        for panel in panels:
+            if panel.panel_id.endswith("_diversity_scatter"):
+                bag = "structural" if "struct" in panel.panel_id else "functional"
+                panel.frame = scatter[scatter["bag"].eq(bag)][
+                    ["objective", "rung", "model_id", "order", "baseline_r2", "delta_r2_vs_baseline",
+                     "shannon_h", "n_domains", "dominant_domain"]
+                ].reset_index(drop=True)
+                panel.description = (
+                    "Candidate ΔR² over the covariate-only baseline at the same BAG and model rung, "
+                    "plotted against Shannon domain entropy H."
+                )
+                panel.columns.update({
+                    "baseline_r2": "matched-rung covariate-only baseline R²",
+                    "delta_r2_vs_baseline": "candidate R² minus matched-rung covariate baseline R² -- plotted y axis",
+                })
+    if partial_set_size:
+        for panel in panels:
+            if panel.panel_id.endswith("_diversity_scatter"):
+                source_columns = ["objective", "rung", "model_id", "order"]
+                if delta_r2_over_baseline:
+                    source_columns.extend(["baseline_r2", "delta_r2_vs_baseline"])
+                source_columns.extend([
+                    "country_balanced_r2", "shannon_h", "r2_residual", "entropy_residual",
+                    "n_domains", "dominant_domain",
+                ])
+                panel.frame = scatter[scatter["bag"].eq("structural" if "struct" in panel.panel_id else "functional")][
+                    source_columns
+                ].reset_index(drop=True)
+                panel.description = (
+                    "Set-size-adjusted partial association between held-out LOCO R² and Shannon domain entropy H; "
+                    "both variables are residualized linearly on set size within BAG and arm."
+                )
+                panel.columns.update({
+                    "country_balanced_r2": (
+                        "original Δ country-balanced R² over the matched-rung covariate baseline before adjustment"
+                        if delta_r2_over_baseline
+                        else "original country-balanced held-out LOCO R² before adjustment"
+                    ),
+                    "shannon_h": "original Shannon domain entropy H before adjustment",
+                    "r2_residual": (
+                        "ΔR² residual after linear adjustment for set size -- plotted y axis"
+                        if delta_r2_over_baseline
+                        else "LOCO R² residual after linear adjustment for set size -- plotted y axis"
+                    ),
+                    "entropy_residual": "entropy residual after linear adjustment for set size -- plotted x axis",
+                })
+                if delta_r2_over_baseline:
+                    panel.columns.update({
+                        "baseline_r2": "matched-rung covariate-only baseline R²",
+                        "delta_r2_vs_baseline": "candidate R² minus matched-rung covariate baseline R² before residualization",
+                    })
+                panel.notes = "Partial correlation residualizes both LOCO R² and entropy on set size within each BAG and arm."
+            elif panel.panel_id.endswith("_diversity_stats"):
+                bag = "structural" if "struct" in panel.panel_id else "functional"
+                panel.frame = partial_stats[partial_stats["bag"].eq(bag)].drop(columns="bag").reset_index(drop=True)
+                panel.description = "Set-size-adjusted partial Pearson correlation between LOCO R² and domain entropy H, per arm."
+                panel.columns = {
+                    "objective": "O-information arm", "arm_label": "arm label",
+                    "n_candidates": "candidates entering the partial correlation",
+                    "slope_residual": "slope of R² residual on entropy residual",
+                    "intercept_residual": "fitted residual intercept",
+                    "partial_pearson_r": "partial Pearson correlation controlling for set size",
+                    "partial_p_value": "exact two-sided partial-correlation p value",
+                    "degrees_of_freedom": "partial-correlation test degrees of freedom (n - 3)",
+                    "stderr": "standard error of the residual slope",
+                }
+                panel.test = "Two-sided partial Pearson correlation test controlling for one covariate (set size), df = n - 3."
     for panel in panels:
         if "global_oof_r2" in panel.columns:
             panel.columns["global_oof_r2"] = (
-                ("global pooled held-out LOCO R² -- the y axis" if estimator == "global-oof" else "country-balanced held-out LOCO R² (unweighted mean over countries) -- the y axis")
+                (
+                    "Δ global pooled held-out R² over the matched-rung covariate baseline -- the y axis"
+                    if delta_r2_over_baseline and estimator == "global-oof"
+                    else "Δ country-balanced held-out R² over the matched-rung covariate baseline -- the y axis"
+                    if delta_r2_over_baseline
+                    else "global pooled held-out LOCO R² -- the y axis"
+                    if estimator == "global-oof"
+                    else "country-balanced held-out LOCO R² (unweighted mean over countries) -- the y axis"
+                )
             )
         if "country_balanced_r2" in panel.frame.columns:
             panel.columns["country_balanced_r2"] = (
-                ("global pooled held-out LOCO R²" if estimator == "global-oof" else "country-balanced held-out LOCO R² (unweighted mean over countries)")
+                (
+                    "Δ global pooled held-out R² over the matched-rung covariate baseline"
+                    if delta_r2_over_baseline and estimator == "global-oof"
+                    else "Δ country-balanced held-out R² over the matched-rung covariate baseline"
+                    if delta_r2_over_baseline
+                    else "global pooled held-out LOCO R²"
+                    if estimator == "global-oof"
+                    else "country-balanced held-out LOCO R² (unweighted mean over countries)"
+                )
             )
         panel.notes = (panel.notes + " " if panel.notes else "") + (
             ("All displayed performance values are newly calculated global pooled LOCO R²." if estimator == "global-oof" else "All displayed performance values are newly calculated country-balanced LOCO R².")
@@ -375,20 +639,38 @@ def main() -> None:
         sources.extend(paths)
     metrics = pd.concat(all_metrics, ignore_index=True)
     scatter, recipe, selected = _build_tables(metrics, domains, args.model_rung, args.r2_estimator)
+    if args.delta_r2_over_baseline:
+        scatter, baseline_sources = _delta_r2_over_baseline(
+            scatter, repro_root, analysis_run_id, args.model_rung, args.r2_estimator
+        )
+        sources.extend(baseline_sources)
     regressions = _regression_table(scatter)
     suffix = "" if args.r2_estimator == "country-balanced" else "_global"
-    stats_dir = repro_root / "results" / "analysis_runs" / analysis_run_id / "main_statistics" / f"fig3_diversity_{args.model_rung.removeprefix('xgb_tree_')}{suffix}"
+    partial_suffix = "_partial" if args.partial_set_size else ""
+    delta_suffix = "_deltaR" if args.delta_r2_over_baseline else ""
+    stats_dir = repro_root / "results" / "analysis_runs" / analysis_run_id / "main_statistics" / f"fig3_diversity_{args.model_rung.removeprefix('xgb_tree_')}{suffix}{delta_suffix}{partial_suffix}"
     metrics_name = "candidate_global_oof_metrics.csv" if args.r2_estimator == "global-oof" else "candidate_country_balanced_metrics.csv"
     _atomic_csv(metrics, stats_dir / metrics_name)
     _atomic_csv(selected, stats_dir / "selected_rungs.csv")
     _atomic_csv(scatter, stats_dir / "per_candidate_diversity_scatter.csv")
     _atomic_csv(recipe, stats_dir / "per_candidate_recipe_top20.csv")
     _atomic_csv(regressions, stats_dir / "domain_diversity_regression.csv")
+    if args.partial_set_size:
+        partial_scatter, partial_stats = _partialize_by_set_size(scatter)
+        _atomic_csv(partial_scatter, stats_dir / "per_candidate_diversity_scatter_partial.csv")
+        _atomic_csv(partial_stats, stats_dir / "partial_correlation_set_size.csv")
     manifest = {"hpo_set": args.hpo_set, "analysis_run_id": analysis_run_id, "candidate_scope": candidate_scope, "output_label": output_label, "model_rung": args.model_rung, "performance_estimator": args.r2_estimator, "order_max": ORDER_MAX,
+                "partial_set_size": bool(args.partial_set_size),
+                "delta_r2_over_baseline": bool(args.delta_r2_over_baseline),
                 "top_k": TOP_K, "sources": sources}
     (stats_dir / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     output_dir = args.output_directory.resolve() if args.output_directory else args.output_root.resolve() / output_label / "paper" / "complete"
-    _render(scatter, recipe, output_dir, sources, output_label, args.model_rung, args.r2_estimator)
+    _render(
+        scatter, recipe, output_dir, sources, output_label, args.model_rung,
+        args.r2_estimator, output_stem=args.output_stem,
+        partial_set_size=args.partial_set_size,
+        delta_r2_over_baseline=args.delta_r2_over_baseline,
+    )
     print(f"Saved Figure 3 statistics: {stats_dir}")
 
 

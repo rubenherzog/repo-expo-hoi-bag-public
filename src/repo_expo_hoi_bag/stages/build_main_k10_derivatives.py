@@ -28,6 +28,12 @@ def _args() -> argparse.Namespace:
     parser.add_argument("--draws", type=int, default=10_000)
     parser.add_argument("--n-jobs", type=int, default=20)
     parser.add_argument("--smoke-test", action="store_true", help="Validate sources and policy without writing outputs.")
+    parser.add_argument(
+        "--r2-estimator",
+        choices=("country-balanced", "global-oof"),
+        default="country-balanced",
+        help="Estimand whose level winners supply the residuals; global-oof reads the sibling oof_global_oof/ root.",
+    )
     return parser.parse_args()
 
 
@@ -35,8 +41,8 @@ def _r2(y: np.ndarray, prediction: np.ndarray) -> float:
     return float(1 - np.square(y - prediction).sum() / np.square(y - y.mean()).sum())
 
 
-def _oof(source: Path, bag: str, suffix: str) -> pd.DataFrame:
-    path = source / "main_statistics" / "model_comparison" / "oof" / f"level_best_{suffix}" / bag / "oof_xgb_tree_d3.parquet"
+def _oof(source: Path, bag: str, suffix: str, oof_dirname: str = "oof") -> pd.DataFrame:
+    path = source / "main_statistics" / "model_comparison" / oof_dirname / f"level_best_{suffix}" / bag / "oof_xgb_tree_d3.parquet"
     frame = pd.read_parquet(path)
     required = {"row_id", "country", "diagnosis", "age", "sex", "y_true", "y_pred_full", "candidate_id"}
     missing = required.difference(frame.columns)
@@ -74,12 +80,14 @@ def main() -> None:
     runtime = args.repro_data_root.resolve()
     source = runtime / "results" / "analysis_runs" / args.source_run_id
     destination = runtime / "results" / "analysis_runs" / args.main_run_id / "derived"
+    r2_mode = "global_oof" if args.r2_estimator == "global-oof" else "country_balanced"
+    oof_dirname = "oof" if args.r2_estimator == "country-balanced" else "oof_global_oof"
     ols = json.loads(args.historical_ols_provenance.read_text(encoding="utf-8"))
     if ols.get("analysis_label") != "main" or ols.get("country_variant") != "historical_a":
         raise ValueError("Historical OLS provenance must declare main / historical_a compatibility")
     prepared: list[tuple[int, str, str, str, pd.DataFrame]] = []
     for index, (bag, objective, suffix) in enumerate((bag, objective, suffix) for bag in BAGS for objective, suffix in OBJECTIVES):
-        frame = _oof(source, bag, suffix)
+        frame = _oof(source, bag, suffix, oof_dirname)
         if frame.country.nunique() < 2:
             raise ValueError(f"OOF source has fewer than two countries: {bag}/{objective}")
         prepared.append((index, bag, objective, suffix, frame))
@@ -103,7 +111,7 @@ def main() -> None:
     subject_frame.to_csv(destination / "main_residual_subject_summary.csv", index=False)
     country_frame.to_csv(destination / "main_residual_country_summary.csv", index=False)
     tests_frame.to_csv(destination / "main_residual_tests.csv", index=False)
-    (destination / "manifest.json").write_text(json.dumps({"analysis_label": "main", "country_variant": "historical_a", "source_k10_run": str(source), "historical_ols_provenance": str(args.historical_ols_provenance), "performance_estimator": "country_balanced_r2", "global_oof_role": "sensitivity", "draws": args.draws}, indent=2) + "\n", encoding="utf-8")
+    (destination / "manifest.json").write_text(json.dumps({"analysis_label": "main", "country_variant": "historical_a", "source_k10_run": str(source), "historical_ols_provenance": str(args.historical_ols_provenance), "performance_estimator": "global_oof_r2" if args.r2_estimator == "global-oof" else "country_balanced_r2", "r2_mode": r2_mode, "oof_source_dir": oof_dirname, "draws": args.draws}, indent=2) + "\n", encoding="utf-8")
     print(f"Saved main local derivatives: {destination}")
 
 

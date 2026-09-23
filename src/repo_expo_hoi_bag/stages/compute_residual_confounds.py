@@ -28,6 +28,7 @@ import matplotlib as mpl
 
 mpl.use("Agg")
 import matplotlib.pyplot as plt
+from matplotlib.patches import FancyBboxPatch
 import numpy as np
 import pandas as pd
 import statsmodels.api as sm
@@ -255,6 +256,87 @@ def _fit_mixed_model(formula: str, fit_df: pd.DataFrame):
         fitted, key=lambda item: float(item[1].llf)
     )
     return result, method, warning_text
+
+
+def fit_country_scanner_variance_components(
+    design: pd.DataFrame,
+    fixed_effects: list[str],
+    scanner: pd.DataFrame,
+    *,
+    bag: str,
+    objective: str,
+) -> pd.DataFrame:
+    """Compare country-only and country+scanner ML variance-component models.
+
+    Scanner enters solely as an additional random-intercept variance component;
+    the residual outcome and every fixed effect remain those of the original
+    country model.  The one-component boundary LRT uses the standard 50:50
+    chi-square(0)/chi-square(1) reference.
+    """
+    fit_df = design[["N_MEGA", "residual", "country", *fixed_effects]].merge(
+        scanner, on="N_MEGA", how="inner", validate="many_to_one"
+    ).dropna().copy()
+    if fit_df["scanner_id"].nunique() < 2:
+        raise ValueError("Scanner variance component needs at least two scanner identities")
+    formula = "residual ~ " + " + ".join(fixed_effects)
+    country_only, country_method, country_warnings = _fit_mixed_model(formula, fit_df)
+    attempts = []
+    for method in OPTIMIZERS:
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            try:
+                fitted = sm.MixedLM.from_formula(
+                    formula,
+                    groups="country",
+                    # With variance components present, declare the country
+                    # random intercept explicitly; otherwise statsmodels can
+                    # construct a VC-only model with an empty ``cov_re``.
+                    re_formula="1",
+                    vc_formula={"scanner": "0 + C(scanner_id)"},
+                    data=fit_df,
+                ).fit(reml=False, method=method, maxiter=OPTIMIZER_MAX_ITERATIONS, disp=False)
+            except (np.linalg.LinAlgError, ValueError) as exc:
+                attempts.append((method, None, repr(exc)))
+                continue
+        warning_text = " | ".join(str(item.message) for item in caught)
+        attempts.append((method, fitted, warning_text))
+        if fitted.converged and np.isfinite(float(fitted.llf)):
+            scanner_variance = float(np.asarray(fitted.vcomp, dtype=float)[0])
+            if scanner_variance >= 0 and float(fitted.cov_re.iloc[0, 0]) >= 0:
+                scanner_fit, scanner_method, scanner_warnings = fitted, method, warning_text
+                break
+    else:
+        valid = [item for item in attempts if item[1] is not None]
+        if not valid:
+            raise RuntimeError(f"Every country+scanner optimizer failed: {attempts}")
+        scanner_method, scanner_fit, scanner_warnings = max(valid, key=lambda item: float(item[1].llf))
+    country_variance = float(country_only.cov_re.iloc[0, 0])
+    scanner_country_variance = float(scanner_fit.cov_re.iloc[0, 0])
+    scanner_variance = float(np.asarray(scanner_fit.vcomp, dtype=float)[0])
+    residual_variance = float(scanner_fit.scale)
+    total_variance = country_variance + float(country_only.scale)
+    scanner_total_variance = scanner_country_variance + scanner_variance + residual_variance
+    statistic = max(0.0, 2.0 * (float(scanner_fit.llf) - float(country_only.llf)))
+    boundary_p = 1.0 if statistic <= 1e-12 else float(0.5 * stats.chi2.sf(statistic, 1))
+    return pd.DataFrame([{
+        "bag": bag, "objective": objective, "n_obs": len(fit_df),
+        "n_countries": int(fit_df["country"].nunique()), "n_scanners": int(fit_df["scanner_id"].nunique()),
+        "fixed_effects": "|".join(fixed_effects),
+        "country_only_variance": country_variance,
+        "country_only_icc": country_variance / total_variance,
+        "country_variance_after_scanner": scanner_country_variance,
+        "country_icc_after_scanner": scanner_country_variance / scanner_total_variance,
+        "scanner_variance": scanner_variance,
+        "scanner_icc": scanner_variance / scanner_total_variance,
+        "residual_variance_after_scanner": residual_variance,
+        "country_variance_change": scanner_country_variance - country_variance,
+        "country_variance_change_pct": 100.0 * (scanner_country_variance - country_variance) / country_variance if country_variance > 0 else np.nan,
+        "scanner_lrt_statistic": statistic,
+        "scanner_lrt_boundary_p": boundary_p,
+        "scanner_lrt_reference": "0.5*chi2_0 + 0.5*chi2_1 boundary mixture",
+        "country_only_optimizer": country_method, "scanner_vc_optimizer": scanner_method,
+        "country_only_warnings": country_warnings, "scanner_vc_warnings": scanner_warnings,
+    }])
 
 
 @dataclass(frozen=True)
@@ -599,6 +681,7 @@ def _draw_residual_distribution(
             color=color,
             density=True,
             label=_PAPER_CFG.objective_metadata[objective]["arm_label"],
+            linewidth=2.0,
         )
     axis.axvline(0, color=NULL_COLOR, ls=":", lw=0.8)
     # Row label on the row's first column (the plot_fig2_grid_v3 convention).
@@ -610,7 +693,7 @@ def _draw_residual_distribution(
     axis.set_ylabel("Density")
     if show_legend:
         # Upper-left: the right edge abuts the forest panel's term labels.
-        axis.legend(fontsize=7, loc="upper left")
+        axis.legend(fontsize=7, loc="upper right")
     style_axis(axis)
 
 
@@ -664,6 +747,10 @@ def _plot_residual_confounds(
     estimates: pd.DataFrame,
     fixed_effects: list[str],
     output_directory: Path,
+    *,
+    write_rendered_source_data: bool = True,
+    scanner_vc: pd.DataFrame | None = None,
+    stem: str = "residual_confounds",
 ) -> None:
     """One figure with a row per BAG, structural first. No suptitle.
 
@@ -680,7 +767,33 @@ def _plot_residual_confounds(
     for i, bag in enumerate(BAGS):
         _draw_residual_distribution(designs, bag, axes[i][0], ROW_LETTERS[i], show_legend=(i == 0))
         _draw_forest(estimates, fixed_effects, bag, axes[i][1])
-
+        if scanner_vc is not None:
+            existing_legend = axes[i][0].get_legend()
+            if existing_legend is not None:
+                existing_legend.remove()
+            rows = scanner_vc[scanner_vc["bag"].eq(bag)]
+            axes[i][0].add_patch(
+                FancyBboxPatch(
+                    (0.01, 0.80), 0.79, 0.18,
+                    boxstyle="round,pad=0.01",
+                    transform=axes[i][0].transAxes,
+                    facecolor="white", edgecolor="none", alpha=0.72,
+                    zorder=2,
+                )
+            )
+            for line_index, (objective, color) in enumerate(zip(OBJECTIVES, (SYN_COLOR, RED_COLOR))):
+                row = rows[rows["objective"].eq(objective)]
+                if row.empty:
+                    continue
+                value = row.iloc[0]
+                arm = _PAPER_CFG.objective_metadata[objective]["arm_label"]
+                axes[i][0].text(
+                    0.02, 0.94 - (0.070 * line_index),
+                    f"{arm}: country ICC={value.country_icc_after_scanner:.3f}; "
+                    f"scanner ICC={value.scanner_icc:.3f}",
+                    transform=axes[i][0].transAxes,
+                    ha="left", va="top", fontsize=9.5, color=color, zorder=3,
+                )
         residual_frame = pd.concat(
             [
                 pd.DataFrame(
@@ -701,10 +814,10 @@ def _plot_residual_confounds(
                 frame=residual_frame,
                 description=(
                     f"Subject-level signed {BAG_LABELS[bag]} bias (predicted - observed) "
-                    f"for the best synergy-arm and redundancy-arm models."
+                    f"for the best Min O-info and Max O-info models."
                 ),
                 columns={
-                    "objective": "o_min = synergy arm, o_max = redundancy arm",
+                    "objective": "o_min = Min O-info, o_max = Max O-info",
                     "residual": "signed BAG bias in years (predicted - observed)",
                 },
                 notes="Histogram is plotted as a density over 40 bins.",
@@ -726,7 +839,7 @@ def _plot_residual_confounds(
                     f"signed {BAG_LABELS[bag]} bias."
                 ),
                 columns={
-                    "objective": "o_min = synergy arm, o_max = redundancy arm",
+                    "objective": "o_min = Min O-info, o_max = Max O-info",
                     "term": "fixed effect (continuous terms standardized)",
                     "coef": "coefficient (plotted point)",
                     "se": "standard error",
@@ -740,13 +853,36 @@ def _plot_residual_confounds(
                 notes="Sex uses female and diagnosis uses HC as the reference level.",
             )
         )
+        if scanner_vc is not None:
+            panels.append(
+                Panel(
+                    panel_id=f"{ROW_LETTERS[i]}3_{BAG_SHORT[bag]}_scanner_vc",
+                    frame=scanner_vc[scanner_vc["bag"].eq(bag)].reset_index(drop=True),
+                    description=f"Country and scanner variance components for {BAG_LABELS[bag]} residual bias.",
+                    columns={
+                        "scanner_variance": "scanner random-intercept variance",
+                        "scanner_icc": "scanner intraclass correlation coefficient",
+                        "country_variance_after_scanner": "country variance after including scanner",
+                        "country_icc_after_scanner": "country ICC after including scanner",
+                        "country_variance_change": "country+scanner minus country-only variance",
+                        "scanner_lrt_boundary_p": "boundary-aware scanner variance-component LRT p value",
+                    },
+                    test="One-sided variance-component LRT with 50:50 chi-square(0)/chi-square(1) null mixture.",
+                )
+            )
 
-    save_figure(figure, "residual_confounds", output_directory)
+    save_figure(figure, stem, output_directory)
     plt.close(figure)
-    write_source_data("residual_confounds", panels, output_directory)
+    if write_rendered_source_data:
+        write_source_data(stem, panels, output_directory)
 
 
-def render_completed_parts(parts_root: Path, output_directory: Path) -> None:
+def render_completed_parts(
+    parts_root: Path,
+    output_directory: Path,
+    *,
+    write_rendered_source_data: bool = True,
+) -> None:
     """Render both BAG rows from already completed per-BAG source-data parts."""
     source_root = parts_root / "source_data"
     designs: dict[tuple[str, str], pd.DataFrame] = {}
@@ -778,6 +914,7 @@ def render_completed_parts(parts_root: Path, output_directory: Path) -> None:
         pd.concat(estimates, ignore_index=True),
         fixed_effects,
         output_directory,
+        write_rendered_source_data=write_rendered_source_data,
     )
 
 

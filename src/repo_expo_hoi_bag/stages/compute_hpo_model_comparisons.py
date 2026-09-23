@@ -8,6 +8,7 @@ predictions and applies the same 10,000-draw country bootstrap and Holm rules.
 from __future__ import annotations
 
 import argparse
+import os
 from pathlib import Path
 
 import numpy as np
@@ -30,11 +31,38 @@ def _args() -> argparse.Namespace:
     parser.add_argument("--source-run-id", help="Immutable k10 OOF source; defaults to paper_reanalysis_<hpo-set>.")
     parser.add_argument("--output-run-id", help="Separate analysis namespace for derived statistics.")
     parser.add_argument("--exclude-ols", action="store_true", help="Use only k10 XGBoost OOF; required when OLS is reused from historical metrics.")
+    parser.add_argument(
+        "--r2-estimator",
+        choices=("country-balanced", "global-oof"),
+        default=None,
+        help="Reported estimand. Defaults to R2_MODE when set, else country-balanced.",
+    )
     return parser.parse_args()
 
 
 def _r2(y: np.ndarray, prediction: np.ndarray) -> float:
     return float(1 - np.square(y - prediction).sum() / np.square(y - y.mean()).sum())
+
+
+def _oof_dirname() -> str:
+    """OOF directory of the winners selected under the active estimand."""
+    return "oof_global_oof" if _global_oof_mode() else "oof"
+
+
+def _global_oof_mode() -> bool:
+    """Whether the global pooled OOF estimand is active."""
+    return os.environ.get("R2_MODE", "").strip() == "global_oof"
+
+
+def _reported_r2(frame: pd.DataFrame, prediction: str) -> float:
+    """The point estimate under the active estimand.
+
+    Global: plain R² on the concatenated OOF predictions.
+    Country-balanced: unweighted mean of the per-country R² values.
+    """
+    if _global_oof_mode():
+        return _r2(frame["y_true"].to_numpy(float), frame[prediction].to_numpy(float))
+    return float(_country_r2(frame, prediction).mean())
 
 
 def _country_r2(frame: pd.DataFrame, prediction: str) -> pd.Series:
@@ -55,7 +83,40 @@ def _load(path: Path) -> pd.DataFrame:
     return frame[np.isfinite(frame.y_true) & np.isfinite(frame.y_pred_full)].copy()
 
 
+def _bootstrap_global(frame: pd.DataFrame, draws: int, seed: int, column_a: str, column_b: str) -> dict[str, float]:
+    """Country-cluster bootstrap of the difference in pooled global OOF R².
+
+    The resampling unit stays the country, exactly as in the country-balanced
+    bootstrap, so the dependence structure and the number of draws are
+    unchanged.  Only the statistic recomputed on each resample differs: the
+    pooled R² over the resampled participants rather than a mean of per-country
+    R² values."""
+    groups = [group for _, group in frame.groupby("country", sort=True)]
+    if not groups:
+        raise ValueError("No countries available for the global OOF bootstrap")
+    truth = [group["y_true"].to_numpy(float) for group in groups]
+    pred_a = [group[column_a].to_numpy(float) for group in groups]
+    pred_b = [group[column_b].to_numpy(float) for group in groups]
+    observed = _r2(np.concatenate(truth), np.concatenate(pred_a)) - _r2(
+        np.concatenate(truth), np.concatenate(pred_b)
+    )
+    rng = np.random.default_rng(seed)
+    n = len(groups)
+    delta = np.empty(draws, dtype=float)
+    for draw in range(draws):
+        picks = rng.integers(0, n, size=n)
+        y = np.concatenate([truth[i] for i in picks])
+        a = np.concatenate([pred_a[i] for i in picks])
+        b = np.concatenate([pred_b[i] for i in picks])
+        delta[draw] = _r2(y, a) - _r2(y, b)
+    p = min(1.0, max(2 * min(float(np.mean(delta <= 0)), float(np.mean(delta >= 0))), 1 / draws))
+    return {"delta_r2": float(observed),
+            "ci_lo": float(np.percentile(delta, 2.5)), "ci_hi": float(np.percentile(delta, 97.5)), "p_raw": p}
+
+
 def _bootstrap(frame: pd.DataFrame, draws: int, seed: int, column_a: str, column_b: str) -> dict[str, float]:
+    if _global_oof_mode():
+        return _bootstrap_global(frame, draws, seed, column_a, column_b)
     country_a = _country_r2(frame, column_a)
     country_b = _country_r2(frame, column_b)
     paired = pd.concat([country_a.rename("a"), country_b.rename("b")], axis=1).dropna()
@@ -103,14 +164,13 @@ def _sensitivity_tests(frame: pd.DataFrame) -> dict[str, float]:
 
 
 def _as_result(comparison_type: str, bag: str, objective: str, model_a: str, model_b: str, frame: pd.DataFrame, draws: int, seed: int, **extra: object) -> dict[str, object]:
-    country_a = _country_r2(frame, "prediction_a")
-    country_b = _country_r2(frame, "prediction_b")
     return {
         "comparison_type": comparison_type, "bag": bag, "objective": objective,
         "model_a": model_a, "model_b": model_b, "n_subjects": len(frame),
-        "n_countries": frame.country.nunique(), "r2_a": float(country_a.mean()),
-        "r2_b": float(country_b.mean()),
-        "r2_estimand": "unweighted_mean_country_r2",
+        "n_countries": frame.country.nunique(),
+        "r2_a": _reported_r2(frame, "prediction_a"),
+        "r2_b": _reported_r2(frame, "prediction_b"),
+        "r2_estimand": "global_oof_r2" if _global_oof_mode() else "unweighted_mean_country_r2",
         **_bootstrap(frame, draws, seed, "prediction_a", "prediction_b"),
         **_sensitivity_tests(frame), **extra,
     }
@@ -118,7 +178,7 @@ def _as_result(comparison_type: str, bag: str, objective: str, model_a: str, mod
 
 def _comparison(root: Path, bag: str, objective: str, a: str, b: str, draws: int, seed: int) -> dict[str, object]:
     family = "level_best_syn" if objective == "o_min" else "level_best_red"
-    left, right = _load(root / "oof" / family / bag / f"oof_{a}.parquet"), _load(root / "oof" / family / bag / f"oof_{b}.parquet")
+    left, right = _load(root / _oof_dirname() / family / bag / f"oof_{a}.parquet"), _load(root / _oof_dirname() / family / bag / f"oof_{b}.parquet")
     merged = left[["row_id", "country", "y_true", "y_pred_full"]].merge(right[["row_id", "y_true", "y_pred_full"]], on="row_id", suffixes=("_a", "_b"), validate="one_to_one")
     if not np.allclose(merged.y_true_a, merged.y_true_b): raise ValueError("OOF outcomes differ")
     merged = merged.rename(columns={"country": "country", "y_true_a": "y_true", "y_pred_full_a": "prediction_a", "y_pred_full_b": "prediction_b"})
@@ -126,28 +186,28 @@ def _comparison(root: Path, bag: str, objective: str, a: str, b: str, draws: int
 
 
 def _arm_comparison(root: Path, bag: str, rung: str, draws: int, seed: int) -> dict[str, object]:
-    syn, red = _load(root / "oof/level_best_syn" / bag / f"oof_{rung}.parquet"), _load(root / "oof/level_best_red" / bag / f"oof_{rung}.parquet")
+    syn, red = _load(root / _oof_dirname() / "level_best_syn" / bag / f"oof_{rung}.parquet"), _load(root / _oof_dirname() / "level_best_red" / bag / f"oof_{rung}.parquet")
     merged = syn[["row_id", "country", "y_true", "y_pred_full"]].merge(red[["row_id", "y_true", "y_pred_full"]], on="row_id", suffixes=("_a", "_b"), validate="one_to_one").rename(columns={"y_true_a":"y_true","y_pred_full_a":"prediction_a","y_pred_full_b":"prediction_b"})
     return _as_result("arm_level_selected", bag, "o_min_minus_o_max", rung, rung, merged, draws, seed)
 
 
 def _baseline_comparison(root: Path, bag: str, objective: str, rung: str, draws: int, seed: int) -> dict[str, object]:
     family = "level_best_syn" if objective == "o_min" else "level_best_red"
-    frame = _load(root / "oof" / family / bag / f"oof_{rung}.parquet").rename(columns={"y_pred_full": "prediction_a", "y_pred_base": "prediction_b"})
+    frame = _load(root / _oof_dirname() / family / bag / f"oof_{rung}.parquet").rename(columns={"y_pred_full": "prediction_a", "y_pred_base": "prediction_b"})
     return _as_result("vs_baseline", bag, objective, rung, "baseline", frame, draws, seed)
 
 
 def _single_comparison(root: Path, bag: str, objective: str, draws: int, seed: int) -> dict[str, object]:
     family = "level_best_syn" if objective == "o_min" else "level_best_red"
-    multi, single = _load(root / "oof" / family / bag / "oof_xgb_tree_d3.parquet"), _load(root / "oof/level_best_single" / bag / "oof_xgb_tree_d3.parquet")
+    multi, single = _load(root / _oof_dirname() / family / bag / "oof_xgb_tree_d3.parquet"), _load(root / _oof_dirname() / "level_best_single" / bag / "oof_xgb_tree_d3.parquet")
     merged = multi[["row_id","country","y_true","y_pred_full"]].merge(single[["row_id","y_true","y_pred_full"]], on="row_id", suffixes=("_a","_b"), validate="one_to_one").rename(columns={"y_true_a":"y_true","y_pred_full_a":"prediction_a","y_pred_full_b":"prediction_b"})
     return _as_result("vs_single", bag, objective, "xgb_tree_d3", "best_single", merged, draws, seed)
 
 
 def _fixed_comparison(root: Path, bag: str, objective: str, source_level: str, a: str, b: str, draws: int, seed: int) -> dict[str, object]:
     family = f"fixed_{source_level}_{'syn' if objective == 'o_min' else 'red'}"
-    left = _load(root / "oof" / family / bag / f"oof_{a}.parquet")
-    right = _load(root / "oof" / family / bag / f"oof_{b}.parquet")
+    left = _load(root / _oof_dirname() / family / bag / f"oof_{a}.parquet")
+    right = _load(root / _oof_dirname() / family / bag / f"oof_{b}.parquet")
     merged = left[["row_id", "country", "y_true", "y_pred_full", "candidate_id"]].merge(
         right[["row_id", "y_true", "y_pred_full", "candidate_id"]], on="row_id", suffixes=("_a", "_b"), validate="one_to_one"
     ).rename(columns={"y_true_a": "y_true", "y_pred_full_a": "prediction_a", "y_pred_full_b": "prediction_b"})
@@ -167,8 +227,8 @@ def _fixed_arm_comparison(root: Path, bag: str, source_level: str, rung: str, dr
 
 
 def _reference_trajectory(root: Path, bag: str, family: str, a: str, b: str, draws: int, seed: int) -> dict[str, object]:
-    left = _load(root / "oof" / family / bag / f"oof_{a}.parquet")
-    right = _load(root / "oof" / family / bag / f"oof_{b}.parquet")
+    left = _load(root / _oof_dirname() / family / bag / f"oof_{a}.parquet")
+    right = _load(root / _oof_dirname() / family / bag / f"oof_{b}.parquet")
     merged = left[["row_id", "country", "y_true", "y_pred_full", "y_pred_base", "candidate_id"]].merge(
         right[["row_id", "y_true", "y_pred_full", "y_pred_base", "candidate_id"]], on="row_id", suffixes=("_a", "_b"), validate="one_to_one"
     ).rename(columns={"y_true_a": "y_true"})

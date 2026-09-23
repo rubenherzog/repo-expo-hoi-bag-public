@@ -204,6 +204,87 @@ def apply_order_cap(df: pd.DataFrame, order_col: str = "order") -> pd.DataFrame:
     return df[keep].copy()
 
 
+# --------------------------------------------------------------------------- #
+# R2 estimand selector
+# --------------------------------------------------------------------------- #
+# The paper reports two LOCO R2 estimands over exactly the same OOF
+# predictions, folds, cohort and exclusions.  They differ only in how the
+# per-participant OOF residuals are aggregated:
+#
+#   country_balanced  every observed country contributes equal total weight
+#                     (the delivered main-k10 estimand; unchanged default).
+#   global_oof        the valid OOF predictions of the set are concatenated and
+#                     the ordinary R2 definition is applied once, with no
+#                     per-country, per-fold or per-subgroup averaging.
+#
+# Selected with R2_MODE.  It is a reporting/selection policy, not a new
+# scientific default: it never changes which models are fitted, only which
+# already-computed estimand is selected and reported.  Stages that honour it
+# must record the resolved mode in their manifest.
+R2_MODE_COUNTRY_BALANCED = "country_balanced"
+R2_MODE_GLOBAL_OOF = "global_oof"
+R2_MODES = (R2_MODE_COUNTRY_BALANCED, R2_MODE_GLOBAL_OOF)
+
+
+def r2_mode() -> str:
+    """The active R2 estimand. Defaults to the delivered country-balanced mode."""
+    raw = os.environ.get("R2_MODE", "").strip() or R2_MODE_COUNTRY_BALANCED
+    if raw not in R2_MODES:
+        raise ValueError(
+            f"R2_MODE={raw!r} is not a supported estimand; expected one of {list(R2_MODES)}"
+        )
+    return raw
+
+
+def global_oof_mode() -> bool:
+    """True when the global pooled OOF estimand is active."""
+    return r2_mode() == R2_MODE_GLOBAL_OOF
+
+
+def r2_mode_suffix() -> str:
+    """`_global_oof` when the global estimand is active, else empty.
+
+    Keeps global-mode artifacts in sibling paths so a global run can never
+    overwrite a delivered country-balanced artifact."""
+    return "_global_oof" if global_oof_mode() else ""
+
+
+def global_oof_r2(y_true, y_pred) -> float:
+    """R2 over the concatenated valid OOF predictions of one candidate set.
+
+    This is the plain coefficient of determination applied once to the pooled
+    residuals: no country, fold or subgroup averaging enters the statistic.
+    Pairs are dropped only when either side is non-finite."""
+    truth = np.asarray(y_true, dtype=float)
+    predicted = np.asarray(y_pred, dtype=float)
+    if truth.shape != predicted.shape:
+        raise ValueError("Global OOF R2 inputs must have the same shape")
+    valid = np.isfinite(truth) & np.isfinite(predicted)
+    if not valid.any():
+        return float("nan")
+    truth = truth[valid]
+    predicted = predicted[valid]
+    total = float(np.sum(np.square(truth - float(np.mean(truth)))))
+    if total <= 0.0:
+        return float("nan")
+    residual = float(np.sum(np.square(truth - predicted)))
+    return float(1.0 - residual / total)
+
+
+def r2_column(frame: "pd.DataFrame") -> str:
+    """The column of ``frame`` holding the active estimand.
+
+    Raises rather than silently falling back, so a frame that lacks the active
+    estimand can never be reported under the other one."""
+    wanted = "global_oof_r2" if global_oof_mode() else "country_balanced_r2"
+    if wanted not in frame.columns:
+        raise ValueError(
+            f"Frame lacks the active R2_MODE={r2_mode()!r} column {wanted!r}; "
+            f"available: {sorted(map(str, frame.columns))}"
+        )
+    return wanted
+
+
 def _ols_dx_interactions() -> bool:
     """Whether the OLS rung should include diagnosis x exposome interactions
     (to match the main pipeline's OLS). Env-gated; default off for reproducibility."""
@@ -926,6 +1007,112 @@ def build_fold_residualized_y(
     }
 
 
+def _residualize_train_fit_with_year(
+    y: np.ndarray,
+    age: np.ndarray,
+    sex: np.ndarray,
+    diag: np.ndarray,
+    year_basis: np.ndarray,
+    train_idx: np.ndarray,
+) -> tuple[np.ndarray, dict]:
+    """OLS-residualize y ~ 1 + age + year + sex + diag, fit on training rows only.
+
+    Clean-namespace counterpart to `_residualize_train_fit`. The only formula
+    change is `year`, supplied as this fold's already-leakage-free year basis
+    (`context['year_basis_by_country'][country]`, whose spline knots are placed
+    from the fold's training rows). The original function is left untouched so
+    the delivered `residualized_bag` sensitivity stays reproducible bit for bit.
+
+    Year belongs here because the downstream main-analysis baseline design
+    (`_build_fold_mats_from_indices`) carries age + year + sex + diagnosis. The
+    delivered residualizer omitted year, so the covariate set removed from the
+    target and the covariate set the models controlled for were not the same.
+
+    Returns `(residual, diagnostics)`. The diagnostics are fold-level
+    provenance -- the residualization R2 on training rows and the design rank --
+    recorded per fold so a reviewer can audit how much variance was removed
+    without re-running the fit.
+    """
+    sex_tr, sex_all, _ = encode_dummies(sex[train_idx], sex)
+    diag_tr, diag_all, _ = encode_dummies(diag[train_idx], diag)
+    yb_all = np.asarray(year_basis, dtype=float)
+    if yb_all.ndim == 1:
+        yb_all = yb_all.reshape(-1, 1)
+    # The spline year basis carries its own intercept column (all ones), which
+    # would duplicate the explicit intercept below. lstsq tolerates the
+    # collinearity via its minimum-norm solution and the fitted values are
+    # unchanged either way, but dropping it keeps the design full rank so the
+    # recorded `design_rank` is a meaningful diagnostic rather than always
+    # one short.
+    if yb_all.shape[1] and np.allclose(yb_all[:, 0], 1.0):
+        yb_all = yb_all[:, 1:]
+    X_all = np.hstack([
+        np.ones((len(y), 1)), age.reshape(-1, 1), yb_all, sex_all, diag_all
+    ])
+    X_tr = X_all[train_idx]
+    keep_tr = (
+        np.isfinite(y[train_idx])
+        & np.isfinite(age[train_idx])
+        & np.isfinite(X_tr).all(axis=1)
+    )
+    beta, *_ = np.linalg.lstsq(X_tr[keep_tr], y[train_idx][keep_tr], rcond=None)
+    residual = np.full(len(y), np.nan)
+    finite_all = np.isfinite(y) & np.isfinite(age) & np.isfinite(X_all).all(axis=1)
+    residual[finite_all] = y[finite_all] - X_all[finite_all] @ beta
+
+    fitted_tr = X_tr[keep_tr] @ beta
+    truth_tr = y[train_idx][keep_tr]
+    total_tr = float(np.sum((truth_tr - float(np.mean(truth_tr))) ** 2))
+    resid_tr = float(np.sum((truth_tr - fitted_tr) ** 2))
+    diagnostics = {
+        "n_train_rows_used": int(keep_tr.sum()),
+        "design_columns": int(X_all.shape[1]),
+        "design_rank": int(np.linalg.matrix_rank(X_tr[keep_tr])),
+        "residualizer_train_r2": float(1.0 - resid_tr / total_tr) if total_tr > 0 else float("nan"),
+        "train_residual_mean": float(np.mean(truth_tr - fitted_tr)),
+        "train_residual_sd": float(np.std(truth_tr - fitted_tr, ddof=1)),
+    }
+    return residual, diagnostics
+
+
+def build_fold_residualized_y_with_year(
+    y: np.ndarray,
+    age: np.ndarray,
+    sex: np.ndarray,
+    diag: np.ndarray,
+    year_basis_by_country: dict,
+    countries: list[str],
+    train_idx_by_country: dict,
+) -> tuple[dict, pd.DataFrame]:
+    """Per-fold residualized target including year, plus fold diagnostics.
+
+    Returns `({country: residualized_y}, diagnostics_frame)`. The diagnostics
+    frame additionally carries the held-out country's residual mean and SD,
+    which is the quantity that makes a mean-held-out-country R2 negative on a
+    fold-residualized target: the held-out country's residual mean is non-zero
+    by construction, because the residualizer never saw that country.
+    """
+    fold_y: dict = {}
+    rows: list[dict] = []
+    for country in countries:
+        train_idx = train_idx_by_country[country]
+        residual, diagnostics = _residualize_train_fit_with_year(
+            y, age, sex, diag, year_basis_by_country[country], train_idx
+        )
+        fold_y[country] = residual
+        test_idx = np.setdiff1d(np.arange(len(y)), np.asarray(train_idx, dtype=int))
+        held = residual[test_idx]
+        held = held[np.isfinite(held)]
+        rows.append({
+            "fold_country": country,
+            **diagnostics,
+            "n_heldout_rows": int(held.size),
+            "heldout_residual_mean": float(np.mean(held)) if held.size else float("nan"),
+            "heldout_residual_sd": float(np.std(held, ddof=1)) if held.size > 1 else float("nan"),
+        })
+    return fold_y, pd.DataFrame(rows)
+
+
 def combo_candidate_table(
     representative_names: list[str],
     *,
@@ -1166,12 +1353,21 @@ def _fit_candidate(
     fold_xgb_ensembles: dict[str, list[dict]] | None = None,
     fold_pc: dict | None = None,
     fold_y: dict | None = None,
+    drop_covariates: bool = False,
 ) -> tuple[dict, pd.DataFrame]:
     model_id = str(row["candidate_id"])
     pred_all = _predictor_indices(row, exposome_cols)
     y = np.asarray(context["y"], dtype=float)
     X_exp = np.asarray(context["X_exp"], dtype=np.float32)
     base_seed = 20260304 if xgb_cfg is None else int(xgb_cfg.get("random_state", 20260304))
+    # Covariate-free downstream design (clean residualized namespace): the
+    # prespecified covariates were already removed from the target, so
+    # reintroducing them as predictors would model variance the target no
+    # longer contains. `__null__` is then the intercept-only comparator,
+    # predicting the fold's TRAINING residual mean -- not a covariate-only
+    # baseline, and not a literal zero (a zero-column OLS design would predict
+    # exactly 0.0, which is not the training mean on a held-out fold).
+    is_null_arm = drop_covariates and not pred_all
     y_true_all = []
     y_pred_all = []
     country_rows = []
@@ -1193,9 +1389,27 @@ def _fit_candidate(
             var = np.nanvar(X_exp_use[np.ix_(train_idx, pred_used)], axis=0)
             pred_used = [idx for idx, keep in zip(pred_used, var > 0) if bool(keep)]
 
+        # Under drop_covariates the candidate design is the exposome alone.
+        # `_append_predictors` already returns the predictor block unchanged
+        # when the base has zero columns, so substituting empty covariate
+        # blocks is sufficient and leaves the covariate-carrying callers alone.
+        def _base(key: str, n_rows: int):
+            if drop_covariates:
+                return np.zeros((n_rows, 0), dtype=np.float32)
+            return fd[key]
+
         y_pred = np.full(len(test_idx), np.nan, dtype=float)
         try:
-            if rung_id == "ols" and _ols_dx_interactions():
+            if is_null_arm:
+                # Intercept-only comparator: the fold's training residual mean.
+                train_target = y_use[train_idx]
+                train_target = train_target[np.isfinite(train_target)]
+                y_pred = np.full(
+                    len(test_idx),
+                    float(np.mean(train_target)) if train_target.size else np.nan,
+                    dtype=float,
+                )
+            elif rung_id == "ols" and _ols_dx_interactions() and not drop_covariates:
                 # Faithful reproduction of the main pipeline's OLS design
                 # (loco_fusion_matrix_engine.py L835-883): intercept + age +
                 # encode_dummies(sex) + year spline basis + encode_dummies(diag) +
@@ -1207,8 +1421,8 @@ def _fit_candidate(
                 beta, *_ = np.linalg.lstsq(X_train, y_use[train_idx], rcond=None)
                 y_pred = X_test @ beta
             elif rung_id == "ols":
-                X_train = _append_predictors(fd["Xb_train_full"], X_exp_use, train_idx, pred_used).astype(float)
-                X_test = _append_predictors(fd["Xb_test"], X_exp_use, test_idx, pred_used).astype(float)
+                X_train = _append_predictors(_base("Xb_train_full", len(train_idx)), X_exp_use, train_idx, pred_used).astype(float)
+                X_test = _append_predictors(_base("Xb_test", len(test_idx)), X_exp_use, test_idx, pred_used).astype(float)
                 X_train = np.column_stack([np.ones(len(train_idx)), X_train])
                 X_test = np.column_stack([np.ones(len(test_idx)), X_test])
                 beta, *_ = np.linalg.lstsq(X_train, y_use[train_idx], rcond=None)
@@ -1216,9 +1430,9 @@ def _fit_candidate(
             else:
                 tr_inner = fd["tr_inner_idx"]
                 val_idx = fd["val_idx"]
-                X_tr_inner = _append_predictors(fd["Xb_train_inner"], X_exp_use, tr_inner, pred_used)
-                X_val = _append_predictors(fd["Xb_val"], X_exp_use, val_idx, pred_used)
-                X_test = _append_predictors(fd["Xb_test"], X_exp_use, test_idx, pred_used)
+                X_tr_inner = _append_predictors(_base("Xb_train_inner", len(tr_inner)), X_exp_use, tr_inner, pred_used)
+                X_val = _append_predictors(_base("Xb_val", len(val_idx)), X_exp_use, val_idx, pred_used)
+                X_test = _append_predictors(_base("Xb_test", len(test_idx)), X_exp_use, test_idx, pred_used)
                 ensemble = (fold_xgb_ensembles or {}).get(country)
                 members = ensemble if ensemble is not None else [dict((fold_xgb_cfgs or {}).get(country, xgb_cfg or {}))]
                 if not members:
@@ -1291,6 +1505,9 @@ def evaluate_candidates_by_rung(
     max_candidates: int | None = None,
     fold_pca: dict | None = None,
     fold_residualize: bool = False,
+    fold_residualize_with_year: bool = False,
+    drop_covariates: bool = False,
+    residualization_diagnostics_path: Path | None = None,
     cv_override: dict | None = None,
     tuning_artifact_path: str | Path | None = None,
     tuning_strict: bool = False,
@@ -1370,7 +1587,27 @@ def evaluate_candidates_by_rung(
     # not in the formula -- it stays the LOCO grouping variable, unchanged
     # from the original/main analysis.
     fold_y = None
-    if fold_residualize:
+    if fold_residualize and fold_residualize_with_year:
+        raise ValueError(
+            "fold_residualize and fold_residualize_with_year are mutually exclusive: "
+            "the first is the delivered age+sex+diagnosis residualizer, the second the "
+            "clean age+year+sex+diagnosis one"
+        )
+    if fold_residualize_with_year:
+        fold_y, residualization_diagnostics = build_fold_residualized_y_with_year(
+            context["y"],
+            context["age"],
+            context["sex"],
+            context["diag"],
+            context["year_basis_by_country"],
+            context["countries"],
+            context["train_idx_by_country"],
+        )
+        if residualization_diagnostics_path is not None:
+            residualization_diagnostics_path.parent.mkdir(parents=True, exist_ok=True)
+            residualization_diagnostics.insert(0, "bag", bag)
+            residualization_diagnostics.to_csv(residualization_diagnostics_path, index=False)
+    elif fold_residualize:
         fold_y = build_fold_residualized_y(
             context["y"],
             context["age"],
@@ -1422,11 +1659,27 @@ def evaluate_candidates_by_rung(
             )
         if fold_pca is not None:
             rung_candidate_df["fold_pca_sha256"] = fold_pca_sha256
+        # Target/design identity in the resume cache. Without these a
+        # covariate-free, year-residualized run could silently load cached
+        # results fitted under the covariate-carrying design (or vice versa):
+        # the candidate IDs and HPO identity are identical across both.
+        # Only the new clean-residualization modes stamp it, so every already
+        # delivered stage keeps its existing cache identity and resume
+        # behaviour unchanged.
+        target_design_identity = (
+            f"resid_year={int(bool(fold_residualize_with_year))}"
+            f"|drop_cov={int(bool(drop_covariates))}"
+        )
+        stamps_target_design = bool(fold_residualize_with_year or drop_covariates)
+        if stamps_target_design:
+            rung_candidate_df["target_design_identity"] = target_design_identity
         if fold_xgb_cfgs is not None and artifact_fold_xgb_cfgs is not None:
             raise ValueError("Provide either direct fold_xgb_cfgs or a tuning artifact, not both")
         resolved_fold_xgb_cfgs = fold_xgb_cfgs or artifact_fold_xgb_cfgs
         expected_ids = set(rung_candidate_df["candidate_id"].astype(str).tolist())
         identity_columns = ["hpo_scope", "hpo_artifact_sha256"]
+        if stamps_target_design:
+            identity_columns.append("target_design_identity")
         if fold_pca is not None:
             identity_columns.append("fold_pca_sha256")
         expected_hpo = (
@@ -1522,6 +1775,7 @@ def evaluate_candidates_by_rung(
                         fold_xgb_ensembles=fold_xgb_ensembles,
                         fold_pc=fold_pc,
                         fold_y=fold_y,
+                        drop_covariates=drop_covariates,
                     )
                     for row in chunk
                 ]
@@ -1542,6 +1796,7 @@ def evaluate_candidates_by_rung(
                         fold_xgb_ensembles=fold_xgb_ensembles,
                         fold_pc=fold_pc,
                         fold_y=fold_y,
+                        drop_covariates=drop_covariates,
                     )
                     for row in chunk
                 )
@@ -1750,8 +2005,12 @@ def load_best_single_by_rung(bag: str) -> pd.DataFrame:
         runtime = bundle_root()
         source_run = os.environ.get("MAIN_K10_SOURCE_RUN_ID", "paper_reanalysis_k10").strip()
         parts = []
-        for rung in ("xgb_tree_d1", "xgb_tree_d2", "xgb_tree_d3"):
-            root = runtime / "results" / "analysis_runs" / source_run / "xgb" / bag / rung / "single"
+        for rung in ("ols", "xgb_tree_d1", "xgb_tree_d2", "xgb_tree_d3"):
+            root = (
+                runtime / "results" / "analysis_runs" / source_run / "ols" / bag / "ols" / "single"
+                if rung == "ols"
+                else runtime / "results" / "analysis_runs" / source_run / "xgb" / bag / rung / "single"
+            )
             global_path = root / "metrics_global.csv"
             country_path = root / "metrics_country.csv"
             if not global_path.is_file() or not country_path.is_file():

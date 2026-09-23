@@ -209,7 +209,13 @@ def _draw_pca_rows(
     ]
 
 
-def _plot_pca(bag_inputs: dict[str, dict], outdir: Path, rungs: list[str]) -> None:
+def _plot_pca(
+    bag_inputs: dict[str, dict],
+    outdir: Path,
+    rungs: list[str],
+    *,
+    write_rendered_source_data: bool = True,
+) -> None:
     """One 2x2 figure: structural row first, then functional.
 
     Each BAG is one row of two columns (PCA variance, incremental-PC
@@ -234,7 +240,8 @@ def _plot_pca(bag_inputs: dict[str, dict], outdir: Path, rungs: list[str]) -> No
     stem = "whole_exposome_pca_sensitivity"
     save_figure(fig, stem, outdir)
     plt.close(fig)
-    write_source_data(stem, panels, outdir)
+    if write_rendered_source_data:
+        write_source_data(stem, panels, outdir)
 
 
 def main() -> None:
